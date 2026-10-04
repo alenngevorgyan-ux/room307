@@ -302,3 +302,27 @@ func check_occluder_fades() -> void:
 	await _settle_hero_at(lobby.global_position + Vector3(9.0, 0, 6.0), "LOBBY")
 	await frames(60)
 	expect(float(mat.get_shader_parameter("fade")) < 0.05, "and comes back when he moves on")
+
+
+## V1.5: dressing is visual only — no collision anywhere under Look roots or box Visual nodes,
+## so it can never block a route the gameplay relies on.
+func check_dressing_adds_no_collision() -> void:
+	var bad: Array = []
+	var dressed := 0
+	for zid in Services.world.zones:
+		var z: Node = Services.world.zones[zid]
+		var roots: Array = []
+		if z.get_node_or_null("Look"):
+			roots.append(z.get_node("Look"))
+		var geo: Node = z.get_node_or_null("Geometry")
+		if geo:
+			for n in geo.get_children():
+				if n.get_node_or_null("Visual"):
+					roots.append(n.get_node("Visual"))
+		for r in roots:
+			for c in r.find_children("*", "", true, false):
+				dressed += 1
+				if c is CollisionObject3D or c is CollisionShape3D:
+					bad.append(String(c.get_path()))
+	expect(dressed > 500, "the hotel is dressed (%d visual nodes)" % dressed)
+	expect(bad.is_empty(), "collision inside visual dressing: %s" % [bad.slice(0, 5)])

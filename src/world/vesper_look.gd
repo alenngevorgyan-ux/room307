@@ -153,11 +153,15 @@ static func emissive(c: Color, energy: float) -> StandardMaterial3D:
 
 # ================================================================== apply
 
+const DRESS := preload("res://src/world/vesper_dress.gd")
+
+
 static func apply(world: Node) -> void:
 	for zid in world.zones:
 		skin_zone(world.zones[zid])
 	for it in world.get_tree().get_nodes_in_group("interactables"):
 		_skin_interactable(it)
+	DRESS.apply(world)
 
 
 static func skin_zone(z: Zone) -> void:
