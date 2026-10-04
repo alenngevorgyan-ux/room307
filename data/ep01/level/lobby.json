@@ -233,6 +233,35 @@
     ],
     "k": "metal",
     "nocol": true
+   },
+   {
+    "id": "keypad",
+    "p": [
+     26.5,
+     1.3,
+     0.12
+    ],
+    "s": [
+     0.18,
+     0.25,
+     0.06
+    ],
+    "k": "metal",
+    "nocol": true,
+    "emit": 0.3
+   },
+   {
+    "id": "desk_return",
+    "p": [
+     17.6,
+     1.6
+    ],
+    "s": [
+     0.3,
+     1.15,
+     1.6
+    ],
+    "k": "counter"
    }
   ],
   "labels": [
@@ -318,20 +347,6 @@
     "kind": "stair"
    },
    {
-    "id": "LOBBY_RECBACK",
-    "p": [
-     25.6,
-     0.0
-    ],
-    "side": "N",
-    "to": "RECBACK_LOBBY",
-    "label": "Служебное",
-    "kind": "door",
-    "auto": false,
-    "open_if": "flag:reception_back_open",
-    "locked_text": "Только для персонала"
-   },
-   {
     "id": "LOBBY_STREET",
     "p": [
      14.0,
@@ -348,6 +363,30 @@
      ]
     },
     "locked_text": "Не сейчас"
+   },
+   {
+    "id": "LOBBY_SEC",
+    "p": [
+     25.6,
+     0.0
+    ],
+    "side": "N",
+    "to": "SEC_FRONT",
+    "label": "Охрана",
+    "kind": "door",
+    "auto": false,
+    "open_if": {
+     "any": [
+      "flag:sec_front_open",
+      "flag:pavel_door_open"
+     ]
+    },
+    "locked_text": "Кодовый замок",
+    "locked_actions": [
+     {
+      "sfx": "locked"
+     }
+    ]
    }
   ],
   "markers": {
@@ -438,6 +477,26 @@
    "adrian_report": [
     13.0,
     10.5
+   ],
+   "keypad": [
+    26.4,
+    0.8
+   ],
+   "pavel_keypad": [
+    26.0,
+    1.0
+   ],
+   "behind_desk": [
+    22.0,
+    1.2
+   ],
+   "cart_end": [
+    24.0,
+    1.4
+   ],
+   "house_phone_ring": [
+    21.0,
+    1.6
    ]
   },
   "rigs": {

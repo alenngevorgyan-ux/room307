@@ -1,0 +1,101 @@
+{
+ "C_MARA_CALLED_FROM_615": {
+  "text": "Мара позвонила мне из 615.",
+  "line": "H_615",
+  "verb": "BLUFF",
+  "about": "F_MARA_LOCATION",
+  "is_true": false,
+  "contradicted_by": [],
+  "fears": {
+   "eva": "MARA_FOUND"
+  },
+  "available_to": [
+   "eva"
+  ],
+  "overrides": {
+   "eva": [
+    {
+     "if": "hears:daniel:eva",
+     "reaction": "DEFLECT"
+    },
+    {
+     "if": {
+      "npc_state": {
+       "eva": {
+        "suspicion_gte": 2
+       }
+      }
+     },
+     "reaction": "CALLED"
+    },
+    {
+     "if": true,
+     "reaction": "SLIP"
+    }
+   ]
+  }
+ },
+ "C_MARA_SAID_YOU_HIDE_HER": {
+  "text": "Мара сказала мне, что ты её прячешь.",
+  "line": "H_HIDE",
+  "verb": "BLUFF",
+  "about": "F_EVA_PROTECTING_MARA",
+  "is_true": false,
+  "contradicted_by": [
+   "F_MARA_WOULD_NOT_SAY"
+  ],
+  "fears": {
+   "eva": "BETRAY_MARA"
+  }
+ },
+ "C_EVA_ROOM_308": {
+  "text": "Ты живёшь в 308.",
+  "line": "H_308",
+  "verb": "PRESS",
+  "about": "F_EVA_ROOM_308",
+  "is_true": true,
+  "fears": {
+   "eva": "MARA_FOUND"
+  }
+ },
+ "C_ADRIAN_SENT_ME": {
+  "text": "Адриан Вейл сказал, ты в курсе.",
+  "line": "H_NICO_ADRIAN",
+  "verb": "BLUFF",
+  "about": "F_HERO_WORKS_FOR_ADRIAN",
+  "is_true": false,
+  "contradicted_by": [
+   "F_ADRIAN_NEVER_TALKS_STAFF"
+  ]
+ },
+ "C_STAGED": {
+  "text": "Красивая постановка.",
+  "line": "H_STAGED",
+  "verb": "PROVOKE",
+  "about": "F_EVA_INVOLVED",
+  "is_true": true,
+  "fears": {
+   "eva": "MARA_FOUND"
+  }
+ },
+ "C_HIDING_FROM_YOU": {
+  "text": "Она прячется от вас.",
+  "line": "H_HIDING_FROM_YOU",
+  "verb": "PROVOKE",
+  "about": "F_OLD_ACCIDENT",
+  "is_true": true,
+  "fears": {
+   "adrian": "LOSE_MARA"
+  }
+ },
+ "C_PHOTO_HUB": {
+  "text": "Ваш человек обыскивал её номер.",
+  "line": "H_PHOTO_HUB",
+  "verb": "PRESS",
+  "about": "F_DANIEL_SEARCHED_307",
+  "is_true_if": "ITEM_PHOTO_DANIEL_307",
+  "fears": {
+   "adrian": "LOSES_NAME"
+  }
+ }
+}

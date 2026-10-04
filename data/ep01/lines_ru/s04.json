@@ -1,0 +1,346 @@
+{
+ "ADR_SMS_NEWS": {
+  "speaker": "adrian",
+  "text": "Новости?"
+ },
+ "NICO_01": {
+  "speaker": "nico",
+  "text": "Господи. Только не ты."
+ },
+ "H_NICO_01": {
+  "speaker": "hero",
+  "text": "Я тоже рад тебя видеть."
+ },
+ "NICO_JULES": {
+  "speaker": "nico",
+  "text": "Жюль сказал, ты его спас. Не жди благодарности."
+ },
+ "NICO_BUSY": {
+  "speaker": "nico",
+  "text": "Я работаю, профессор. Видишь — люди ждут."
+ },
+ "H_NICO_WHO": {
+  "speaker": "hero",
+  "text": "Она была с кем-то?"
+ },
+ "NICO_MAN": {
+  "speaker": "nico",
+  "text": "Седой. Пил чай. Руки держал как водитель — на десяти и двух, даже на столе."
+ },
+ "H_NICO_ASKED": {
+  "speaker": "hero",
+  "text": "Что она спрашивала?"
+ },
+ "NICO_CAMS": {
+  "speaker": "nico",
+  "text": "Спрашивала, где камеры. Два раза."
+ },
+ "NICO_DANIEL": {
+  "speaker": "nico",
+  "text": "Потом пришёл этот ваш Дэниел. Те же вопросы. Только про неё."
+ },
+ "H_NICO_WHERE_MAN": {
+  "speaker": "hero",
+  "text": "Седой — куда он пошёл?"
+ },
+ "NICO_VOLVO": {
+  "speaker": "nico",
+  "text": "Седой спрашивал служебный выезд. У погрузки стоит старое Volvo. Не наше."
+ },
+ "H_NICO_ADRIAN": {
+  "speaker": "hero",
+  "text": "Адриан Вейл сказал, ты в курсе."
+ },
+ "NICO_CALLED": {
+  "speaker": "nico",
+  "text": "Вейл? С барменом? Не смеши. …Ладно. Седой с ней сидел. Всё."
+ },
+ "H_NICO_LUKAS": {
+  "speaker": "hero",
+  "text": "Где Лукас?"
+ },
+ "NICO_LUKAS": {
+  "speaker": "nico",
+  "text": "Какой ещё Лукас? Не было никакого Лукаса."
+ },
+ "H_NICO_LINA": {
+  "speaker": "hero",
+  "text": "Лина что-то рассказывала?"
+ },
+ "NICO_LINA": {
+  "speaker": "nico",
+  "text": "Лина рассказывала… девушка ушла сама. Спокойная. А потом заходил тип в костюме."
+ },
+ "H_NICO_PAST": {
+  "speaker": "hero",
+  "text": "Кто меня порекомендовал?"
+ },
+ "NICO_RECOMMENDED": {
+  "speaker": "nico",
+  "text": "Это я сказал менеджеру про тебя. Прости."
+ },
+ "NICO_PRAGUE": {
+  "speaker": "nico",
+  "text": "После истории в Праге я думал, ты больше никогда…"
+ },
+ "H_NOT_TODAY": {
+  "speaker": "hero",
+  "text": "Не сегодня, Нико."
+ },
+ "NICO_BAR": {
+  "speaker": "nico",
+  "text": "Положи. Мой бар."
+ },
+ "GUEST_THANKS": {
+  "speaker": "guest_1",
+  "text": "О. Спасибо, шеф."
+ },
+ "NICO_SMOKE": {
+  "speaker": "nico",
+  "text": "Будешь? …Нет, ты же бросил. Ладно. Спрашивай."
+ },
+ "NICO_SMS": {
+  "speaker": "nico",
+  "text": "Зайди. Есть кое-что."
+ },
+ "EVA_01": {
+  "speaker": "eva",
+  "text": "Нет. Я её не видела. Я здесь вообще случайно. Пусти.",
+  "tell": {
+   "obs": "O_EVA_POCKET",
+   "at": 1.2,
+   "dur": 1.8
+  }
+ },
+ "H_615": {
+  "speaker": "hero",
+  "text": "Мара позвонила мне из 615."
+ },
+ "EVA_SLIP": {
+  "speaker": "eva",
+  "text": "Она вообще не была на шестом…"
+ },
+ "EVA_SLIP_AFTER": {
+  "speaker": "eva",
+  "text": "…Ты кто вообще? Отстань от неё."
+ },
+ "EVA_CALLED": {
+  "speaker": "eva",
+  "text": "Мара? Тебе? Она даже отцу не звонит."
+ },
+ "H_308": {
+  "speaker": "hero",
+  "text": "Ты живёшь в 308."
+ },
+ "EVA_308": {
+  "speaker": "eva",
+  "text": "…Ну и что? Ты кто вообще? Я ничего не скажу."
+ },
+ "H_HIDE": {
+  "speaker": "hero",
+  "text": "Мара сказала, что ты её прячешь."
+ },
+ "EVA_HIDE_CALLED": {
+  "speaker": "eva",
+  "text": "Мара бы так не сказала. Никогда. Ты врёшь."
+ },
+ "H_STAGED": {
+  "speaker": "hero",
+  "text": "Красивая постановка."
+ },
+ "EVA_STAGED": {
+  "speaker": "eva",
+  "text": "Не понимаю, о чём ты.",
+  "tell": {
+   "obs": "O_EVA_POCKET",
+   "at": 0.3,
+   "dur": 1.5
+  }
+ },
+ "H_LUKAS": {
+  "speaker": "hero",
+  "text": "Где Лукас?"
+ },
+ "EVA_LUKAS": {
+  "speaker": "eva",
+  "text": "Лукас? Он в Лиссабоне два года."
+ },
+ "H_WHERE_IS_SHE": {
+  "speaker": "hero",
+  "text": "Где она?"
+ },
+ "EVA_NO": {
+  "speaker": "eva",
+  "text": "Не скажу. Хоть убей."
+ },
+ "EVA_GO": {
+  "speaker": "eva",
+  "text": "Всё. Мне пора."
+ },
+ "EVA_CALL_1": {
+  "speaker": "eva",
+  "text": "Томас ещё здесь? …У прачечной."
+ },
+ "EVA_CALL_2": {
+  "speaker": "eva",
+  "text": "Скажи ему, пусть уезжает. …Нет, она в порядке."
+ },
+ "EVA_TAILED": {
+  "speaker": "eva",
+  "text": "Ты за мной ходишь?"
+ },
+ "H_HONEST": {
+  "speaker": "hero",
+  "text": "Её отец заплатил мне. На твоём месте я бы тоже её прятал.",
+  "anchor": true
+ },
+ "EVA_HONEST": {
+  "speaker": "eva",
+  "text": "…Поговори с Томасом. Он у прачечной. И не смей её трогать."
+ },
+ "EVA_LEAVES": {
+  "speaker": "eva",
+  "text": "Отвали."
+ },
+ "PHONE307_TXT": {
+  "speaker": "eva",
+  "text": "Т. у прачечной. Уходи через кухню, если что."
+ },
+ "ADR_CALL_1": {
+  "speaker": "adrian",
+  "text": "Она ничего не помнит, Дэниел. Ничего."
+ },
+ "ADR_CALL_2": {
+  "speaker": "adrian",
+  "text": "Найди карту — и всё. Мне всё равно, как."
+ },
+ "DAN_BRODY_1": {
+  "speaker": "brody",
+  "text": "В номере пусто. Шеф, может, она уже уехала?"
+ },
+ "DAN_BRODY_2": {
+  "speaker": "daniel",
+  "text": "Если не найдём до семи — она сама всё выложит."
+ },
+ "PAVEL_STOP": {
+  "speaker": "pavel",
+  "text": "Сюда нельзя. Пройдёмте."
+ },
+ "PAVEL_AGAIN": {
+  "speaker": "pavel",
+  "text": "Опять вы? Всё. Звоню Дэниелу."
+ },
+ "PAVEL_RUN": {
+  "speaker": "pavel",
+  "text": "Не бегаем, не бегаем."
+ },
+ "PAVEL_FIGHT": {
+  "speaker": "pavel",
+  "text": "Драка на третьем? Иду."
+ },
+ "PAVEL_FIGHT_AGAIN": {
+  "speaker": "pavel",
+  "text": "Опять «драка»? Ну-ну."
+ },
+ "PAVEL_RADIO": {
+  "speaker": "pavel",
+  "text": "…Павел, ответь. Ты где?"
+ },
+ "PAVEL_BACK": {
+  "speaker": "pavel",
+  "text": "Так. Возвращаюсь."
+ },
+ "H_PHONE_FIGHT": {
+  "speaker": "hero",
+  "text": "На третьем драка."
+ },
+ "DAN_ESCORT": {
+  "speaker": "daniel",
+  "text": "Мистер Вейл платит вам за дочь. Не за наши записи."
+ },
+ "LINA_FB": {
+  "speaker": "lina",
+  "text": "Тот пожилой… он сидит в машине у погрузки уже час."
+ },
+ "PA_VOLVO": {
+  "speaker": "pa",
+  "text": "Владельца серого Volvo просят подойти к зоне погрузки."
+ },
+ "ADR_REPORT": {
+  "speaker": "adrian",
+  "text": "Ну? Что вы нашли?"
+ },
+ "H_HIDING_FROM_YOU": {
+  "speaker": "hero",
+  "text": "Она прячется от вас."
+ },
+ "ADR_HIDING": {
+  "speaker": "adrian",
+  "text": "…От меня? Чушь."
+ },
+ "H_POCKET": {
+  "speaker": "hero",
+  "text": "Покажите, что у вас в кармане."
+ },
+ "ADR_POCKET": {
+  "speaker": "adrian",
+  "text": "…Она прислала мне это. «Я знаю.» Больше ничего."
+ },
+ "H_STAGED_REPORT": {
+  "speaker": "hero",
+  "text": "Номер инсценирован."
+ },
+ "ADR_STAGED": {
+  "speaker": "adrian",
+  "text": "Значит, она жива. И умна. В меня."
+ },
+ "H_WINDOW": {
+  "speaker": "hero",
+  "text": "Она ушла через окно."
+ },
+ "ADR_WINDOW": {
+  "speaker": "adrian",
+  "text": "Через окно? Дэниел, люди — на улицу. Все."
+ },
+ "H_NOT_TAKEN": {
+  "speaker": "hero",
+  "text": "Её никто не похищал."
+ },
+ "ADR_NOT_TAKEN": {
+  "speaker": "adrian",
+  "text": "Хорошо. Это… хорошо."
+ },
+ "H_PHOTO_HUB": {
+  "speaker": "hero",
+  "text": "Ваш человек обыскивал её номер.",
+  "anchor": true
+ },
+ "ADR_PHOTO": {
+  "speaker": "adrian",
+  "text": "…Дайте посмотреть. …Я разберусь."
+ },
+ "ADR_DAN_ARGUE": {
+  "speaker": "adrian",
+  "text": "Что ты делал в её номере, Дэниел?"
+ },
+ "DAN_ARGUE": {
+  "speaker": "daniel",
+  "text": "Свою работу, мистер Вейл."
+ },
+ "VID_NO_SIGNAL": {
+  "speaker": "voice",
+  "text": "НЕТ СИГНАЛА"
+ },
+ "THOMAS_CANOPY": {
+  "speaker": "thomas",
+  "text": "…"
+ },
+ "H_NEED_CARD": {
+  "speaker": "hero",
+  "text": "Мне нужна твоя служебная карта."
+ },
+ "LINA_CARD": {
+  "speaker": "lina",
+  "text": "…Берите. И тележку. Только верните."
+ }
+}

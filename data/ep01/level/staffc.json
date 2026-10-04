@@ -1,0 +1,21 @@
+{
+  "STAFF_CORRIDOR": {
+    "origin": [200, 0, 200], "size": [24, 3.2], "height": 3.0, "mode": "CORRIDOR",
+    "tint": [0.35, 0.33, 0.28], "floor_color": [0.22, 0.22, 0.2], "ambience": "hum",
+    "boxes": [
+      {"id": "lockers_1", "p": [6.0, 2.85], "s": [3.0, 2.0, 0.6], "k": "metal", "c": [0.45, 0.5, 0.45]},
+      {"id": "lockers_2", "p": [15.0, 2.85], "s": [3.0, 2.0, 0.6], "k": "metal", "c": [0.45, 0.5, 0.45]},
+      {"id": "bench", "p": [10.5, 0.5], "s": [2.0, 0.45, 0.5], "k": "furn"},
+      {"id": "breaker", "p": [19.0, 1.4, 0.1], "s": [0.6, 0.8, 0.12], "k": "metal", "nocol": true, "c": [0.5, 0.5, 0.3]}
+    ],
+    "doors": [
+      {"id": "STAFF_COLD", "p": [0.0, 1.6], "side": "W", "to": "COLD_STAFF", "label": "Холодильная", "kind": "door"},
+      {"id": "STAFF_FREIGHT", "p": [13.0, 0.0], "side": "N", "to": "FREIGHT_DOOR", "label": "Грузовой лифт", "kind": "elevator", "auto": false,
+        "open_if": {"cmp": ["flag.freight_floor", "==", "G"]}, "locked_text": "Вызвать лифт", "locked_actions": [{"sfx": "click"}, {"hint": ["Лифт едет…", 3.0]}, {"delay": 4.0, "do": [{"flag": ["freight_floor", "G"]}, {"sfx": "ding"}]}]},
+      {"id": "STAFF_SSTAIR", "p": [24.0, 1.6], "side": "E", "to": "SSTAIR_STAFF", "label": "Лестница", "kind": "stair"}
+    ],
+    "markers": {"enter": [1.0, 1.6], "breaker": [19.0, 0.8], "radio": [10.5, 1.0], "locker_1": [6.0, 2.2], "locker_2": [15.0, 2.2], "mid": [12.0, 1.6]},
+    "rigs": {"main": {"type": "follow", "offset": [0, 2.8, 7.0], "look": [0, 1.1, -1.0], "fov": 52, "clamp_x": [4.0, 20.0], "lock_z": 9.5, "lead": 0.3}},
+    "lights": [{"p": [5.0, 2.7, 1.6], "c": [1.0, 0.9, 0.7], "e": 1.0, "r": 7}, {"p": [13.0, 2.7, 1.6], "c": [1.0, 0.9, 0.7], "e": 1.0, "r": 7}, {"p": [20.0, 2.7, 1.6], "c": [1.0, 0.9, 0.7], "e": 1.0, "r": 7}]
+  }
+}

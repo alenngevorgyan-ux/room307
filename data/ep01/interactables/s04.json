@@ -1,0 +1,317 @@
+{
+ "I_BAR_PHONE": {
+  "zone": "BAR",
+  "p": [
+   0.25,
+   1.4,
+   5.4
+  ],
+  "scene": [
+   "S04"
+  ],
+  "verb": "Позвонить",
+  "prompt": "На ресепшен",
+  "mesh": {
+   "s": [
+    0.12,
+    0.2,
+    0.08
+   ],
+   "c": [
+    0.8,
+    0.75,
+    0.6
+   ],
+   "emit": 0.3
+  },
+  "actions": [
+   {
+    "line": "H_PHONE_FIGHT"
+   },
+   {
+    "sfx": "ring"
+   },
+   {
+    "trap_bait": [
+     "house_phone",
+     {}
+    ]
+   }
+  ]
+ },
+ "I_BAR_BOTTLE": {
+  "zone": "BAR",
+  "p": [
+   11.0,
+   1.0,
+   3.2
+  ],
+  "scene": "S04",
+  "verb": "Взять",
+  "prompt": "Бутылку",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.09,
+    0.32,
+    0.09
+   ],
+   "c": [
+    0.3,
+    0.55,
+    0.3
+   ],
+   "emit": 0.2
+  },
+  "actions": [
+   {
+    "flag": "holding_bottle"
+   },
+   {
+    "hero": [
+     "carry",
+     {
+      "item": "bottle"
+     }
+    ]
+   }
+  ]
+ },
+ "I_BAR_POUR": {
+  "npc": "guest_1",
+  "scene": "S04",
+  "verb": "Налить",
+  "prompt": "Гостю",
+  "once": true,
+  "no_mesh": true,
+  "radius": 2.0,
+  "priority": 2,
+  "visible_if": "flag:holding_bottle",
+  "actions": [
+   {
+    "sfx": "pour"
+   },
+   {
+    "line": "GUEST_THANKS"
+   },
+   {
+    "line": "NICO_BAR"
+   },
+   {
+    "warmth": [
+     "nico",
+     1
+    ]
+   },
+   {
+    "unflag": "holding_bottle"
+   },
+   {
+    "hero": [
+     "carry",
+     {
+      "item": ""
+     }
+    ]
+   },
+   {
+    "flag": "poured"
+   }
+  ]
+ },
+ "I_KEYPAD": {
+  "zone": "LOBBY",
+  "p": [
+   26.5,
+   1.3,
+   0.3
+  ],
+  "scene": [
+   "S04"
+  ],
+  "verb": "Ввести код",
+  "prompt": "3071",
+  "mesh": {
+   "s": [
+    0.18,
+    0.25,
+    0.06
+   ],
+   "c": [
+    0.2,
+    0.9,
+    0.5
+   ],
+   "emit": 0.4
+  },
+  "requires": {
+   "any": [
+    "O_PAVEL_CODE_FULL",
+    {
+     "all": [
+      "O_PAVEL_CODE_A",
+      "O_PAVEL_CODE_B"
+     ]
+    }
+   ]
+  },
+  "locked_text": "Кодовый замок · код?",
+  "locked_actions": [
+   {
+    "sfx": "deny"
+   },
+   {
+    "hint": [
+     "Код не знаю. Посмотреть, как вводит охранник?",
+     2.5
+    ]
+   }
+  ],
+  "actions": [
+   {
+    "sfx": "keypad"
+   },
+   {
+    "sfx": "accept"
+   },
+   {
+    "flag": "sec_front_open"
+   },
+   {
+    "delay": 5.0,
+    "do": [
+     {
+      "unflag": "sec_front_open"
+     }
+    ]
+   },
+   {
+    "flag": "used_keypad"
+   }
+  ]
+ },
+ "I_KEY_HOOK": {
+  "zone": "SCORR",
+  "p": [
+   15.0,
+   1.5,
+   0.2
+  ],
+  "scene": [
+   "S04"
+  ],
+  "verb": "Снять ключ-карту",
+  "prompt": "Крючок прачечной",
+  "hold": 2.5,
+  "once": true,
+  "visible_if": "!ITEM_STAFF_KEYCARD",
+  "mesh": {
+   "s": [
+    0.1,
+    0.12,
+    0.04
+   ],
+   "c": [
+    0.9,
+    0.85,
+    0.3
+   ],
+   "emit": 0.4
+  },
+  "actions": [
+   {
+    "give_item": [
+     "ITEM_STAFF_KEYCARD",
+     "hero"
+    ]
+   },
+   {
+    "sfx": "accept"
+   },
+   {
+    "bark": [
+     "laundry_worker",
+     "…"
+    ]
+   }
+  ]
+ },
+ "I_LINA_CART": {
+  "zone": "HALL_3F",
+  "p": [
+   28.5,
+   0.0,
+   3.0
+  ],
+  "scene": [
+   "S04"
+  ],
+  "radius": 1.8,
+  "mesh": {
+   "s": [
+    1.1,
+    1.0,
+    0.6
+   ],
+   "c": [
+    0.7,
+    0.7,
+    0.75
+   ],
+   "emit": 0.1,
+   "off": [
+    0,
+    0,
+    0
+   ]
+  },
+  "visible_if": {
+   "all": [
+    "flag:cart_in_hall",
+    "!flag:pushing_cart"
+   ]
+  },
+  "verb": "Взять",
+  "prompt": "Тележку горничной",
+  "actions": [
+   {
+    "flag": "pushing_cart"
+   },
+   {
+    "hero": [
+     "carry",
+     {
+      "item": "cart"
+     }
+    ]
+   },
+   {
+    "hint": [
+     "С тележкой ты — персонал.",
+     2.5
+    ]
+   }
+  ]
+ },
+ "I_LAUNDRY_WINDOW": {
+  "zone": "LAUNDRY",
+  "p": [
+   13.7,
+   1.4,
+   4.0
+  ],
+  "scene": [
+   "S04"
+  ],
+  "verb": "Посмотреть",
+  "prompt": "В окно",
+  "no_mesh": true,
+  "visible_if": "flag:thomas_at_canopy",
+  "once": true,
+  "actions": [
+   {
+    "notice": "O_LAUNDRY_WINDOW"
+   }
+  ]
+ }
+}

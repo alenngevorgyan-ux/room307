@@ -53,8 +53,9 @@ func action_sites() -> Array:
 		for l in D.overhears[oid].get("lines", []):
 			if typeof(l) == TYPE_DICTIONARY and l.has("actions"):
 				out.append([String(D.overhears[oid].get("source", oid)), l.actions])
-		if D.overhears[oid].has("actions"):
-			out.append([String(D.overhears[oid].get("source", oid)), D.overhears[oid].actions])
+		for k in ["actions", "on_start", "on_end"]:
+			if D.overhears[oid].has(k):
+				out.append([String(D.overhears[oid].get("source", oid)), D.overhears[oid][k]])
 	for sid in D.scenes:
 		var s: Dictionary = D.scenes[sid]
 		for k in ["enter", "exit"]:

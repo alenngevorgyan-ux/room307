@@ -1,0 +1,8 @@
+{
+  "I_VID_CHAIR": {"zone": "SECURITY", "p": [3.0, 0.5, 2.5], "scene": ["S04"], "verb": "Сесть", "prompt": "За мониторы", "no_mesh": true, "radius": 1.4,
+    "visible_if": "phase:S05_VIDEO", "actions": [{"trap_bait": ["vid", {"cmd": "sit"}]}]},
+  "I_VID_CAMKEYS": {"zone": "SECURITY", "p": [2.2, 0.8, 1.2], "scene": ["S04"], "verb": "Переключить", "prompt": "Камеры", "radius": 1.6,
+    "visible_if": "phase:S05_VIDEO", "mesh": {"s": [0.5, 0.04, 0.15], "c": [0.3, 0.8, 0.4], "emit": 0.4}, "actions": [{"trap_bait": ["vid", {"cmd": "cam"}]}]},
+  "I_VID_TABS": {"zone": "SECURITY", "p": [3.8, 0.8, 1.2], "scene": ["S04"], "verb": "Время", "prompt": "Вкладки", "radius": 1.6,
+    "visible_if": "phase:S05_VIDEO", "mesh": {"s": [0.4, 0.04, 0.15], "c": [0.8, 0.7, 0.3], "emit": 0.4}, "actions": [{"trap_bait": ["vid", {"cmd": "tab"}]}]}
+}

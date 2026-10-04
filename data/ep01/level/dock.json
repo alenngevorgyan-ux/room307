@@ -1,0 +1,35 @@
+{
+  "LOADING_DOCK": {
+    "origin": [400, 0, 100], "size": [26, 11], "height": 6.0, "mode": "ROOM",
+    "tint": [0.2, 0.2, 0.22], "floor_color": [0.13, 0.13, 0.15], "ambience": "rain_heavy", "rain": true,
+    "walls": {"skip": []},
+    "boxes": [
+      {"id": "dock_raised", "p": [5.5, 7.5], "s": [11.0, 1.2, 7.0], "k": "floor", "c": [0.28, 0.27, 0.26]},
+      {"id": "dock_edge", "p": [11.05, 1.2, 7.5], "s": [0.1, 0.06, 7.0], "k": "furn", "c": [0.9, 0.75, 0.1], "nocol": true},
+      {"id": "canopy", "p": [5.5, 4.2, 7.5], "s": [11.0, 0.15, 7.0], "k": "dark", "nocol": true},
+      {"id": "volvo", "p": [15.5, 3.4], "s": [4.4, 1.4, 1.9], "k": "furn", "c": [0.42, 0.44, 0.46]},
+      {"id": "volvo_top", "p": [15.2, 1.4, 3.4], "s": [2.4, 0.6, 1.7], "k": "glass", "nocol": true, "c": [0.35, 0.4, 0.45, 0.7]},
+      {"id": "gate", "p": [23.0, 0.15], "s": [5.0, 3.5, 0.3], "k": "metal", "c": [0.35, 0.35, 0.38]},
+      {"id": "pallets", "p": [19.5, 8.5], "s": [2.0, 0.9, 1.4], "k": "vault", "c": [0.5, 0.38, 0.25]},
+      {"id": "lamp", "p": [12.0, 0.0, 0.3], "s": [0.2, 5.0, 0.2], "k": "metal", "nocol": true},
+      {"id": "lamp_head", "p": [12.0, 5.0, 0.6], "s": [0.6, 0.15, 0.4], "k": "furn", "c": [1.0, 0.65, 0.2], "nocol": true, "emit": 2.0}
+    ],
+    "ramps": [{"id": "dock_ramp", "from": [11.0, 1.2, 9.6], "to": [14.5, 0.0, 9.6], "w": 1.8}],
+    "doors": [
+      {"id": "DOCK_LAUNDRY", "p": [0.0, 1.2, 6.0], "side": "W", "to": "LAUNDRY_DOCK", "label": "Прачечная", "kind": "door"},
+      {"id": "DOCK_KITCHEN", "p": [26.0, 7.5], "side": "E", "to": "KITCHEN_YARD", "label": "Кухня (двор)", "kind": "door",
+        "open_if": {"any": ["phase:S07_CHASE"]}, "locked_text": "Заперто"}
+    ],
+    "markers": {
+      "enter": [1.2, 1.2, 6.0], "thomas_start": [1.6, 1.2, 7.2], "thomas_edge": [10.2, 1.2, 6.0], "thomas_car": [15.5, 4.8], "thomas_lean": [13.0, 4.6],
+      "car_driver": [15.5, 2.0], "gate_chain": [21.0, 1.0], "keys_spot": [10.6, 1.2, 4.6], "van": [21.0, 1.2], "brody_start": [20.0, 2.2], "sato_start": [21.5, 3.2],
+      "block_lane": [12.5, 5.2], "photo_dash": [14.2, 1.4, 3.4], "cart": [8.0, 1.2, 9.0], "hero_chase": [6.0, 1.2, 7.5], "canopy_smoke": [6.0, 1.2, 4.6], "yard_side": [24.5, 7.5]
+    },
+    "rigs": {
+      "main": {"type": "follow", "offset": [0, 4.0, 13.0], "look": [0, 0.8, -2.0], "fov": 48, "clamp_x": [8.0, 18.0], "lock_z": 15.0, "lead": 0.2},
+      "car": {"type": "fixed", "pos": [11.0, 2.3, 8.6], "at": [14.5, 1.1, 3.8], "fov": 44, "track": 0.3}
+    },
+    "camzones": [{"rig": "car", "p": [11.5, 0.0], "s": [8.0, 6.6], "y": [-1, 0.6]}],
+    "lights": [{"p": [12.0, 4.6, 1.2], "c": [1.0, 0.62, 0.25], "e": 2.0, "r": 14}, {"p": [5.0, 4.0, 7.5], "c": [0.9, 0.9, 1.0], "e": 0.7, "r": 7}]
+  }
+}

@@ -1,50 +1,222 @@
 {
-  "_comment": "sources = grant-site names (exchange/trap/interactable/overhear/scene ids or explicit give_fact sources). guaranteed_by marks unmissable sites.",
-  "F_WATCH_PAWNED": {"text": "Хейл заложил часы Жюлю", "truth": true, "sources": ["X_S01_JULES", "I_S1_DRAWER", "S01"]},
-  "F_HERO_READS_PEOPLE": {"text": "Адриан оценил героя", "truth": true},
-  "F_OLD_ACCIDENT": {"text": "Была старая авария", "truth": true},
-  "F_ADRIAN_EXPECTS_CONTACT": {"text": "Адриан ждёт, что Мара выйдет на связь", "truth": true},
-  "F_MARA_CONTACT": {"text": "(Адриан думает, что Мара звонила герою)", "truth": false},
-  "F_MARA_LEFT_ALIVE": {"text": "Мара ушла из 307 сама", "truth": true},
-  "F_SECURITY_IN_307": {"text": "В 307 заходил кто-то «из охраны»", "truth": true},
-  "F_SERVICE_STAIR": {"text": "Мара спрашивала про служебную лестницу", "truth": true},
-  "F_EVA_ROOM_308": {"text": "Эва живёт в 308", "truth": true},
-  "F_EVA_INVOLVED": {"text": "Эва вместе с Марой", "truth": true},
-  "F_MARA_MET_OLDER_MAN": {"text": "Мара встречалась с седым мужчиной", "truth": true},
-  "F_MARA_ASKED_CAMERAS": {"text": "Мара спрашивала про камеры", "truth": true},
-  "F_DANIEL_ASKING": {"text": "Дэниел расспрашивал о Маре", "truth": true},
-  "F_EVA_KNOWS_WHERE": {"text": "Эва знает, где Мара", "truth": true},
-  "F_MARA_NOT_ON_6": {"text": "Мары не было на шестом", "truth": true},
-  "F_EVA_PROTECTING_MARA": {"text": "Эва прячет Мару", "truth": true},
-  "F_THOMAS_NAME": {"text": "Седого зовут Томас", "truth": true},
-  "F_THOMAS_LOCATION": {"text": "Седой ждёт у погрузки", "truth": true, "required": true},
-  "F_DANIEL_SEARCHED_307": {"text": "Дэниел обыскивал 307", "truth": true},
-  "F_ADRIAN_DANIEL_COORDINATE": {"text": "Адриан и Дэниел ищут вместе", "truth": true},
-  "F_DEADLINE_MORNING": {"text": "Утром Мара всё опубликует", "truth": true},
-  "F_DANIEL_KNOWS_SHE_IS_INSIDE": {"text": "(Дэниел знает, что она в здании)", "truth": true},
-  "F_THOMAS_TOOK_BLAME": {"text": "Томас отсидел за аварию", "truth": true, "required": true},
-  "F_ADRIAN_WAS_DRIVING": {"text": "За рулём был Адриан", "truth": true, "required": true},
-  "F_THOMAS_PAID_SON": {"text": "Деньги Вейла спасли сына Томаса", "truth": true},
-  "F_THOMAS_CONSENTED": {"text": "Томас согласился сам", "truth": true},
-  "F_RECORDING_EXISTS": {"text": "Есть запись с регистратора", "truth": true, "required": true},
-  "F_ADRIAN_THINKS_MARA_FORGOT": {"text": "Адриан думает, что Мара ничего не помнит", "truth": true, "required": true},
-  "F_MARA_BELIEVED_SHE_DROVE": {"text": "Мара думала, что за рулём была она", "truth": true, "required": true},
-  "F_DANIEL_TOLD_MARA": {"text": "Это Дэниел сказал ей", "truth": true, "required": true},
-  "F_ADRIAN_NEVER_ASKED": {"text": "Адриан никого не просил внушать ей вину", "truth": true},
-  "F_MARA_WILL_PUBLISH": {"text": "В восемь Мара всё расскажет журналисту", "truth": true, "required": true},
-  "F_DANIEL_CONFESSED": {"text": "Дэниел признался", "truth": true},
-  "F_NICO_RECOMMENDED": {"text": "Это Нико порекомендовал героя", "truth": true},
-  "F_MARA_LOCATION": {"text": "(где Мара на самом деле)", "truth": true, "internal": true},
-  "F_HERO_WORKS_FOR_ADRIAN": {"text": "(герой работает на Адриана)", "truth": true, "internal": true},
-  "F_HERO_NOT_STAFF": {"text": "(герой не из персонала)", "truth": true, "internal": true},
-  "F_MARA_WOULD_NOT_SAY": {"text": "(Мара бы такого не сказала)", "truth": true, "internal": true},
-  "F_ADRIAN_NEVER_TALKS_STAFF": {"text": "(Адриан не говорит с персоналом)", "truth": true, "internal": true},
-  "F_KAI_INNOCENT": {"text": "(Кай ничего не брал)", "truth": true, "internal": true},
-  "F_DOME_DEAD": {"text": "(камера над стойкой не работает)", "truth": true, "internal": true},
-  "F_DOOR_CODE": {"text": "(код двери охраны — 3071)", "truth": true, "internal": true},
-  "F_CAMERA_FOOTAGE": {"text": "(камеры что-то записали)", "truth": true, "internal": true},
-  "F_HALE_BROKE": {"text": "(Хейл на мели)", "truth": true, "internal": true},
-  "F_POLICE_COMING": {"text": "(полиция едет)", "truth": false, "internal": true},
-  "F_DANIEL_NOT_CALLING": {"text": "(Дэниел ничего такого не говорил)", "truth": true, "internal": true},
-  "F_RECORDING_LOCATION": {"text": "(где запись)", "truth": true, "internal": true}
+ "_comment": "sources = grant-site names (exchange/trap/interactable/overhear/scene ids or explicit give_fact sources). guaranteed_by marks unmissable sites.",
+ "F_WATCH_PAWNED": {
+  "text": "Хейл заложил часы Жюлю",
+  "truth": true,
+  "sources": [
+   "X_S01_JULES",
+   "I_S1_DRAWER",
+   "S01"
+  ]
+ },
+ "F_HERO_READS_PEOPLE": {
+  "text": "Адриан оценил героя",
+  "truth": true
+ },
+ "F_OLD_ACCIDENT": {
+  "text": "Была старая авария",
+  "truth": true
+ },
+ "F_ADRIAN_EXPECTS_CONTACT": {
+  "text": "Адриан ждёт, что Мара выйдет на связь",
+  "truth": true
+ },
+ "F_MARA_CONTACT": {
+  "text": "(Адриан думает, что Мара звонила герою)",
+  "truth": false
+ },
+ "F_MARA_LEFT_ALIVE": {
+  "text": "Мара ушла из 307 сама",
+  "truth": true
+ },
+ "F_SECURITY_IN_307": {
+  "text": "В 307 заходил кто-то «из охраны»",
+  "truth": true
+ },
+ "F_SERVICE_STAIR": {
+  "text": "Мара спрашивала про служебную лестницу",
+  "truth": true
+ },
+ "F_EVA_ROOM_308": {
+  "text": "Эва живёт в 308",
+  "truth": true
+ },
+ "F_EVA_INVOLVED": {
+  "text": "Эва вместе с Марой",
+  "truth": true
+ },
+ "F_MARA_MET_OLDER_MAN": {
+  "text": "Мара встречалась с седым мужчиной",
+  "truth": true
+ },
+ "F_MARA_ASKED_CAMERAS": {
+  "text": "Мара спрашивала про камеры",
+  "truth": true
+ },
+ "F_DANIEL_ASKING": {
+  "text": "Дэниел расспрашивал о Маре",
+  "truth": true
+ },
+ "F_EVA_KNOWS_WHERE": {
+  "text": "Эва знает, где Мара",
+  "truth": true
+ },
+ "F_MARA_NOT_ON_6": {
+  "text": "Мары не было на шестом",
+  "truth": true
+ },
+ "F_EVA_PROTECTING_MARA": {
+  "text": "Эва прячет Мару",
+  "truth": true
+ },
+ "F_THOMAS_NAME": {
+  "text": "Седого зовут Томас",
+  "truth": true
+ },
+ "F_THOMAS_LOCATION": {
+  "text": "Седой ждёт у погрузки",
+  "truth": true,
+  "required": true
+ },
+ "F_DANIEL_SEARCHED_307": {
+  "text": "Дэниел обыскивал 307",
+  "truth": true
+ },
+ "F_ADRIAN_DANIEL_COORDINATE": {
+  "text": "Адриан и Дэниел ищут вместе",
+  "truth": true
+ },
+ "F_DEADLINE_MORNING": {
+  "text": "Утром Мара всё опубликует",
+  "truth": true
+ },
+ "F_DANIEL_KNOWS_SHE_IS_INSIDE": {
+  "text": "(Дэниел знает, что она в здании)",
+  "truth": true
+ },
+ "F_THOMAS_TOOK_BLAME": {
+  "text": "Томас отсидел за аварию",
+  "truth": true,
+  "required": true
+ },
+ "F_ADRIAN_WAS_DRIVING": {
+  "text": "За рулём был Адриан",
+  "truth": true,
+  "required": true
+ },
+ "F_THOMAS_PAID_SON": {
+  "text": "Деньги Вейла спасли сына Томаса",
+  "truth": true
+ },
+ "F_THOMAS_CONSENTED": {
+  "text": "Томас согласился сам",
+  "truth": true
+ },
+ "F_RECORDING_EXISTS": {
+  "text": "Есть запись с регистратора",
+  "truth": true,
+  "required": true
+ },
+ "F_ADRIAN_THINKS_MARA_FORGOT": {
+  "text": "Адриан думает, что Мара ничего не помнит",
+  "truth": true,
+  "required": true
+ },
+ "F_MARA_BELIEVED_SHE_DROVE": {
+  "text": "Мара думала, что за рулём была она",
+  "truth": true,
+  "required": true
+ },
+ "F_DANIEL_TOLD_MARA": {
+  "text": "Это Дэниел сказал ей",
+  "truth": true,
+  "required": true
+ },
+ "F_ADRIAN_NEVER_ASKED": {
+  "text": "Адриан никого не просил внушать ей вину",
+  "truth": true
+ },
+ "F_MARA_WILL_PUBLISH": {
+  "text": "В восемь Мара всё расскажет журналисту",
+  "truth": true,
+  "required": true
+ },
+ "F_DANIEL_CONFESSED": {
+  "text": "Дэниел признался",
+  "truth": true
+ },
+ "F_NICO_RECOMMENDED": {
+  "text": "Это Нико порекомендовал героя",
+  "truth": true
+ },
+ "F_MARA_LOCATION": {
+  "text": "(где Мара на самом деле)",
+  "truth": true,
+  "internal": true
+ },
+ "F_HERO_WORKS_FOR_ADRIAN": {
+  "text": "(герой работает на Адриана)",
+  "truth": true,
+  "internal": true
+ },
+ "F_HERO_NOT_STAFF": {
+  "text": "(герой не из персонала)",
+  "truth": true,
+  "internal": true
+ },
+ "F_MARA_WOULD_NOT_SAY": {
+  "text": "(Мара бы такого не сказала)",
+  "truth": true,
+  "internal": true
+ },
+ "F_ADRIAN_NEVER_TALKS_STAFF": {
+  "text": "(Адриан не говорит с персоналом)",
+  "truth": true,
+  "internal": true
+ },
+ "F_KAI_INNOCENT": {
+  "text": "(Кай ничего не брал)",
+  "truth": true,
+  "internal": true
+ },
+ "F_DOME_DEAD": {
+  "text": "(камера над стойкой не работает)",
+  "truth": true,
+  "internal": true
+ },
+ "F_DOOR_CODE": {
+  "text": "(код двери охраны — 3071)",
+  "truth": true,
+  "internal": true
+ },
+ "F_CAMERA_FOOTAGE": {
+  "text": "(камеры что-то записали)",
+  "truth": true,
+  "internal": true
+ },
+ "F_HALE_BROKE": {
+  "text": "(Хейл на мели)",
+  "truth": true,
+  "internal": true
+ },
+ "F_POLICE_COMING": {
+  "text": "(полиция едет)",
+  "truth": false,
+  "internal": true
+ },
+ "F_DANIEL_NOT_CALLING": {
+  "text": "(Дэниел ничего такого не говорил)",
+  "truth": true,
+  "internal": true
+ },
+ "F_RECORDING_LOCATION": {
+  "text": "(где запись)",
+  "truth": true,
+  "internal": true
+ },
+ "F_HERO_IN_SECURITY": {
+  "text": "(герой лез в охрану)",
+  "truth": true,
+  "internal": true
+ }
 }

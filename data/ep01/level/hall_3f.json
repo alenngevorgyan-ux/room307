@@ -292,13 +292,68 @@
     "kind": "elevator",
     "auto": false,
     "open_if": {
-     "any": [
-      "phase:S04_HUB",
-      "phase:S05_VIDEO",
-      "phase:S07_CHASE"
+     "all": [
+      {
+       "cmp": [
+        "flag.freight_floor",
+        "==",
+        "3"
+       ]
+      },
+      {
+       "any": [
+        "phase:S04_HUB",
+        "phase:S05_VIDEO",
+        "phase:S07_CHASE"
+       ]
+      }
      ]
     },
-    "locked_text": "Служебный"
+    "locked_text": "Вызвать лифт",
+    "locked_actions": [
+     {
+      "if": {
+       "any": [
+        "phase:S04_HUB",
+        "phase:S05_VIDEO",
+        "phase:S07_CHASE"
+       ]
+      },
+      "then": [
+       {
+        "sfx": "click"
+       },
+       {
+        "hint": [
+         "Лифт едет…",
+         3.0
+        ]
+       },
+       {
+        "delay": 4.0,
+        "do": [
+         {
+          "flag": [
+           "freight_floor",
+           "3"
+          ]
+         },
+         {
+          "sfx": "ding"
+         }
+        ]
+       }
+      ],
+      "else": [
+       {
+        "hint": [
+         "Служебный",
+         1.5
+        ]
+       }
+      ]
+     }
+    ]
    },
    {
     "id": "HALL_SSTAIR",

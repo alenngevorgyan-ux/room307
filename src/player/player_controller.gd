@@ -107,7 +107,7 @@ func _physics_process(delta: float) -> void:
 	if not input_locked() and stunned <= 0.0:
 		input = Vector2(Input.get_axis("move_left", "move_right"), Input.get_axis("move_back", "move_fwd"))
 	if seated:
-		if input.length() > 0.2 or Input.is_action_just_pressed("context"):
+		if not has_meta("seat_mode") and (input.length() > 0.2 or Input.is_action_just_pressed("context")):
 			_stand_up()
 		velocity = Vector3.ZERO
 		return

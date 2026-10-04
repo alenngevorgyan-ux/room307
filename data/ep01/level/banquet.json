@@ -1,0 +1,818 @@
+{
+ "BCORR": {
+  "origin": [
+   100,
+   0,
+   400
+  ],
+  "size": [
+   26,
+   4
+  ],
+  "height": 3.2,
+  "mode": "CORRIDOR",
+  "tint": "accent_purple",
+  "floor_color": [
+   0.2,
+   0.15,
+   0.2
+  ],
+  "ambience": "room",
+  "boxes": [
+   {
+    "id": "chairs_1",
+    "p": [
+     5.0,
+     3.5
+    ],
+    "s": [
+     1.4,
+     1.4,
+     0.6
+    ],
+    "k": "cover",
+    "c": [
+     0.6,
+     0.5,
+     0.35
+    ]
+   },
+   {
+    "id": "chairs_2",
+    "p": [
+     14.0,
+     3.5
+    ],
+    "s": [
+     1.4,
+     1.4,
+     0.6
+    ],
+    "k": "cover",
+    "c": [
+     0.6,
+     0.5,
+     0.35
+    ]
+   },
+   {
+    "id": "gala_table",
+    "p": [
+     19.5,
+     3.4
+    ],
+    "s": [
+     2.0,
+     0.85,
+     0.7
+    ],
+    "k": "vault",
+    "c": [
+     0.75,
+     0.7,
+     0.6
+    ],
+    "vault": true
+   }
+  ],
+  "labels": [
+   {
+    "p": [
+     10.0,
+     2.6,
+     0.12
+    ],
+    "t": "BANQUET HALL",
+    "s": 28
+   },
+   {
+    "p": [
+     24.0,
+     2.6,
+     0.12
+    ],
+    "t": "ORCHID",
+    "s": 28
+   }
+  ],
+  "doors": [
+   {
+    "id": "BCORR_SSTAIR",
+    "p": [
+     0.0,
+     2.0
+    ],
+    "side": "W",
+    "to": "SSTAIR_2",
+    "label": "Лестница",
+    "kind": "stair"
+   },
+   {
+    "id": "BCORR_MEZZ",
+    "p": [
+     4.0,
+     0.0
+    ],
+    "side": "N",
+    "to": "MEZZ_BCORR",
+    "label": "Балкон",
+    "kind": "door"
+   },
+   {
+    "id": "BCORR_FREIGHT",
+    "p": [
+     7.0,
+     0.0
+    ],
+    "side": "N",
+    "to": "FREIGHT_DOOR",
+    "label": "Грузовой лифт",
+    "kind": "elevator",
+    "auto": false,
+    "open_if": {
+     "cmp": [
+      "flag.freight_floor",
+      "==",
+      "2"
+     ]
+    },
+    "locked_text": "Вызвать лифт",
+    "locked_actions": [
+     {
+      "sfx": "click"
+     },
+     {
+      "hint": [
+       "Лифт едет…",
+       3.0
+      ]
+     },
+     {
+      "delay": 4.0,
+      "do": [
+       {
+        "flag": [
+         "freight_floor",
+         "2"
+        ]
+       },
+       {
+        "sfx": "ding"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "BCORR_BHALL",
+    "p": [
+     10.0,
+     0.0
+    ],
+    "side": "N",
+    "to": "BHALL_BCORR",
+    "label": "Банкетный зал",
+    "kind": "door",
+    "open_if": {
+     "any": [
+      "phase:S07_CHASE",
+      "phase:S04_HUB"
+     ]
+    },
+    "locked_text": "Закрыто"
+   },
+   {
+    "id": "BCORR_ORCHID",
+    "p": [
+     24.0,
+     0.0
+    ],
+    "side": "N",
+    "to": "ORCHID_BCORR",
+    "label": "Orchid",
+    "kind": "door",
+    "auto": false,
+    "open_if": {
+     "any": [
+      "phase:S08_MARA",
+      "phase:S09_STAGING"
+     ]
+    },
+    "locked_text": "Заперто изнутри"
+   },
+   {
+    "id": "BCORR_ORCHID_SIDE",
+    "p": [
+     26.0,
+     2.0
+    ],
+    "side": "E",
+    "to": "ORCHID_SERVICE",
+    "label": "",
+    "kind": "hidden",
+    "npc_only": true
+   }
+  ],
+  "markers": {
+   "enter_w": [
+    1.2,
+    2.0
+   ],
+   "orchid_door": [
+    24.0,
+    1.0
+   ],
+   "end_zone": [
+    22.0,
+    2.0
+   ],
+   "mid": [
+    13.0,
+    2.0
+   ],
+   "mara_pull": [
+    24.0,
+    0.8
+   ],
+   "pursuer_pass": [
+    16.0,
+    2.2
+   ]
+  },
+  "rigs": {
+   "main": {
+    "type": "follow",
+    "offset": [
+     0,
+     2.8,
+     7.0
+    ],
+    "look": [
+     0,
+     1.1,
+     -1.0
+    ],
+    "fov": 52,
+    "clamp_x": [
+     4.0,
+     22.0
+    ],
+    "lock_z": 10.5,
+    "lead": 0.3
+   }
+  },
+  "lights": [
+   {
+    "p": [
+     6.0,
+     2.9,
+     2.0
+    ],
+    "c": [
+     0.85,
+     0.6,
+     1.0
+    ],
+    "e": 0.9,
+    "r": 8
+   },
+   {
+    "p": [
+     18.0,
+     2.9,
+     2.0
+    ],
+    "c": [
+     0.85,
+     0.6,
+     1.0
+    ],
+    "e": 0.9,
+    "r": 8
+   }
+  ]
+ },
+ "BHALL": {
+  "origin": [
+   200,
+   0,
+   400
+  ],
+  "size": [
+   24,
+   14
+  ],
+  "height": 5.0,
+  "mode": "ROOM",
+  "tint": "accent_purple",
+  "floor_color": [
+   0.2,
+   0.15,
+   0.2
+  ],
+  "ambience": "room",
+  "boxes": [
+   {
+    "id": "t1",
+    "p": [
+     5.0,
+     4.0
+    ],
+    "s": [
+     1.8,
+     0.8,
+     1.8
+    ],
+    "k": "vault",
+    "c": [
+     0.85,
+     0.85,
+     0.82
+    ],
+    "vault": true,
+    "group": "cloth_tables"
+   },
+   {
+    "id": "t2",
+    "p": [
+     10.0,
+     4.0
+    ],
+    "s": [
+     1.8,
+     0.8,
+     1.8
+    ],
+    "k": "vault",
+    "c": [
+     0.85,
+     0.85,
+     0.82
+    ],
+    "vault": true,
+    "group": "cloth_tables"
+   },
+   {
+    "id": "t3",
+    "p": [
+     15.0,
+     4.0
+    ],
+    "s": [
+     1.8,
+     0.8,
+     1.8
+    ],
+    "k": "vault",
+    "c": [
+     0.85,
+     0.85,
+     0.82
+    ],
+    "vault": true,
+    "group": "cloth_tables"
+   },
+   {
+    "id": "t4",
+    "p": [
+     7.5,
+     9.0
+    ],
+    "s": [
+     1.8,
+     0.8,
+     1.8
+    ],
+    "k": "vault",
+    "c": [
+     0.85,
+     0.85,
+     0.82
+    ],
+    "vault": true,
+    "group": "cloth_tables"
+   },
+   {
+    "id": "t5",
+    "p": [
+     12.5,
+     9.0
+    ],
+    "s": [
+     1.8,
+     0.8,
+     1.8
+    ],
+    "k": "vault",
+    "c": [
+     0.85,
+     0.85,
+     0.82
+    ],
+    "vault": true,
+    "group": "cloth_tables"
+   },
+   {
+    "id": "t6",
+    "p": [
+     17.5,
+     9.0
+    ],
+    "s": [
+     1.8,
+     0.8,
+     1.8
+    ],
+    "k": "vault",
+    "c": [
+     0.85,
+     0.85,
+     0.82
+    ],
+    "vault": true,
+    "group": "cloth_tables"
+   },
+   {
+    "id": "stage",
+    "p": [
+     20.5,
+     2.0
+    ],
+    "s": [
+     5.0,
+     0.5,
+     3.0
+    ],
+    "k": "furn",
+    "c": [
+     0.3,
+     0.15,
+     0.2
+    ]
+   }
+  ],
+  "doors": [
+   {
+    "id": "BHALL_BCORR",
+    "p": [
+     12.0,
+     14.0
+    ],
+    "side": "S",
+    "to": "BCORR_BHALL",
+    "label": "Коридор",
+    "kind": "door"
+   },
+   {
+    "id": "BHALL_BCORR2",
+    "p": [
+     24.0,
+     11.0
+    ],
+    "side": "E",
+    "to": "BCORR_ORCHID_SIDE",
+    "label": "К Орхидее",
+    "kind": "door"
+   }
+  ],
+  "markers": {
+   "enter": [
+    12.0,
+    12.8
+   ],
+   "hide_t4": [
+    7.5,
+    9.0
+   ],
+   "hide_t5": [
+    12.5,
+    9.0
+   ],
+   "hide_t6": [
+    17.5,
+    9.0
+   ],
+   "mid": [
+    12.0,
+    6.5
+   ]
+  },
+  "rigs": {
+   "main": {
+    "type": "follow",
+    "offset": [
+     0,
+     9.0,
+     8.0
+    ],
+    "look": [
+     0,
+     0.5,
+     -1.0
+    ],
+    "fov": 52,
+    "clamp_x": [
+     7.0,
+     17.0
+    ],
+    "clamp_z": [
+     12.0,
+     20.0
+    ]
+   }
+  },
+  "lights": [
+   {
+    "p": [
+     8.0,
+     4.5,
+     6.5
+    ],
+    "c": [
+     1.0,
+     0.8,
+     0.9
+    ],
+    "e": 1.0,
+    "r": 12
+   },
+   {
+    "p": [
+     16.0,
+     4.5,
+     6.5
+    ],
+    "c": [
+     1.0,
+     0.8,
+     0.9
+    ],
+    "e": 1.0,
+    "r": 12
+   }
+  ]
+ },
+ "ORCHID": {
+  "origin": [
+   300,
+   0,
+   400
+  ],
+  "size": [
+   9,
+   7
+  ],
+  "height": 3.5,
+  "mode": "ROOM",
+  "tint": "accent_purple",
+  "floor_color": [
+   0.17,
+   0.12,
+   0.18
+  ],
+  "ambience": "room",
+  "boxes": [
+   {
+    "id": "chair_stack_1",
+    "p": [
+     1.6,
+     5.8
+    ],
+    "s": [
+     1.2,
+     1.6,
+     0.8
+    ],
+    "k": "cover",
+    "c": [
+     0.4,
+     0.3,
+     0.25
+    ]
+   },
+   {
+    "id": "chair_stack_2",
+    "p": [
+     7.4,
+     5.8
+    ],
+    "s": [
+     1.2,
+     1.6,
+     0.8
+    ],
+    "k": "cover",
+    "c": [
+     0.4,
+     0.3,
+     0.25
+    ]
+   },
+   {
+    "id": "table",
+    "p": [
+     4.5,
+     3.4
+    ],
+    "s": [
+     2.0,
+     0.78,
+     2.0
+    ],
+    "k": "furn",
+    "c": [
+     0.5,
+     0.45,
+     0.42
+    ]
+   },
+   {
+    "id": "laptop",
+    "p": [
+     4.5,
+     0.78,
+     3.0
+    ],
+    "s": [
+     0.4,
+     0.04,
+     0.3
+    ],
+    "k": "dark",
+    "nocol": true,
+    "emit": 0.6,
+    "c": [
+     0.4,
+     0.5,
+     0.7
+    ]
+   },
+   {
+    "id": "windows",
+    "p": [
+     4.5,
+     1.8,
+     0.05
+    ],
+    "s": [
+     7.0,
+     2.4,
+     0.1
+    ],
+    "k": "glass",
+    "nocol": true,
+    "c": [
+     0.3,
+     0.35,
+     0.55,
+     0.4
+    ]
+   }
+  ],
+  "doors": [
+   {
+    "id": "ORCHID_BCORR",
+    "p": [
+     1.0,
+     7.0
+    ],
+    "side": "S",
+    "to": "BCORR_ORCHID",
+    "label": "Коридор",
+    "kind": "door",
+    "auto": false,
+    "locked_if": "phase:S08_MARA",
+    "locked_text": "Не сейчас"
+   },
+   {
+    "id": "ORCHID_SERVICE",
+    "p": [
+     9.0,
+     1.5
+    ],
+    "side": "E",
+    "to": "BCORR_ORCHID_SIDE",
+    "label": "Служебная дверь",
+    "kind": "door",
+    "auto": false,
+    "npc_only": true
+   }
+  ],
+  "markers": {
+   "hero_in": [
+    1.4,
+    6.0
+   ],
+   "mara_start": [
+    6.5,
+    2.2
+   ],
+   "table_c": [
+    4.5,
+    3.4
+   ],
+   "laptop": [
+    4.5,
+    2.6
+   ],
+   "thomas_in": [
+    8.2,
+    1.5
+   ],
+   "thomas_stand": [
+    7.0,
+    1.8
+   ],
+   "door": [
+    1.0,
+    6.4
+   ],
+   "ring_n": [
+    4.5,
+    1.4
+   ],
+   "ring_s": [
+    4.5,
+    5.4
+   ],
+   "ring_e": [
+    6.6,
+    3.4
+   ],
+   "ring_w": [
+    2.4,
+    3.4
+   ],
+   "ring_ne": [
+    6.0,
+    1.9
+   ],
+   "ring_nw": [
+    3.0,
+    1.9
+   ],
+   "ring_se": [
+    6.0,
+    4.9
+   ],
+   "ring_sw": [
+    3.0,
+    4.9
+   ]
+  },
+  "rigs": {
+   "main": {
+    "type": "follow",
+    "offset": [
+     0,
+     4.5,
+     6.0
+    ],
+    "look": [
+     0,
+     0.8,
+     -1.2
+    ],
+    "fov": 52,
+    "clamp_x": [
+     3.5,
+     5.5
+    ],
+    "clamp_z": [
+     8.0,
+     10.5
+    ]
+   }
+  },
+  "lights": [
+   {
+    "p": [
+     4.5,
+     1.2,
+     2.9
+    ],
+    "c": [
+     0.6,
+     0.7,
+     1.0
+    ],
+    "e": 1.2,
+    "r": 5
+   },
+   {
+    "p": [
+     4.5,
+     3.0,
+     0.8
+    ],
+    "c": [
+     0.4,
+     0.4,
+     0.8
+    ],
+    "e": 0.7,
+    "r": 8
+   }
+  ]
+ }
+}

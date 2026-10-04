@@ -21,6 +21,9 @@ func _ready() -> void:
 	var traps := TrapDirector.new()
 	traps.name = "TrapDirector"
 	add_child(traps)
+	var oh := OverhearDirector.new()
+	oh.name = "OverhearDirector"
+	add_child(oh)
 	var cine := CinePlayer.new()
 	cine.name = "CinePlayer"
 	add_child(cine)

@@ -30,6 +30,8 @@ func label() -> String:
 
 
 func is_locked() -> bool:
+	if def.get("locked_if") is bool:
+		return bool(def.locked_if)
 	if def.has("locked_if") and Conditions.check(def.locked_if, get_node("/root/Episode")):
 		return true
 	if def.has("open_if") and not Conditions.check(def.open_if, get_node("/root/Episode")):

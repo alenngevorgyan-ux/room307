@@ -1,0 +1,121 @@
+{
+  "X_S04_NICO_GREET": {
+    "npc": "nico", "scene": "S04", "trigger": {"type": "npc_enters_radius", "radius": 4.5, "cond": "zone:BAR"}, "priority": 1, "radius_leave": 8.0,
+    "nodes": {
+      "start": {"line": ["NICO_01", "H_NICO_01"], "next": "j"},
+      "j": {"branch": [{"if": "flag:jules_saved", "next": "jules"}, {"else": true, "next": "end"}]},
+      "jules": {"line": "NICO_JULES", "actions": [{"warmth": ["nico", 1]}], "next": "end"}
+    }
+  },
+  "X_S04_NICO": {
+    "npc": "nico", "scene": "S04", "trigger": {"type": "talk", "cond": "seen:X_S04_NICO_GREET"}, "repeatable": true, "radius_leave": 4.0,
+    "nodes": {
+      "start": {"branch": [{"if": {"npc_state": {"nico": {"trust_gte": 1}}}, "next": "warm"}, {"else": true, "next": "cold_l"}]},
+      "cold_l": {"line": "NICO_BUSY", "next": "cold"},
+      "cold": {"timeout": 6.0, "chips": [
+        {"id": "CH_NICO_ADRIAN", "verb": "BLUFF", "label": "Вейл сказал", "claim": "C_ADRIAN_SENT_ME", "next_by_reaction": {"*": "called"}},
+        {"id": "CH_NICO_LUKAS", "verb": "PRESS", "label": "Где Лукас?", "requires": "T_EX_BOYFRIEND", "line": "H_NICO_LUKAS", "next": "lukas"},
+        {"id": "CH_NICO_LINA", "verb": "PRESS", "label": "Лина говорила?", "requires": {"all": [{"npc_state": {"lina": {"var": {"state": "SCARED"}}}}, "!F_MARA_LEFT_ALIVE"]}, "line": "H_NICO_LINA", "next": "lina"}
+      ], "silence": "end", "leave": "end"},
+      "warm": {"timeout": 7.0, "chips": [
+        {"id": "CH_NICO_WHO", "verb": "PRESS", "label": "Она была с кем-то?", "requires": "!F_MARA_MET_OLDER_MAN", "line": "H_NICO_WHO", "next": "man"},
+        {"id": "CH_NICO_VOLVO", "verb": "PRESS", "label": "Седой — куда?", "requires": "F_MARA_MET_OLDER_MAN", "line": "H_NICO_WHERE_MAN", "next": "volvo", "repeat_lock": true},
+        {"id": "CH_NICO_ASKED", "verb": "PRESS", "label": "Что спрашивала?", "requires": "!F_MARA_ASKED_CAMERAS", "line": "H_NICO_ASKED", "next": "asked"},
+        {"id": "CH_NICO_LINA2", "verb": "PRESS", "label": "Лина говорила?", "requires": {"all": [{"npc_state": {"lina": {"var": {"state": "SCARED"}}}}, "!F_MARA_LEFT_ALIVE"]}, "line": "H_NICO_LINA", "next": "lina"},
+        {"id": "CH_NICO_LUKAS2", "verb": "PRESS", "label": "Где Лукас?", "requires": "T_EX_BOYFRIEND", "line": "H_NICO_LUKAS", "next": "lukas"},
+        {"id": "CH_NICO_PAST", "verb": "CALM", "label": "Кто меня позвал?", "requires": {"all": [{"npc_state": {"nico": {"trust_gte": 2}}}, "!F_NICO_RECOMMENDED"]}, "line": "H_NICO_PAST", "next": "past"}
+      ], "silence": "end", "leave": "end"},
+      "man": {"line": "NICO_MAN", "actions": [{"give_fact": ["F_MARA_MET_OLDER_MAN", "X_S04_NICO"]}, {"lead": ["A", "DONE"]}], "next": "end"},
+      "volvo": {"line": "NICO_VOLVO", "actions": [{"give_fact": ["F_THOMAS_LOCATION", "nico"]}], "next": "end"},
+      "asked": {"line": ["NICO_CAMS", "NICO_DANIEL"], "actions": [{"give_fact": ["F_MARA_ASKED_CAMERAS", "X_S04_NICO"]}, {"give_fact": ["F_DANIEL_ASKING", "X_S04_NICO"]}], "next": "end"},
+      "past": {"line": ["NICO_RECOMMENDED", "NICO_PRAGUE", "H_NOT_TODAY"], "actions": [{"give_fact": ["F_NICO_RECOMMENDED", "X_S04_NICO"]}], "next": "end"},
+      "called": {"line": "NICO_CALLED", "actions": [{"give_fact": ["F_MARA_MET_OLDER_MAN", "X_S04_NICO"]}, {"lead": ["A", "DONE"]}], "next": "end"},
+      "lukas": {"line": "NICO_LUKAS", "actions": [{"strike_thread": "T_EX_BOYFRIEND"}], "next": "end"},
+      "lina": {"line": "NICO_LINA", "actions": [{"give_fact": ["F_MARA_LEFT_ALIVE", "X_S04_NICO"]}, {"give_fact": ["F_SECURITY_IN_307", "X_S04_NICO"]}, {"give_fact": ["F_SERVICE_STAIR", "X_S04_NICO"]}], "next": "end"}
+    }
+  },
+  "X_S04_NICO_SMOKE": {
+    "npc": "nico", "scene": "S04", "trigger": {"type": "npc_enters_radius", "radius": 3.0, "cond": "flag:nico_smoking"}, "priority": 1, "radius_leave": 6.0,
+    "on_end": [{"start_exchange": "X_S04_NICO"}],
+    "nodes": {"start": {"line": "NICO_SMOKE", "actions": [{"warmth": ["nico", 1]}], "next": "end"}}
+  },
+  "X_S04_EVA": {
+    "npc": "eva", "scene": "S04", "trigger": {"type": "npc_enters_radius", "radius": 5.0}, "priority": 2, "radius_leave": 8.0, "leave": "gone",
+    "on_end": [{"flag": "eva_talked"}],
+    "nodes": {
+      "start": {"line": "EVA_01", "actions": [{"flag": "eva_approached"}, {"set_schedule": ["eva", "eva_descend"]}, {"flag": "eva_lied_once"}], "next": "e1"},
+      "e1": {"timeout": 7.0, "chips": [
+        {"id": "CH_EVA_308", "verb": "PRESS", "label": "Ты живёшь в 308", "requires": "F_EVA_ROOM_308", "claim": "C_EVA_ROOM_308", "next_by_reaction": {"*": "end"}},
+        {"id": "CH_EVA_615", "verb": "BLUFF", "label": "615", "claim": "C_MARA_CALLED_FROM_615", "next_by_reaction": {"TRAP": "end", "SLIP": "slip", "CALLED": "called", "*": "gone"}},
+        {"id": "CH_EVA_STAGED", "verb": "PROVOKE", "label": "Красивая постановка", "requires": "T_307_STAGED", "claim": "C_STAGED", "next_by_reaction": {"*": "staged"}},
+        {"id": "CH_EVA_LUKAS", "verb": "PRESS", "label": "Где Лукас?", "requires": "T_EX_BOYFRIEND", "line": "H_LUKAS", "next": "lukas"},
+        {"id": "CH_EVA_HIDE", "verb": "BLUFF", "label": "Мара сказала", "claim": "C_MARA_SAID_YOU_HIDE_HER", "next_by_reaction": {"CALLED": "hide_called", "*": "gone"}}
+      ], "silence": "gone", "leave": "gone"},
+      "slip": {"line": ["EVA_SLIP", "EVA_SLIP_AFTER"], "actions": [{"give_fact": ["F_MARA_NOT_ON_6", "X_S04_EVA"]}, {"give_fact": ["F_EVA_KNOWS_WHERE", "X_S04_EVA"]}, {"caught_lying": "eva"}, {"lead": ["B", "DONE"]}, {"flag": "eva_caught"}], "next": "end"},
+      "called": {"line": "EVA_CALLED", "actions": [{"flag": "mara_wary"}, {"flag": "eva_called_bluff"}], "next": "end"},
+      "hide_called": {"line": "EVA_HIDE_CALLED", "actions": [{"suspicion": ["eva", 1]}, {"flag": "mara_wary"}, {"flag": "eva_called_bluff"}, {"set_var": ["eva", "texted_mara", true]}], "next": "end"},
+      "staged": {"line": "EVA_STAGED", "actions": [{"flag": "eva_lied_twice"}], "next": "e2"},
+      "lukas": {"line": "EVA_LUKAS", "actions": [{"suspicion": ["eva", 1]}, {"strike_thread": "T_EX_BOYFRIEND"}], "next": "e2"},
+      "e2": {"timeout": 6.0, "chips": [
+        {"id": "CH_EVA_615_2", "verb": "BLUFF", "label": "615", "claim": "C_MARA_CALLED_FROM_615", "next_by_reaction": {"TRAP": "end", "SLIP": "slip", "CALLED": "called", "*": "gone"}},
+        {"id": "CH_EVA_308_2", "verb": "PRESS", "label": "Ты живёшь в 308", "requires": "F_EVA_ROOM_308", "claim": "C_EVA_ROOM_308", "next_by_reaction": {"*": "end"}},
+        {"id": "CH_EVA_WHERE", "verb": "PRESS", "label": "Где она?", "requires": "T_EVA_KNOWS", "line": "H_WHERE_IS_SHE", "next": "no"}
+      ], "silence": "gone", "leave": "gone"},
+      "no": {"line": "EVA_NO", "next": "end"},
+      "gone": {"line": "EVA_GO", "next": "end"}
+    }
+  },
+  "X_S04_EVA_TAILED": {
+    "npc": "eva", "scene": "S04", "trigger": {"type": "manual"}, "priority": 3, "radius_leave": 7.0, "npc_keeps_schedule": false,
+    "nodes": {
+      "start": {"line": "EVA_TAILED", "next": "t1"},
+      "t1": {"timeout": 7.0, "chips": [
+        {"id": "CH_EVA_HONEST", "verb": "CALM", "label": "Её отец заплатил", "requires": {"all": ["!flag:eva_called_bluff"]}, "line": "H_HONEST", "next": "honest"}
+      ], "silence": "leaves", "leave": "leaves"},
+      "honest": {"line": "EVA_HONEST", "actions": [{"give_fact": ["F_THOMAS_LOCATION", "eva_confront"]}, {"give_fact": ["F_THOMAS_NAME", "X_S04_EVA_TAILED"]}, {"give_fact": ["F_EVA_PROTECTING_MARA", "X_S04_EVA_TAILED"]}, {"lead": ["B", "DONE"]}, {"trust": ["eva", 1]}], "next": "end"},
+      "leaves": {"line": "EVA_LEAVES", "actions": [{"if": "flag:phone_307_charged", "then": [{"flag": "phone307_has_text"},
+        {"if": "ITEM_MARA_PHONE", "then": [{"phone_msg": ["eva", "Т. у прачечной. Уходи через кухню, если что."]}, {"give_fact": ["F_THOMAS_LOCATION", "phone_307_text"]}, {"give_fact": ["F_THOMAS_NAME", "phone_307_text"]}, {"give_fact": ["F_EVA_PROTECTING_MARA", "phone_307_text"]}]}]}], "next": "end"}
+    }
+  },
+  "X_S04_PAVEL_ESCORT": {
+    "npc": "pavel", "scene": "S04", "trigger": {"type": "manual"}, "priority": 4, "radius_leave": 30.0, "npc_keeps_schedule": false,
+    "nodes": {"start": {"line": "PAVEL_STOP", "next": "end"}}
+  },
+  "X_S04_DANIEL_ESCORT": {
+    "npc": "daniel", "scene": "S04", "trigger": {"type": "manual"}, "priority": 4, "radius_leave": 30.0, "npc_keeps_schedule": false,
+    "nodes": {"start": {"line": "DAN_ESCORT", "tell": {"obs": "O_DANIEL_CAMERA_CONCERN", "at": 0.5, "dur": 2.5},
+      "actions": [{"suspicion": ["daniel", 1]}, {"flag": "daniel_escorted"}, {"lead": ["C", "FAILED_DONE"]}, {"knows": ["daniel", "F_HERO_IN_SECURITY"]}], "next": "end"}}
+  },
+  "X_S04_ADRIAN_REPORT": {
+    "npc": "adrian", "scene": "S04", "trigger": {"type": "talk", "cond": "flag:adrian_in_lobby"}, "radius_leave": 6.0, "priority": 1,
+    "nodes": {
+      "start": {"line": "ADR_REPORT", "next": "r1"},
+      "r1": {"timeout": 8.0, "chips": [
+        {"id": "CH_REP_PHOTO", "verb": "PRESS", "label": "Фото", "requires": "ITEM_PHOTO_DANIEL_307", "claim": "C_PHOTO_HUB", "next_by_reaction": {"*": "end"}},
+        {"id": "CH_REP_POCKET", "verb": "PRESS", "label": "Покажите карман", "requires": "T_ADRIAN_FEARS_WHAT_SHE_HAS", "line": "H_POCKET", "next": "pocket"},
+        {"id": "CH_REP_HIDING", "verb": "PROVOKE", "label": "Она прячется от вас", "claim": "C_HIDING_FROM_YOU", "next_by_reaction": {"*": "hiding"}},
+        {"id": "CH_REP_STAGED", "verb": "CALM", "label": "Номер инсценирован", "requires": "T_307_STAGED", "line": "H_STAGED_REPORT", "next": "staged"},
+        {"id": "CH_REP_NOT_TAKEN", "verb": "CALM", "label": "Её не похищали", "requires": "F_MARA_LEFT_ALIVE", "line": "H_NOT_TAKEN", "next": "not_taken"},
+        {"id": "CH_REP_WINDOW", "verb": "PRESS", "label": "Ушла через окно", "requires": "T_SHE_LEFT_BY_WINDOW", "line": "H_WINDOW", "next": "window"}
+      ], "silence": "end", "leave": "end"},
+      "pocket": {"line": "ADR_POCKET", "tell": {"obs": "O_S2_POCKET_TOUCH", "at": 0.2, "dur": 2.0}, "actions": [{"give_fact": ["F_RECORDING_EXISTS", "X_S04_ADRIAN_REPORT"]}, {"give_fact": ["F_OLD_ACCIDENT", "X_S04_ADRIAN_REPORT"]}, {"trust": ["adrian", -1]}, {"respect": ["adrian", 1]}], "next": "end"},
+      "hiding": {"line": "ADR_HIDING", "next": "end"},
+      "staged": {"line": "ADR_STAGED", "actions": [{"trust": ["adrian", 1]}], "next": "end"},
+      "not_taken": {"line": "ADR_NOT_TAKEN", "actions": [{"trust": ["adrian", 1]}], "next": "end"},
+      "window": {"line": "ADR_WINDOW", "actions": [{"flag": "fewer_patrols"}, {"flag": "adrian_misled"}], "next": "end"}
+    }
+  },
+  "X_S04_LINA_FB": {
+    "npc": "lina", "scene": "S04", "trigger": {"type": "manual"}, "priority": 3, "radius_leave": 12.0,
+    "nodes": {"start": {"line": "LINA_FB", "actions": [{"give_fact": ["F_THOMAS_LOCATION", "fb_lina"]}], "next": "end"}}
+  },
+  "X_S04_LINA": {
+    "npc": "lina", "scene": "S04", "trigger": {"type": "talk", "cond": {"npc_state": {"lina": {"var": {"state": "ALLY"}}}}}, "radius_leave": 5.0,
+    "nodes": {
+      "start": {"timeout": 6.0, "chips": [
+        {"id": "CH_LINA_CARD", "verb": "CALM", "label": "Нужна твоя карта", "requires": "!ITEM_STAFF_KEYCARD", "line": "H_NEED_CARD", "next": "card"}
+      ], "silence": "end", "leave": "end"},
+      "card": {"line": "LINA_CARD", "actions": [{"give_item": ["ITEM_STAFF_KEYCARD", "hero"]}, {"flag": "cart_in_hall"}], "next": "end"}
+    }
+  }
+}

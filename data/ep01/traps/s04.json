@@ -1,0 +1,44 @@
+{
+  "TR_EVA_615": {
+    "target": "eva",
+    "bait": {"event": "claim_spoken", "claim": "C_MARA_CALLED_FROM_615", "addressee": "eva"},
+    "environment": {"zones": ["SERVICE_STAIR", "ROOF_SMOKING", "LOBBY", "SCORR", "MEZZANINE", "LAUNDRY"]},
+    "audience": {"forbid": ["daniel"]},
+    "timing": {"after_beat": "BEAT_HUB_OPEN"},
+    "outcomes": [
+      {"if": {"npc_state": {"eva": {"suspicion_lt": 2}}}, "do": [
+        {"line": "EVA_SLIP"}, {"line": "EVA_SLIP_AFTER"}, {"give_fact": ["F_MARA_NOT_ON_6", "TR_EVA_615"]}, {"give_fact": ["F_EVA_KNOWS_WHERE", "TR_EVA_615"]},
+        {"set_disposition": ["eva", "PRESSURED"]}, {"caught_lying": "eva"}, {"lead": ["B", "DONE"]}, {"flag": "eva_caught"}]},
+      {"else": true, "do": [{"line": "EVA_CALLED"}, {"stress": ["eva", 1]}, {"flag": "mara_wary"}, {"suspicion": ["eva", 1]}, {"flag": "eva_called_bluff"}]}
+    ]
+  },
+  "TR_EVA_308": {
+    "target": "eva",
+    "bait": {"event": "claim_spoken", "claim": "C_EVA_ROOM_308", "addressee": "eva"},
+    "requires": "F_EVA_ROOM_308",
+    "outcomes": [{"else": true, "do": [
+      {"line": "EVA_308"}, {"give_fact": ["F_EVA_KNOWS_WHERE", "TR_EVA_308"]}, {"set_disposition": ["eva", "PRESSURED"]},
+      {"caught_lying": "eva"}, {"lead": ["B", "DONE"]}, {"flag": "eva_caught"}]}]
+  },
+  "TR_PAVEL_FAKE_FIGHT": {
+    "target": "pavel", "repeatable": true,
+    "bait": {"event": "house_phone"},
+    "timing": {"scene": "S04"},
+    "outcomes": [
+      {"if": "flag:fake_fight_recent", "do": [{"bark": ["pavel", "Опять «драка»? Ну-ну."]}, {"hint": ["Павел не поверил второй раз.", 2.5]}]},
+      {"if": {"any": ["npc_zone:pavel:SECURITY", "npc_zone:pavel:LOBBY"]}, "do": [
+        {"line": "PAVEL_FIGHT"}, {"set_schedule": ["pavel", "pavel_to_f3"]}, {"flag": "pavel_distracted"}, {"flag": "fake_fight_recent"},
+        {"delay": 90.0, "do": [{"unflag": "pavel_distracted"}]}, {"delay": 300.0, "do": [{"unflag": "fake_fight_recent"}]}]},
+      {"else": true, "do": [{"hint": ["Никто не ответил.", 2.0]}]}
+    ]
+  },
+  "TR_PHOTO_TO_ADRIAN": {
+    "target": "adrian",
+    "bait": {"event": "claim_spoken", "claim": "C_PHOTO_HUB", "addressee": "adrian"},
+    "object": "ITEM_PHOTO_DANIEL_307",
+    "timing": {"scene": "S04"},
+    "audience": {"forbid": ["daniel"]},
+    "outcomes": [{"else": true, "do": [
+      {"line": "ADR_PHOTO"}, {"flag": "adrian_doubts_daniel"}, {"tell": ["O_ADRIAN_DANIEL_ARGUE", 1.0]}, {"flag": "adrian_daniel_argue_due"}]}]
+  }
+}

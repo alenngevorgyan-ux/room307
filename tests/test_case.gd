@@ -59,15 +59,21 @@ func make_directors() -> Dictionary:
 	var traps := TrapDirector.new()
 	traps.set_meta("sim_node", true)
 	tree.root.add_child(traps)
+	var oh := OverhearDirector.new()
+	oh.set_meta("sim_node", true)
+	oh.set_process(false)
+	tree.root.add_child(oh)
+	_oh = oh
 	var cine := CinePlayer.new()
 	cine.set_meta("sim_node", true)
 	cine.set_process(false)
 	tree.root.add_child(cine)
 	_cine = cine
-	return {"conv": conv, "traps": traps, "cine": cine}
+	return {"conv": conv, "traps": traps, "cine": cine, "oh": oh}
 
 
 var _cine: Node = null
+var _oh: Node = null
 
 
 ## Logic-only scene run: directors + SceneManager (no 3D world). Returns {conv, traps, sm}.
@@ -118,4 +124,6 @@ func advance(conv: Node, sec: float, step: float = 0.1) -> void:
 			sm.tick(step)
 		if is_instance_valid(_cine):
 			_cine._process(step)
+		if is_instance_valid(_oh):
+			_oh.tick(step)
 		t += step

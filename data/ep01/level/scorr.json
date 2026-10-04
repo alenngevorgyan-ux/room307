@@ -1,0 +1,34 @@
+{
+  "SCORR": {
+    "origin": [200, 0, 100], "size": [30, 3.6], "height": 3.0, "mode": "CORRIDOR",
+    "tint": "accent_service", "floor_color": [0.22, 0.24, 0.24], "ambience": "machines",
+    "boxes": [
+      {"id": "cart_1", "p": [9.0, 3.0], "s": [1.2, 1.0, 0.7], "k": "cover", "c": [0.55, 0.55, 0.6], "group": "carts"},
+      {"id": "cart_2", "p": [19.5, 3.0], "s": [1.2, 1.0, 0.7], "k": "cover", "c": [0.55, 0.55, 0.6], "group": "carts"},
+      {"id": "crates", "p": [26.5, 3.0], "s": [1.4, 1.2, 0.8], "k": "vault", "c": [0.42, 0.32, 0.2]},
+      {"id": "key_hook", "p": [15.0, 1.5, 0.1], "s": [0.3, 0.3, 0.05], "k": "metal", "nocol": true},
+      {"id": "alarm_box", "p": [13.0, 1.4, 0.1], "s": [0.2, 0.3, 0.08], "k": "furn", "c": [0.8, 0.1, 0.1], "nocol": true, "emit": 0.3},
+      {"id": "fire_door_frame", "p": [24.0, 1.5, 0.4], "s": [0.3, 3.0, 0.3], "k": "metal", "nocol": true}
+    ],
+    "labels": [{"p": [2.0, 2.5, 0.12], "t": "BAR", "s": 26}, {"p": [6.0, 2.5, 0.12], "t": "SECURITY", "s": 26}, {"p": [11.0, 2.5, 0.12], "t": "KITCHEN", "s": 26}, {"p": [16.5, 2.5, 0.12], "t": "LAUNDRY", "s": 26}, {"p": [22.0, 2.5, 0.12], "t": "FREIGHT", "s": 26}],
+    "doors": [
+      {"id": "SCORR_BAR", "p": [2.0, 0.0], "side": "N", "to": "BAR_SCORR", "label": "Бар", "kind": "door"},
+      {"id": "SCORR_SEC", "p": [6.0, 0.0], "side": "N", "to": "SEC_STAFF", "label": "Охрана", "kind": "door", "auto": false, "open_if": {"any": ["ITEM_STAFF_KEYCARD", "flag:pavel_door_open"]}, "locked_text": "Нужна служебная карта", "locked_actions": [{"sfx": "deny"}]},
+      {"id": "SCORR_KITCHEN", "p": [11.0, 0.0], "side": "N", "to": "KITCHEN_SCORR", "label": "Кухня", "kind": "swing"},
+      {"id": "SCORR_LAUNDRY", "p": [16.5, 0.0], "side": "N", "to": "LAUNDRY_SCORR", "label": "Прачечная", "kind": "door"},
+      {"id": "SCORR_FREIGHT", "p": [22.0, 0.0], "side": "N", "to": "FREIGHT_DOOR", "label": "Грузовой лифт", "kind": "elevator", "auto": false,
+        "open_if": {"cmp": ["flag.freight_floor", "==", "G"]}, "locked_text": "Вызвать лифт", "locked_actions": [{"sfx": "click"}, {"hint": ["Лифт едет…", 3.0]}, {"delay": 4.0, "do": [{"flag": ["freight_floor", "G"]}, {"sfx": "ding"}]}]},
+      {"id": "SCORR_SSTAIR", "p": [30.0, 1.8], "side": "E", "to": "SSTAIR_G", "label": "Лестница", "kind": "stair"}
+    ],
+    "markers": {
+      "nico_smoke": [2.6, 1.4], "key_hook": [15.0, 0.8], "laundry_worker": [17.4, 1.2], "daniel_brody": [27.0, 1.6], "brody_talk": [28.2, 1.4],
+      "overhear_brody": [24.6, 2.6], "eva_pass": [16.5, 1.2], "lina_linen": [8.0, 1.0], "alarm": [13.0, 0.8], "fire_door": [24.0, 1.8],
+      "sec_door": [6.0, 0.9], "pavel_staff": [6.0, 1.4], "thomas_start": [16.5, 1.4], "mid": [15.0, 1.8], "daniel_escort": [3.0, 1.8]
+    },
+    "rigs": {"main": {"type": "follow", "offset": [0, 3.0, 7.5], "look": [0, 1.1, -1.0], "fov": 52, "clamp_x": [4.0, 26.0], "lock_z": 10.5, "lead": 0.25}},
+    "lights": [
+      {"p": [4.0, 2.7, 1.8], "c": [0.75, 0.95, 0.9], "e": 1.1, "r": 7}, {"p": [12.0, 2.7, 1.8], "c": [0.75, 0.95, 0.9], "e": 1.1, "r": 7},
+      {"p": [20.0, 2.7, 1.8], "c": [0.75, 0.95, 0.9], "e": 1.1, "r": 7}, {"p": [27.0, 2.7, 1.8], "c": [0.75, 0.95, 0.9], "e": 1.1, "r": 7}
+    ]
+  }
+}

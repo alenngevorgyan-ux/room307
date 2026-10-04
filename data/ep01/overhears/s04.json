@@ -1,0 +1,31 @@
+{
+  "OH_ADRIAN_CALL": {
+    "speaker": "adrian", "scene": "S04", "start": {"cond": "flag:adrian_on_call"}, "loops": 2, "loop_gap": 60,
+    "listen": [{"marker": "LOBBY:behind_p2", "r": 4.5}, {"marker": "MEZZANINE:overhear", "r": 6.0}],
+    "unseen_by": ["adrian"],
+    "lines": [
+      {"key": "ADR_CALL_1", "actions": [{"give_fact": ["F_ADRIAN_THINKS_MARA_FORGOT", "OH_ADRIAN_CALL"]}]},
+      {"key": "ADR_CALL_2", "actions": [{"give_fact": ["F_RECORDING_EXISTS", "OH_ADRIAN_CALL"]}, {"give_fact": ["F_ADRIAN_DANIEL_COORDINATE", "OH_ADRIAN_CALL"]}]}
+    ]
+  },
+  "OH_DANIEL_BRODY": {
+    "speaker": "daniel", "scene": "S04", "start": {"after": 300}, "loops": 2, "loop_gap": 60,
+    "on_start": [{"spawn": ["brody", "SCORR:brody_talk"]}, {"teleport_npc": ["daniel", "SCORR:daniel_brody"]}, {"set_schedule": ["daniel", ""]}, {"npc": ["daniel", "look", {"target": "brody"}]}, {"npc": ["brody", "look", {"target": "daniel"}]}],
+    "on_end": [{"despawn": "brody"}, {"set_schedule": ["daniel", "daniel_hub"]}],
+    "listen": [{"marker": "SCORR:overhear_brody", "r": 5.0}],
+    "unseen_by": ["daniel", "brody"],
+    "lines": [
+      {"key": "DAN_BRODY_1"},
+      {"key": "DAN_BRODY_2", "actions": [{"give_fact": ["F_DEADLINE_MORNING", "OH_DANIEL_BRODY"]}]}
+    ]
+  },
+  "OH_EVA_CALL": {
+    "speaker": "eva", "scene": "S04", "start": {"beat": "BEAT_EVA_CALL"}, "loops": 1,
+    "listen": [{"marker": "SERVICE_STAIR:l1_call", "r": 5.0}],
+    "unseen_by": ["eva"],
+    "lines": [
+      {"key": "EVA_CALL_1", "actions": [{"give_fact": ["F_THOMAS_NAME", "eva_call"]}]},
+      {"key": "EVA_CALL_2", "actions": [{"give_fact": ["F_THOMAS_LOCATION", "eva_call"]}, {"give_fact": ["F_EVA_PROTECTING_MARA", "eva_call"]}, {"lead": ["B", "DONE"]}]}
+    ]
+  }
+}

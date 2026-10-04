@@ -1,0 +1,21 @@
+{
+  "COLD_STORAGE": {
+    "origin": [100, 0, 200], "size": [11, 6], "height": 3.0, "mode": "ROOM",
+    "tint": "accent_cold", "floor_color": [0.25, 0.3, 0.35], "ambience": "hum",
+    "boxes": [
+      {"id": "shelf_1", "p": [3.0, 2.0], "s": [3.2, 2.0, 0.5], "k": "metal", "c": [0.6, 0.65, 0.7]},
+      {"id": "shelf_2", "p": [3.0, 4.2], "s": [3.2, 2.0, 0.5], "k": "metal", "c": [0.6, 0.65, 0.7]},
+      {"id": "freezer_wall_w", "p": [7.5, 1.5], "s": [0.2, 3.0, 3.0], "k": "wall", "c": [0.7, 0.75, 0.8]},
+      {"id": "freezer_wall_s", "p": [9.25, 3.1], "s": [3.5, 3.0, 0.2], "k": "wall", "c": [0.7, 0.75, 0.8]},
+      {"id": "freezer_door", "p": [8.5, 3.1], "s": [1.2, 2.2, 0.15], "k": "metal", "c": [0.8, 0.85, 0.9], "nocol": true, "group": "freezer_door"},
+      {"id": "crate_stack", "p": [5.2, 5.4], "s": [1.0, 1.2, 0.8], "k": "cover", "c": [0.45, 0.35, 0.25]}
+    ],
+    "doors": [
+      {"id": "COLD_KITCHEN", "p": [0.0, 3.0], "side": "W", "to": "KITCHEN_COLD", "label": "Кухня", "kind": "door"},
+      {"id": "COLD_STAFF", "p": [11.0, 4.6], "side": "E", "to": "STAFF_COLD", "label": "Служебный коридор", "kind": "door"}
+    ],
+    "markers": {"enter": [1.0, 3.0], "freezer_in": [9.3, 1.5], "freezer_door": [8.5, 3.7], "interrog_hero": [4.8, 3.1], "interrog_brody": [5.6, 3.6], "interrog_sato": [6.8, 2.8], "crates": [5.2, 4.8], "mid": [5.5, 3.1]},
+    "rigs": {"main": {"type": "follow", "offset": [0, 7.0, 5.5], "look": [0, 0.6, -1.0], "fov": 55, "clamp_x": [4.5, 6.5], "clamp_z": [8.0, 11.0]}},
+    "lights": [{"p": [3.0, 2.7, 3.0], "c": [0.75, 0.88, 1.0], "e": 1.1, "r": 7}, {"p": [9.2, 2.6, 1.5], "c": [0.6, 0.8, 1.0], "e": 0.8, "r": 4}]
+  }
+}

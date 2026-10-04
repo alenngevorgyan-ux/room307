@@ -1,0 +1,15 @@
+{
+  "FREIGHT": {
+    "origin": [300, 0, 200], "size": [3, 3], "height": 2.8, "mode": "ROOM",
+    "tint": [0.35, 0.35, 0.36], "floor_color": [0.3, 0.3, 0.3], "ambience": "hum",
+    "boxes": [{"id": "cage", "p": [1.5, 1.4, 0.1], "s": [2.8, 2.6, 0.05], "k": "metal", "nocol": true, "c": [0.5, 0.5, 0.52, 0.6]}],
+    "doors": [
+      {"id": "FREIGHT_DOOR", "p": [1.5, 3.0], "side": "S", "to": "SCORR_FREIGHT", "label": "Выйти", "kind": "elevator", "auto": false, "spawn_in": 0.9,
+        "to_by_flag": {"flag": "freight_floor", "map": {"G": "SCORR_FREIGHT", "2": "BCORR_FREIGHT", "3": "HALL_FREIGHT", "R": "ROOF_FREIGHT", "default": "SCORR_FREIGHT"}},
+        "locked_if": "flag:freight_moving", "locked_text": "Едем…"}
+    ],
+    "markers": {"center": [1.5, 1.5], "panel": [2.6, 1.0]},
+    "rigs": {"main": {"type": "fixed", "pos": [1.5, 2.3, 5.2], "at": [1.5, 1.0, 1.2], "fov": 55}},
+    "lights": [{"p": [1.5, 2.5, 1.5], "c": [1.0, 0.9, 0.7], "e": 1.0, "r": 4}]
+  }
+}

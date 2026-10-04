@@ -1,0 +1,50 @@
+{
+  "S04": {
+    "phase": "S04_HUB", "hero": "HALL_3F:hub_start", "music": "HUB_EXPLORE", "checkpoint": true,
+    "npcs": {
+      "nico": {"at": "BAR:nico_taps", "schedule": "nico_bar"},
+      "guest_1": {"at": "BAR:guest_a", "look": "nico"},
+      "guest_2": {"at": "BAR:guest_b"},
+      "eva": {"at": "ROOF_SMOKING:eva_smoke", "schedule": "eva_roof"},
+      "pavel": {"at": "SECURITY:pavel_chair", "schedule": "pavel_loop"},
+      "daniel": {"at": "LOBBY:daniel_phone", "schedule": "daniel_hub"},
+      "receptionist": {"at": "LOBBY:receptionist", "schedule": "receptionist_desk"},
+      "lina": {"at": "HALL_3F:lina_310", "schedule": "lina_hall", "if": {"not": {"npc_state": {"lina": {"var": {"state": "SCARED"}}}}}},
+      "laundry_worker": {"at": "LAUNDRY:worker", "schedule": "laundry_worker"},
+      "staff_1": {"at": "SCORR:lina_linen", "schedule": "staff_walk"}
+    },
+    "enter": [
+      {"if": {"npc_state": {"lina": {"var": {"state": "SCARED"}}}}, "then": [{"spawn": ["lina", "SCORR:lina_linen"]}, {"set_schedule": ["lina", "lina_linen"]}]},
+      {"flag": ["freight_floor", "G"]}, {"flag": ["elev_floor", "3"]},
+      {"delay": 3.0, "do": [{"phone_msg": ["adrian", "Новости?"]}]},
+      {"hint": ["Ищи её. Как хочешь.", 3.0]}
+    ],
+    "rules": [
+      {"id": "adrian_down", "after": 110, "when": "!flag:adrian_in_lobby", "do": [{"spawn": ["adrian", "LOBBY:adrian_elev"]}, {"set_schedule": ["adrian", "adrian_call"]}]},
+      {"id": "adrian_texted", "when": {"all": ["flag:adrian_texted", "!flag:adrian_in_lobby", "!flag:adrian_on_call"]}, "do": [
+        {"spawn": ["adrian", "LOBBY:adrian_elev"]}, {"set_schedule": ["adrian", "adrian_report"]}, {"flag": "adrian_in_lobby"}]},
+      {"id": "adrian_report", "after": 420, "when": {"all": ["!flag:adrian_in_lobby", "!flag:adrian_on_call"]}, "do": [
+        {"spawn": ["adrian", "LOBBY:adrian_elev"]}, {"set_schedule": ["adrian", "adrian_report"]}, {"flag": "adrian_in_lobby"}]},
+      {"id": "thomas_canopy", "after": 360, "do": [{"spawn": ["thomas", "LOADING_DOCK:canopy_smoke"]}, {"set_schedule": ["thomas", "thomas_canopy"]}, {"flag": "thomas_at_canopy"}]},
+      {"id": "lead_a", "when": "F_MARA_MET_OLDER_MAN", "do": [{"lead": ["A", "DONE"]}]},
+      {"id": "lead_b", "when": {"any": ["F_EVA_KNOWS_WHERE", "F_EVA_PROTECTING_MARA"]}, "do": [{"lead": ["B", "DONE"]}]},
+      {"id": "nico_text", "after": 240, "when": {"all": [{"cmp": ["leads", "==", 1]}, "!F_MARA_MET_OLDER_MAN"]}, "do": [
+        {"phone_msg": ["nico", "Зайди. Есть кое-что."]}, {"set": ["char.nico.trust", 1]}]},
+      {"id": "eva_lobby", "after": 360, "when": "!flag:eva_approached", "do": [{"teleport_npc": ["eva", "LOBBY:eva_lobby"]}, {"set_schedule": ["eva", "eva_lobby"]}]},
+      {"id": "thomas_ready", "when": {"all": [{"leads_gte": 2}, "F_THOMAS_LOCATION"]}, "do": [
+        {"flag": "thomas_ready"}, {"hint": ["Погрузка. За прачечной.", 4.0]}, {"music": "TAIL_TENSION"}]},
+      {"id": "fb_location", "when": {"all": [{"leads_gte": 2}, "!F_THOMAS_LOCATION"]}, "hold": 90, "do": [
+        {"if": {"npc_state": {"lina": {"var": {"state": "GONE"}}}}, "then": [{"ambient": "PA_VOLVO"}, {"give_fact": ["F_THOMAS_LOCATION", "fb_pa"]}],
+         "else": [{"flag": "lina_fb_due"}]}]},
+      {"id": "fb_pa_backup", "when": {"all": [{"leads_gte": 2}, "!F_THOMAS_LOCATION"]}, "hold": 140, "do": [{"ambient": "PA_VOLVO"}, {"give_fact": ["F_THOMAS_LOCATION", "fb_pa"]}]},
+      {"id": "to_s06", "when": {"all": ["zone:LOADING_DOCK", "flag:thomas_ready"]}, "do": [{"goto_scene": "S06"}]}
+    ],
+    "logic": "res://src/scenes_logic/s04_hub.gd",
+    "seed": [{"beat": "BEAT_HUB_OPEN"}, {"flag": "entered_room"}],
+    "debug_hero": "HALL_3F:hub_start"
+  },
+  "S05": {
+    "jump_to": "S04", "after_jump": [{"hero": ["teleport", {"marker": "SECURITY:enter_staff"}]}, {"set": ["char.pavel.trust", 0]}, {"flag": "pavel_distracted"}, {"set_schedule": ["pavel", "pavel_to_f3"]}],
+    "seed": []
+  }
+}

@@ -47,6 +47,9 @@ func goto_scene(id: String) -> void:
 	if not D.scenes.has(id):
 		push_error("unknown scene " + id)
 		return
+	if D.scenes[id].has("jump_to"):
+		goto_scene(String(D.scenes[id].jump_to))
+		return
 	if logic:
 		logic.exit()
 		logic.queue_free()
@@ -131,6 +134,11 @@ func _eval_rules(delta: float) -> void:
 ## F2: seed the minimum state for a scene, then jump.
 func debug_jump(id: String) -> void:
 	var D := _data()
+	var js: Dictionary = D.scenes.get(id, {})
+	if js.has("jump_to"):
+		debug_jump(String(js.jump_to))
+		ActionRunner.run(js.get("after_jump", []), {"source": "debug_jump"})
+		return
 	var order: Array = D.scenes.keys()
 	order.sort()
 	# run seeds of all previous scenes in order so the jump has minimum state

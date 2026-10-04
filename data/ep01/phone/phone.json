@@ -1,0 +1,12 @@
+{
+  "_map_text": "КАРТА: крыша — курилка · служебная лестница G–крыша · погрузка за прачечной",
+  "PH_TEXT_ADRIAN": {"tab": "contacts", "label": "Адриан: «Спуститесь в лобби.»", "order": 10, "once": true,
+    "requires": {"all": ["phase:S04_HUB", "!flag:adrian_in_lobby"]},
+    "actions": [{"phone_msg": ["adrian", "Иду."]}, {"flag": "adrian_texted"}]},
+  "PH_PHOTO_MONITOR": {"tab": "camera", "label": "Сфотографировать монитор", "order": 20, "once": true,
+    "requires": "flag:daniel_on_monitor",
+    "actions": [{"give_item": ["ITEM_PHOTO_DANIEL_307", "hero"]}, {"sfx": "click"}, {"hint": ["Фото: Дэниел входит в 307. 01:10.", 3.0]}]},
+  "PH_DROP_CART": {"tab": "contacts", "label": "Оставить тележку", "order": 5,
+    "requires": "flag:pushing_cart",
+    "actions": [{"unflag": "pushing_cart"}, {"hero": ["carry", {"item": ""}]}, {"flag": "cart_in_hall"}]}
+}
