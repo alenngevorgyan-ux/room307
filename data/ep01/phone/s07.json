@@ -1,0 +1,8 @@
+{
+  "PH_CAR_ALARM": {"tab": "contacts", "label": "Брелок Volvo: сигнализация", "order": 1,
+    "requires": {"all": ["flag:chase_active", "ITEM_VOLVO_KEYS", {"any": ["zone:LOADING_DOCK", "zone:LAUNDRY"]}]},
+    "actions": [{"trap_bait": ["chase_tool", {"tool": "car_alarm"}]}]},
+  "PH_SHOUT_BLUFF": {"tab": "contacts", "label": "Крикнуть: «Дэниел сказал прекратить!»", "order": 2, "once": true,
+    "requires": {"all": ["flag:chase_active", "!ITEM_RADIO"]},
+    "actions": [{"trap_bait": ["chase_tool", {"tool": "shout_bluff"}]}]}
+}

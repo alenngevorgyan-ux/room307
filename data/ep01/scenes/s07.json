@@ -1,0 +1,20 @@
+{
+  "S07": {
+    "phase": "S07_CHASE", "hero": "LOADING_DOCK:hero_chase", "music": "CHASE_START", "checkpoint": true,
+    "npcs": {
+      "brody": {"at": "LOADING_DOCK:brody_start", "look": "hero"},
+      "sato": {"at": "LOADING_DOCK:sato_start", "look": "hero"},
+      "pavel": {"at": "LOBBY:pavel_reception", "pose": "radio"},
+      "receptionist": {"at": "LOBBY:receptionist"},
+      "laundry_worker": {"at": "LAUNDRY:worker"}
+    },
+    "enter": [
+      {"flag": "chase_active"}, {"flag": ["freight_floor", "G"]},
+      {"if": "flag:chase_close_start", "then": [{"teleport_npc": ["brody", "LOADING_DOCK:van_side"]}]},
+      {"ambient": "SATO_SEE"}
+    ],
+    "logic": "res://src/scenes_logic/s07_chase.gd",
+    "seed": [{"set": ["threat.daniel_knows_hero_met_thomas", true]}, {"give_fact": ["F_THOMAS_TOOK_BLAME", "debug"]}, {"give_fact": ["F_ADRIAN_WAS_DRIVING", "debug"]},
+      {"give_fact": ["F_RECORDING_EXISTS", "debug"]}, {"give_fact": ["F_ADRIAN_THINKS_MARA_FORGOT", "debug"]}]
+  }
+}

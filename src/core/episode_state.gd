@@ -345,6 +345,8 @@ func set_path_value(path: String, v: Variant) -> void:
 			var c := ch(p[1])
 			if c:
 				c.set(p[2], v)
+		"flag":
+			set_flag(p[1], v)
 		_:
 			set(path, v)
 

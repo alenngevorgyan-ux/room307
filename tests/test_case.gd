@@ -69,7 +69,11 @@ func make_directors() -> Dictionary:
 	cine.set_process(false)
 	tree.root.add_child(cine)
 	_cine = cine
-	return {"conv": conv, "traps": traps, "cine": cine, "oh": oh}
+	var chase := ChaseDirector.new()
+	chase.set_meta("sim_node", true)
+	chase.set_physics_process(false)
+	tree.root.add_child(chase)
+	return {"conv": conv, "traps": traps, "cine": cine, "oh": oh, "chase": chase}
 
 
 var _cine: Node = null

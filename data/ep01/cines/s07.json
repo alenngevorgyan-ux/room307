@@ -1,0 +1,6 @@
+{
+  "C_S7_MARA": {"dur": 7.0, "camera": "BCORR:main",
+    "start": [{"music": "SILENCE"}, {"sfx": "breaker"}, {"line": "MARA_PULL"}, {"hero": ["teleport", {"marker": "BCORR:mara_pull"}]}],
+    "at": [{"t": 3.5, "do": [{"line": "RADIO_LOST"}, {"sfx": "radio"}]}],
+    "after": [{"unflag": "chase_active"}, {"despawn": "brody"}, {"despawn": "sato"}, {"goto_scene": "S08"}]}
+}

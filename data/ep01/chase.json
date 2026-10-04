@@ -1,0 +1,21 @@
+{
+  "_comment": "Chase tuning (ACTION_SEQUENCE). Hot-reload with F5 in debug.",
+  "pursuers": {
+    "brody": {"speed": 0.9, "vault": false, "grab": true, "grab_range": 1.0, "trip_stun": 2.5, "doubt": 2.0, "regroup_after": 9.0, "door_check": 0.0},
+    "sato": {"speed": 1.05, "vault": true, "grab": false, "grab_range": 0.0, "trip_stun": 1.2, "doubt": 3.0, "regroup_after": 6.0, "door_check": 1.0}
+  },
+  "heat_bonus": [0.0, 0.03, 0.06, 0.09],
+  "heat_up_seen": 2.5, "heat_down_unseen": 10.0,
+  "lost_to_search": 1.5, "search_to_regroup": 12.0,
+  "public_zones": ["LOBBY", "BAR", "MEZZANINE", "RESTAURANT"], "public_speed": 0.3,
+  "grab_cooldown": 3.0, "struggle_window": 1.2, "struggle_taps": 3,
+  "stun": {"shove": 1.0, "struggle_win": 1.5, "struggle_lose": 0.8, "cart": 1.5, "steam": 1.0, "hit": 2.0, "cart_wall": 4.0, "vault_wall": 0.6, "laundry_cart_brody": 3.0},
+  "contain": {"freezer": 20.0, "fire_door": 15.0, "decoy": 12.0},
+  "blackout": 8.0, "suppression": 10.0, "suppression_sight": 4.0, "alarm": 25.0, "los_break": 1.5,
+  "car_alarm": 4.0, "noise_lure": 15.0, "bluff_speed_bonus": 0.1, "bluff_bonus_time": 6.0, "angry_bonus": 0.05,
+  "close_slow": {"dist": 3.0, "after": 4.0, "mult": 0.9},
+  "rubber_band_ahead": 25.0,
+  "shove_range": 1.2, "shove_cooldown": 4.0,
+  "end": {"safe_dist": 6.0, "timeout": 30.0},
+  "interrogation": {"thomas_save_after": 60.0, "bad_choices_save": 2}
+}
