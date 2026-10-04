@@ -7,6 +7,12 @@ var hud: HUD
 
 func _ready() -> void:
 	InputSetup.install()
+	# one local playtest log per app session (survives in-game restarts)
+	var dbg := get_node("/root/Debug")
+	if not dbg.has_node("PlaytestLog") and not "--no-playtest-log" in OS.get_cmdline_user_args():
+		var pl := PlaytestLog.new()
+		pl.name = "PlaytestLog"
+		dbg.add_child(pl)
 	Presence.clear()
 	ActionRunner.reset()
 	world = HotelWorld.new()
@@ -39,14 +45,29 @@ func _ready() -> void:
 	var start := "S01"
 	var args := OS.get_cmdline_user_args()
 	for a in args:
-		if a.begins_with("--autopilot"):
+		if a.begins_with("--autopilot") and not get_node("/root/Debug").has_meta("booted"):
 			_autopilot.call_deferred(a.substr(12) if a.length() > 12 else "A_MARA")
 	var i := args.find("--scene")
-	if i >= 0 and i + 1 < args.size():
+	var D := get_node("/root/Debug")
+	if D.pending_resume and get_node("/root/Episode").load_game():
+		D.pending_resume = false
+		var saved: Dictionary = get_node("/root/Episode").to_dict()
+		var sid: String = get_node("/root/Episode").scene_id
+		sm.autosave = false
+		sm.goto_scene(sid)
+		get_node("/root/Episode").from_dict(saved)
+		sm.autosave = true
+		hud.show_toast("Чекпоинт: начало сцены %s" % sid, 3.0)
+	elif i >= 0 and i + 1 < args.size() and not D.has_meta("booted"):
 		start = args[i + 1]
 		sm.debug_jump(start)
 	else:
 		sm.goto_scene(start)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_READY:
+		get_node("/root/Debug").set_meta("booted", true)
 
 
 func _autopilot(ending: String) -> void:

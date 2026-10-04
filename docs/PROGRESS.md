@@ -40,11 +40,16 @@ Run: `godot --path .` · Tests: `./run_tests.sh` · Jump: `godot --path . -- --s
 - **Hearing in the restaurant** is reduced to 55 % while the kitchen swing door is open (kitchen noise) — this is how "Mara out of earshot" is staged.
 - Debug overlay (F1–F7) stays enabled in exported playtest builds.
 
+## Playtest prep (ep01-graybox-playtest-v1)
+
+- Sato vaults vaultable boxes on his direct line to the hero (0.6 s hop); Brody paths around via navmesh.
+- «Дэниел знает»: Thomas opens with a hurried line, keeps scanning the gate, and his silences/chip windows are 30 % shorter (exchange `pace`).
+- Developer mode OFF by default (Ctrl+Shift+D or `-- --dev`); local playtest log + summary in `user://playtest` (macOS: ~/Library/Application Support/Room307/playtest); pause menu: restart episode / load last checkpoint / open log folder.
+- In-engine autopilot (`-- --autopilot=<ENDING>`) runs in CI for all four endings.
+
 ## Known issues
 
 - Feel, camera composition per zone and route timing are verified only by SIM + screenshots; a human playtest is needed (see PLAYTEST_LOG).
-- Pursuer vaulting is modelled in tool timings, not NavigationLink vault links (chase is still fully playable).
-- TR_THOMAS_DANIEL's "30 % shorter gaps" is not implemented (the fear flag is).
 - Audio is placeholder synthesis; there is no voice acting.
 
 ## Dialogue line count

@@ -111,3 +111,30 @@ func test_handoff_to_s07() -> void:
 	advance(d.conv, 9.0)
 	eq(ep().scene_id, "S07")
 	check(ep().threat.daniel_knows_hero_met_thomas)
+
+
+func test_daniel_knows_makes_him_faster() -> void:
+	# same silent playthrough, timed: frightened Thomas reaches the last fragment sooner
+	_approach()
+	_choose("CH_TH_DANIEL")
+	wait_until(d.conv, func(): return ep().flag("th_f2") == true, 60.0)
+	var t := 0.0
+	while not ep().flag("th_done") and t < 120.0:
+		advance(d.conv, 0.25)
+		t += 0.25
+	check(ep().flag("th_fast") == true)
+	check(ep().has_fact("F_ADRIAN_THINKS_MARA_FORGOT"))
+	var fast_t := t
+	fresh()
+	ep().give_fact("F_MARA_MET_OLDER_MAN")
+	d = start_scene("S06")
+	place("hero", "LOADING_DOCK:enter")
+	place("thomas", "LOADING_DOCK:thomas_edge")
+	_approach()
+	_choose("CH_TH_MARA")
+	wait_until(d.conv, func(): return ep().flag("th_f2") == true, 60.0)
+	t = 0.0
+	while not ep().flag("th_done") and t < 120.0:
+		advance(d.conv, 0.25)
+		t += 0.25
+	check(fast_t < t * 0.9, "«Дэниел знает» accelerates the confession (%.1fs vs %.1fs)" % [fast_t, t])

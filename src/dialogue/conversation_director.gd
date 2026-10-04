@@ -75,6 +75,17 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 
 
+## Exchange pacing (data: "pace": [{"if": cond, "mult": 0.7}]) — scales the gaps between lines
+## (chip timeouts, waits), e.g. a frightened Thomas fills silences 30 % sooner. Lines stay readable.
+func pace() -> float:
+	if active.is_empty():
+		return 1.0
+	for p in active.get("pace", []):
+		if Conditions.check(p.get("if"), _ep()):
+			return float(p.get("mult", 1.0))
+	return 1.0
+
+
 func is_active() -> bool:
 	return active_id != ""
 
@@ -307,7 +318,7 @@ func _tick_exchange(delta: float) -> void:
 			node_t = 0.0
 			return
 		if node.has("wait"):
-			if node_t >= float(node.wait):
+			if node_t >= float(node.wait) * pace():
 				_enter(String(node.get("next", "")))
 			return
 		if node.has("await"):
@@ -373,7 +384,7 @@ func _show_chips() -> void:
 	if chips_visible.is_empty():
 		_enter(String(node.get("silence", "")))
 		return
-	var t := float(node.get("timeout", 6.0))
+	var t := float(node.get("timeout", 6.0)) * pace()
 	chips_deadline = exchange_t + t if t > 0.0 else 0.0
 	var view: Array = []
 	for c in chips_visible:

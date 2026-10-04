@@ -6,6 +6,7 @@ physically what happens to the recording. All in-game text is Russian.
 
 ## Play
 
+- **Human playtest:** see `docs/PLAYTEST_GUIDE.md` and the `ep01-graybox-playtest-v1` release.
 - **Builds:** see the rolling [`playtest` release](../../releases/tag/playtest) (Web / Windows / macOS / Linux), produced by CI on every push to `main`.
 - **From source:** `godot --path .` (or open `project.godot`). Jump to any scene: `godot --path . -- --scene S04`.
 

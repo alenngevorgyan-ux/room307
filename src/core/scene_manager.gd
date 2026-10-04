@@ -161,3 +161,20 @@ func respawn_current() -> void:
 	var saved: Dictionary = _ep().to_dict()
 	goto_scene(sid)
 	_ep().from_dict(saved)
+
+
+## Pause menu: restart Episode 01 from the bar, or reload the last scene-start checkpoint.
+## Rebuilds the whole world (main scene reload) so no stale NPC/chase state survives.
+func restart_episode(from_checkpoint: bool) -> void:
+	var E := _ep()
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	if from_checkpoint and FileAccess.file_exists(E.SAVE_PATH):
+		set_meta("resume", true)
+		get_node("/root/Debug").pending_resume = true
+	else:
+		get_node("/root/Debug").pending_resume = false
+	get_node("/root/Bus").player_decision.emit("restart" if not from_checkpoint else "load_checkpoint")
+	E.reset()
+	ActionRunner.reset()
+	get_tree().reload_current_scene()

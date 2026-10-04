@@ -533,8 +533,8 @@ func _build_pause() -> void:
 	pause_menu.set_anchors_preset(Control.PRESET_CENTER)
 	pause_menu.offset_left = -170
 	pause_menu.offset_right = 170
-	pause_menu.offset_top = -150
-	pause_menu.offset_bottom = 150
+	pause_menu.offset_top = -190
+	pause_menu.offset_bottom = 190
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.05, 0.05, 0.07, 0.94)
 	sb.set_corner_radius_all(8)
@@ -569,13 +569,33 @@ func _build_pause() -> void:
 	sl.text = "Размер субтитров"
 	v.add_child(sl)
 	v.add_child(subs)
-	var save := Button.new()
-	save.text = "Сохранить чекпойнт"
-	save.pressed.connect(func(): get_node("/root/Episode").save_game(); show_toast("Сохранено", 2.0))
-	v.add_child(save)
+	var cont := Button.new()
+	cont.text = "Загрузить последний чекпоинт"
+	cont.pressed.connect(func():
+		toggle_pause()
+		if Services.scenes and Services.scenes.has_method("restart_episode"):
+			Services.scenes.restart_episode(true))
+	v.add_child(cont)
+	var restart := Button.new()
+	restart.text = "Начать эпизод заново"
+	restart.pressed.connect(func():
+		toggle_pause()
+		if Services.scenes and Services.scenes.has_method("restart_episode"):
+			Services.scenes.restart_episode(false))
+	v.add_child(restart)
+	if OS.get_name() != "Web":
+		var logs := Button.new()
+		logs.text = "Папка с логами плейтеста"
+		logs.pressed.connect(func():
+			DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://playtest"))
+			OS.shell_open(ProjectSettings.globalize_path("user://playtest")))
+		v.add_child(logs)
 	var quit := Button.new()
 	quit.text = "Выйти"
 	quit.pressed.connect(func(): get_tree().quit())
+	if OS.get_name() == "Web":
+		quit.text = "Выйти (закройте вкладку)"
+		quit.disabled = true
 	v.add_child(quit)
 	pause_menu.visible = false
 	root.add_child(pause_menu)

@@ -19,7 +19,13 @@ const PAD_BUTTONS := {
 }
 
 
+static var _installed := false
+
+
 static func install() -> void:
+	if _installed:
+		return
+	_installed = true
 	for a in KEYS:
 		_ensure(a)
 		for k in KEYS[a]:

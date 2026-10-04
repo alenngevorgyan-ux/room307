@@ -253,6 +253,10 @@ func _move(p: Pursuer, delta: float, hero_zone: String, hero_pos: Vector3) -> vo
 		n.velocity.z = 0
 		n.move_and_slide()
 		return
+	if n.has_meta("vaulting"):
+		return
+	if bool(p.cfg.get("vault", false)) and p.state == Pursuer.S.PURSUIT and _try_vault(p, n, tgt, sp):
+		return
 	n.nav.target_position = tgt
 	var nxt := n.nav.get_next_path_position() - n.global_position
 	nxt.y = 0
@@ -270,6 +274,71 @@ func _move(p: Pursuer, delta: float, hero_zone: String, hero_pos: Vector3) -> vo
 	n.speed_name = "run"
 	n.move_and_slide()
 	n.look_override = "hero" if p.state == Pursuer.S.PURSUIT else null
+
+
+## Vault-capable pursuers (Sato): if the straight line to the hero at knee height is blocked only by
+## a vaultable box (and clear at head height), run straight at it and hop over in `vault_time`.
+## Returns true if it took over movement this frame. Brody never vaults (navmesh goes around).
+func _try_vault(p: Pursuer, n: NPC, tgt: Vector3, sp: float) -> bool:
+	var to := tgt - n.global_position
+	to.y = 0
+	var dist := to.length()
+	if dist < 1.0:
+		return false
+	var dir := to / dist
+	var space := n.get_world_3d().direct_space_state
+	var from := n.global_position + Vector3(0, 0.5, 0)
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * minf(dist, 6.0), Graybox.LAYER_WORLD)
+	var hit := space.intersect_ray(q)
+	if hit.is_empty() or not (hit.collider as Node).is_in_group("vaultables"):
+		return false
+	var box: Node3D = hit.collider
+	var sz: Vector3 = box.get_meta("box_size", Vector3.ONE)
+	if sz.y > 1.35:
+		return false
+	var head := PhysicsRayQueryParameters3D.create(n.global_position + Vector3(0, 1.6, 0), n.global_position + Vector3(0, 1.6, 0) + dir * minf(dist, 6.0), Graybox.LAYER_WORLD)
+	if not space.intersect_ray(head).is_empty():
+		return false
+	var edge: Vector3 = hit.position
+	if Vector2(edge.x - n.global_position.x, edge.z - n.global_position.z).length() > 0.8:
+		# run straight at the obstacle
+		n.velocity.x = dir.x * sp
+		n.velocity.z = dir.z * sp
+		n.speed_name = "run"
+		n.move_and_slide()
+		n.look_override = "hero"
+		return true
+	# hop over: land just beyond the far side of the box footprint
+	var land := Vector3(edge.x, n.global_position.y, edge.z)
+	var aabb := AABB(box.global_position - sz / 2.0, sz).grow(0.35)
+	for i in 40:
+		land += dir * 0.1
+		if not aabb.has_point(Vector3(land.x, box.global_position.y, land.z)):
+			break
+	land += dir * 0.3
+	var down := PhysicsRayQueryParameters3D.create(land + Vector3(0, 2.0, 0), land + Vector3(0, -2.5, 0), Graybox.LAYER_WORLD)
+	var g := space.intersect_ray(down)
+	if g.is_empty():
+		return false
+	land.y = g.position.y
+	var top := box.global_position.y + sz.y / 2.0 + 0.3
+	var mid := (n.global_position + land) / 2.0
+	mid.y = top
+	var vt := float(p.cfg.get("vault_time", 0.6))
+	n.set_meta("vaulting", true)
+	var mask := n.collision_mask
+	n.collision_mask = 0
+	var tw := n.create_tween()
+	tw.tween_property(n, "global_position", mid, vt / 2.0)
+	tw.tween_property(n, "global_position", land, vt / 2.0)
+	tw.tween_callback(func():
+		n.collision_mask = mask
+		n.remove_meta("vaulting")
+		p.pos = n.global_position)
+	get_node("/root/Bus").sfx_requested.emit("vault", n.global_position)
+	if not get_node("/root/Debug")._trace.is_empty():
+		print("[chase] %s vaults %s" % [p.id, box.name])
+	return true
 
 
 ## A pursuer left behind in another zone re-appears at the door of the hero's zone (off-screen),

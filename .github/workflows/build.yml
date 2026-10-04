@@ -3,12 +3,11 @@ name: build
 on:
   push:
     branches: [main]
+    tags: ["ep01-*-playtest-*"]
   workflow_dispatch:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: build-${{ github.ref }}
@@ -67,10 +66,19 @@ jobs:
           ~/godot/godot --headless --path . --export-release "Linux" build/linux/Room307.x86_64
           ~/godot/godot --headless --path . --export-release "macOS" build/macos/Room307.zip
           cd build
-          (cd web && zip -qr ../Room307-web.zip .)
+          (cd web && zip -qr ../Room307-web.zip . -x "*.import")
           (cd windows && zip -qr ../Room307-windows.zip .)
           (cd linux && zip -qr ../Room307-linux.zip .)
           cp macos/Room307.zip Room307-macos.zip
+          # named human-playtest packages
+          mkdir -p pt/mac pt/web
+          (cd pt/mac && unzip -q ../../macos/Room307.zip && cp ../../../docs/PLAYTEST_GUIDE.md "HOW_TO_PLAY.md")
+          (cd pt/mac && zip -qry ../../ROOM307_EP01_GRAYBOX_PLAYTEST_MAC_v1.zip .)
+          cp web/index.* pt/web/ 2>/dev/null || true
+          rm -f pt/web/*.import
+          (cd pt/web && zip -qr ../../ROOM307_EP01_GRAYBOX_PLAYTEST_WEB_v1.zip .)
+          unzip -l ROOM307_EP01_GRAYBOX_PLAYTEST_WEB_v1.zip
+          unzip -l ROOM307_EP01_GRAYBOX_PLAYTEST_MAC_v1.zip | head -8
           ls -la
 
       - uses: actions/upload-artifact@v4
@@ -78,7 +86,20 @@ jobs:
           name: room307-builds
           path: build/*.zip
 
+      - name: Publish tagged playtest release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: "ROOM 307 · EP01 · graybox human playtest (${{ github.ref_name }})"
+          bodyFile: docs/PLAYTEST_GUIDE.md
+          artifacts: build/ROOM307_EP01_GRAYBOX_PLAYTEST_MAC_v1.zip,build/ROOM307_EP01_GRAYBOX_PLAYTEST_WEB_v1.zip,build/Room307-windows.zip,build/Room307-linux.zip
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: false
+
       - name: Publish rolling "playtest" release
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: ncipollo/release-action@v1
         with:
           tag: playtest
@@ -93,20 +114,3 @@ jobs:
           replacesArtifacts: true
           commit: ${{ github.sha }}
           makeLatest: true
-
-      - name: Upload Pages artifact
-        if: ${{ !github.event.repository.private }}
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: build/web
-
-  pages:
-    if: ${{ !github.event.repository.private }}
-    needs: test-and-export
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - id: deploy
-        uses: actions/deploy-pages@v4

@@ -1,9 +1,12 @@
 extends Node
 ## Debug — F1 state dump, F2 scene jump, F3 fact grant, F4 pacing log, F5 reload data,
 ## F6 quick-save, F7 quick-load. Also hosts pacing telemetry and the CINE ≤ 15 s assert.
+## Developer mode is OFF for players: toggle with Ctrl+Shift+D, or launch with `-- --dev`.
+## While off, the F-keys do nothing and no debug UI is drawn.
 
 var telemetry := PacingTelemetry.new()
-var enabled := true
+var pending_resume := false   # set by the pause menu before reloading main (load last checkpoint)
+var enabled := false
 var _layer: CanvasLayer
 var _label: RichTextLabel
 var _mode := 0          # 0 off, 1 state, 2 scene jump, 3 fact grant, 4 pacing
@@ -48,6 +51,8 @@ var _trace_t := 0.0
 
 func _parse_automation() -> void:
 	for a in OS.get_cmdline_user_args():
+		if a == "--dev":
+			enabled = true
 		if a.begins_with("--shot="):
 			_shot_path = a.substr(7)
 		elif a.begins_with("--shot-at="):
@@ -76,6 +81,8 @@ func _tick_automation(delta: float) -> void:
 				get_viewport().warp_mouse(Vector2(e.mouse[0], e.mouse[1]))
 			if e.has("actions"):
 				ActionRunner.run(e.actions, {"source": "automation"})
+			if e.has("restart") and Services.scenes:
+				Services.scenes.restart_episode(bool(e.restart == "checkpoint"))
 	for i in range(_shots.size() - 1, -1, -1):
 		if _auto_t >= float(_shots[i]):
 			var t: float = _shots[i]
@@ -134,9 +141,21 @@ func _process(delta: float) -> void:
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
-	if not enabled or not (event is InputEventKey) or not event.pressed or event.echo:
+	if not (event is InputEventKey) or not event.pressed or event.echo:
 		return
 	var k: int = event.keycode
+	if k == KEY_D and event.ctrl_pressed and event.shift_pressed:
+		enabled = not enabled
+		if not enabled:
+			_mode = 0
+			_label.visible = false
+		else:
+			_toggle(1)
+		get_node("/root/Bus").hint_requested.emit("Режим разработчика: %s" % ("ВКЛ (F1–F7)" if enabled else "ВЫКЛ"), 2.0)
+		get_viewport().set_input_as_handled()
+		return
+	if not enabled:
+		return
 	match k:
 		KEY_F1: _toggle(1)
 		KEY_F2: _toggle(2)
@@ -201,7 +220,8 @@ func _refresh() -> void:
 	var t := ""
 	match _mode:
 		1:
-			t = "[b]F1 STATE[/b]  scene %s  phase %s  zone %s  clock %.0f\n" % [E.scene_id, E.phase_name(), E.hero_zone, E.clock_sec]
+			t = "[b]DEV[/b]  playtime %s · scene %s (%s) · zone %s · scene time %.0fs\n" % [_fmt_time(E.clock_sec), E.scene_id, E.phase_name(), E.hero_zone, E.scene_clock]
+			t += "[color=#ffe08a]objective: %s[/color]\n" % objective()
 			t += "leads %s  s1 %s\n" % [E.leads, E.s1_resolution]
 			t += "facts %s\n" % [E.facts.keys()]
 			t += "obs %s\n" % [E.observations.keys()]
@@ -231,3 +251,31 @@ func _refresh() -> void:
 			for c in telemetry.cine_log:
 				t += "  cine %s %.1fs\n" % [c.id, c.dur]
 	_label.text = t
+
+
+static func _fmt_time(sec: float) -> String:
+	return "%d:%02d" % [int(sec) / 60, int(sec) % 60]
+
+
+## What the game currently expects of the player (developer overlay only — never shown to players).
+func objective() -> String:
+	var E := get_node("/root/Episode")
+	var F = E.finale
+	match E.phase_name():
+		"S01_WATCH": return "Разобраться с часами Хейла (публично / тихо / ошибиться / наблюдать 4:30)"
+		"S02_CLIENT": return "Идти за Адрианом → лифт → 3 этаж (ключ 307)"
+		"S03_ROOM": return "Осмотреть 307 (Лина после 5 действий), выйти в коридор → Дэниел"
+		"S04_HUB", "S05_VIDEO":
+			var l: Dictionary = E.leads
+			var names := ["—", "активна", "ГОТОВО", "провал(засчитан)"]
+			return "Зацепки A Нико: %s · B Эва: %s · C Охрана: %s · место Томаса: %s → 2 зацепки + место = погрузка" % [
+				names[int(l.A)], names[int(l.B)], names[int(l.C)], "да" if E.has_fact("F_THOMAS_LOCATION") else "нет"]
+		"S06_THOMAS": return "Остановить Томаса, выслушать (тишина работает)"
+		"S07_CHASE": return "Уйти от Броди и Сато → банкетный коридор (2 этаж). Захватов: %d" % E.threat.grabs
+		"S08_MARA": return "Успокоить Мару → запись → её история → Томас → план"
+		"S09_STAGING": return "Подготовить ресторан, пригласить (Tab): Адриан, Мара, Дэниел (+Томас) → «Начать»"
+		"S09_LIVE": return "Давление на Дэниела: %d/5 · состояние: %s" % [F.daniel_pressure, F.daniel_state]
+		"S09_DECISION": return "Взять карту и решить: Мара / Томас / уничтожить / Адриан (D: %s)" % ("доступна" if E.ending_d_available() else "нет")
+		"EPILOGUE": return "Выйти на улицу, ответить на звонок"
+		"DONE": return "Эпизод пройден: %s" % E.ending.id
+	return ""
