@@ -9,17 +9,17 @@ Run: `godot --path .` · Tests: `./run_tests.sh` · Jump: `godot --path . -- --s
 - [x] M2 — interaction + ActionRunner + F1 overlay + data loader/validator
 - [x] M3 — READ (time 0.6, low-pass, vignette, reticle, dwell, LOS, TELL windows, captions, threads)
 - [x] M4 — conversation in motion (exchanges, chips, silence/leave, social resolver, traps)
-- [ ] M5 — Scene 01
-- [ ] M6 — Scene 02 + Room 307
-- [ ] M7 — hotel hub navigation
-- [ ] M8 — NPC state, leads A & B
-- [ ] M9 — security route + video room
-- [ ] M10 — Thomas
-- [ ] M11 — chase
-- [ ] M12 — Mara
-- [ ] M13 — finale trap
-- [ ] M14 — endings + epilogue
-- [ ] M15 — pacing, sound, polish
+- [x] M5 — Scene 01: Hale/Selin/Kai/Jules/Adrian, schedules + restroom detours (70 s, 150 s), 8 observations, TR_S1_CAMERAS / PAWN_PUBLIC / PAWN_PRIVATE, all 4 resolutions (SIM), Adrian two-shot CINE, leave-early variant
+- [x] M6 — Scene 02 walk-and-talk (FOLLOW_LEAD, location beats, elevator ride with floor ticks, CALL LIE / SILENCE / PRICE / BLUFF-grab, deep line) + Room 307/308 (18 interactables, 17 observations, mirror re-steam, Lina interruption with glasses loss, ALLY/NEUTRAL/SCARED, Daniel hallway encounter incl. skip-room path)
+- [x] M7 — 24 graybox zones, doorway graph, NPC routing through doors, runtime navmesh per zone; navigation smoke test
+- [x] M8 — Lead A Nico (warmth gates, pour flourish, smoke break, pity fact, Lukas correction), Lead B Eva (615 / 308 / hide traps, tail with perception, burner-call overhear, confrontation, 307-phone text), fallbacks (Nico text 4 min, Eva to lobby 6 min, Lina 90 s, PA)
+- [x] M9 — Lead C: Pavel loop + door window, house-phone distraction (once per 5 min), cart cover, staff keycard (Lina ALLY / key hook hold), code peek via TELLs, caught ×1 escort / ×2 Daniel escort → FAILED_DONE; Scene 05 video room (5 cams, 5 timestamp tabs, jog wheel, live diorama footage, photo, Pavel return cues)
+- [x] M10 — Thomas (see below)
+- [x] M11 — chase (see below)
+- [x] M12 — Scene 08 Mara: table keep-away, extinguisher, silence / honest / bluff (wary → door flight → block or calm), phone return, scrubbable 12 s dashcam clip with READ tells, guaranteed story lines, Thomas arrival (+ hero phone return after interrogation), T_TWO_STORIES auto-pin, the ask + card custody by trust
+- [x] M13 — Scene 09 finale: place cards, recorder, SD card spot, 3 doors, lights, photo, phone invitations with templates and arrival order, start gate (AT-GRAPH-07) + «Томаса нет» warning, positional addressing ring, TR_FINAL_MAIN (3 outcomes + retry), DIRECT, PHOTO, WRONG, CARD BAIT, Daniel tells window, pressure model, flee check / block / chair trip / door slam / catch, cornered → confession, escape (+ Mara's copy), thugs + Thomas/Adrian responses
+- [x] M14 — physical endings A/B/C/D (no menu), walking out with the card is blocked, epilogue street with ending variants, phone call, cut to black
+- [~] M15 — pacing telemetry (F4), synthesized music states / ambience / SFX, checkpoints at scene starts, options in pause menu. **Needs a human playtest** for feel, timing and the 35–45 min target.
 
 ## Decisions
 
@@ -33,13 +33,27 @@ Run: `godot --path .` · Tests: `./run_tests.sh` · Jump: `godot --path . -- --s
 - **Audio is synthesized at runtime** (rain/ambience beds, music states as tonal loops, SFX) — no asset dependency.
 - READ is also bound to **F** (trackpads can't comfortably hold RMB).
 
+- **RECEPTION BACK** is merged into the LOBBY as the area behind the reception desk (forbidden area); the keypad door to SECURITY sits on the lobby's back wall so the code peek from the planter works with line of sight.
+- **Scene 05** is a phase inside the S04 hub (the security room), not a separate world load; F2 "S05" jumps into the hub and teleports into the room.
+- **Kitchen ↔ Restaurant** is a doorway (teleport) rather than a seamless shared block.
+- **Arrival spacing** in the finale is 12 s (spec 20 s) to keep the decision cadence under 60 s; flee checks start once the reveal lines end (first after the 6 s tells window, then every 4 s).
+- **Hearing in the restaurant** is reduced to 55 % while the kitchen swing door is open (kitchen noise) — this is how "Mara out of earshot" is staged.
+- Debug overlay (F1–F7) stays enabled in exported playtest builds.
+
 ## Known issues
 
-- (tracked per milestone)
+- Feel, camera composition per zone and route timing are verified only by SIM + screenshots; a human playtest is needed (see PLAYTEST_LOG).
+- Pursuer vaulting is modelled in tool timings, not NavigationLink vault links (chase is still fully playable).
+- TR_THOMAS_DANIEL's "30 % shorter gaps" is not implemented (the fear flag is).
+- Audio is placeholder synthesis; there is no voice acting.
 
 ## Dialogue line count
 
-See `./run_tests.sh` LINE-BUDGET (≤ 450).
+360 / 450 lines (`LINE-BUDGET` check in the validator).
+
+## Test status
+
+`./run_tests.sh` — **99 tests, 0 failed** (AT-DATA-01..08 + budget, AT-SOC-01..07, AT-GRAPH-01..12 as SIMs incl. a full bar → epilogue playthrough per ending, scene SIMs S01–S09, chase tools/FSM, navigation smoke).
 
 ## M10 / M11 (branch feat/thomas-chase)
 
