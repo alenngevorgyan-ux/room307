@@ -26,6 +26,7 @@ var _decision_lines_t := -1.0
 var _ending_t := -1.0
 var _tells_opened := false
 var _thugs_t := -1.0
+var _labels: Dictionary = {}    # stage point -> Label3D (place cards, recorder, card)
 
 
 func enter() -> void:
@@ -52,6 +53,9 @@ func enter() -> void:
 func exit() -> void:
 	if ring:
 		ring.queue_free()
+	for l in _labels.values():
+		if is_instance_valid(l):
+			l.queue_free()
 	Presence.hearing_mult.erase("RESTAURANT")
 	if Services.conversation:
 		Services.conversation.addressee_provider = Callable()
@@ -152,6 +156,39 @@ func _on_stage(ev: String, d: Dictionary) -> void:
 		"ending":
 			do_ending(String(d.arg))
 	bus().player_decision.emit("stage")
+	_refresh_labels()
+
+
+## Small in-world tags so the staging reads at a glance (place cards, recorder, card).
+func _refresh_labels() -> void:
+	if Services.world == null:
+		return
+	var F: FinaleState = ep().finale
+	var want: Dictionary = {}
+	for s in F.seats:
+		if String(F.seats[s]) != "":
+			want["seat_" + s] = [data().marker("RESTAURANT:" + s) + Vector3(0, 0.82, 0), data().npc_display(String(F.seats[s]))]
+	var i := 0
+	for n in F.standing:
+		want["stand_%d" % i] = [data().marker("RESTAURANT:stand_window") + Vector3(i * 0.4, 1.0, 0), data().npc_display(String(n)) + " (стоя)"]
+		i += 1
+	if F.recorder != "none":
+		var m := {"vase": "RESTAURANT:vase", "basket": "RESTAURANT:basket", "shelf": "RESTAURANT:shelf"}
+		want["rec"] = [data().marker(m[F.recorder]) + Vector3(0, 0.35, 0), "● REC"]
+	for k in _labels.keys():
+		if not want.has(k):
+			_labels[k].queue_free()
+			_labels.erase(k)
+	for k in want:
+		if not _labels.has(k):
+			var l := Graybox.label3d("", 26, Color(1, 0.95, 0.85))
+			l.fixed_size = true
+			l.pixel_size = 0.0007
+			Services.world.add_child(l)
+			_labels[k] = l
+		_labels[k].text = want[k][1]
+		_labels[k].global_position = want[k][0]
+		_labels[k].visible = ep().phase_name() == "S09_STAGING" or k == "rec"
 
 
 func _placed(n: String) -> bool:
@@ -212,6 +249,7 @@ func try_start() -> bool:
 		return false
 	F.started = true
 	E.set_phase_name("S09_LIVE")
+	_refresh_labels()
 	if carrying != "":
 		F.standing.append(carrying)
 		carrying = ""

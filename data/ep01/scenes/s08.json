@@ -173,13 +173,49 @@
   "seed": [
    {
     "give_fact": [
-     "F_THOMAS_TOOK_BLAME",
+     "F_MARA_BELIEVED_SHE_DROVE",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_DANIEL_TOLD_MARA",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_MARA_WILL_PUBLISH",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_ADRIAN_NEVER_ASKED",
      "debug"
     ]
    },
    {
     "give_fact": [
      "F_ADRIAN_WAS_DRIVING",
+     "debug"
+    ]
+   },
+   {
+    "offer_thread": "T_TWO_STORIES"
+   },
+   {
+    "pin_thread": "T_TWO_STORIES"
+   },
+   {
+    "flag": "plan_finale"
+   },
+   {
+    "flag": "rain_stopped"
+   },
+   {
+    "give_fact": [
+     "F_THOMAS_TOOK_BLAME",
      "debug"
     ]
    },
