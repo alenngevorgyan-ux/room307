@@ -1,0 +1,16 @@
+{
+  "PH_INV_ADRIAN_1": {"tab": "contacts", "label": "Адриан: «Ресторан. Сейчас. Она будет.»", "order": 30, "group": "inv_adrian", "requires": "phase:S09_STAGING",
+    "actions": [{"trap_bait": ["stage", {"cmd": "invite", "to": "adrian", "template": "she_will_be"}]}]},
+  "PH_INV_ADRIAN_2": {"tab": "contacts", "label": "Адриан: «Ресторан. Один.»", "order": 31, "group": "inv_adrian", "requires": "phase:S09_STAGING",
+    "actions": [{"trap_bait": ["stage", {"cmd": "invite", "to": "adrian", "template": "alone"}]}]},
+  "PH_INV_DANIEL_1": {"tab": "contacts", "label": "Дэниел: «Ресторан. У меня то, что вы ищете.»", "order": 32, "group": "inv_daniel", "requires": "phase:S09_STAGING",
+    "actions": [{"trap_bait": ["stage", {"cmd": "invite", "to": "daniel", "template": "what_you_seek"}]}]},
+  "PH_INV_DANIEL_2": {"tab": "contacts", "label": "Дэниел: «Мистер Вейл хочет вас в ресторане.»", "order": 33, "group": "inv_daniel", "requires": "phase:S09_STAGING",
+    "actions": [{"trap_bait": ["stage", {"cmd": "invite", "to": "daniel", "template": "vale_wants"}]}]},
+  "PH_INV_DANIEL_3": {"tab": "contacts", "label": "Дэниел: «Мара здесь.»", "order": 34, "group": "inv_daniel", "requires": "phase:S09_STAGING",
+    "actions": [{"trap_bait": ["stage", {"cmd": "invite", "to": "daniel", "template": "mara_here"}]}]},
+  "PH_INV_MARA": {"tab": "contacts", "label": "Мара: «Пора.»", "order": 35, "group": "inv_mara", "requires": "phase:S09_STAGING",
+    "actions": [{"trap_bait": ["stage", {"cmd": "invite", "to": "mara", "template": "time"}]}]},
+  "PH_INV_THOMAS": {"tab": "contacts", "label": "Томас: «Пора.»", "order": 36, "group": "inv_thomas", "requires": "phase:S09_STAGING",
+    "actions": [{"trap_bait": ["stage", {"cmd": "invite", "to": "thomas", "template": "time"}]}]}
+}

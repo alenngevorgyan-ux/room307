@@ -1,0 +1,47 @@
+{
+  "TR_FINAL_MAIN": {
+    "target": "daniel", "repeatable": true,
+    "bait": {"event": "claim_spoken", "claim": ["C_FINAL_MAIN", "C_FINAL_MAIN_AGAIN"], "addressee": "adrian"},
+    "requires": {"all": ["F_MARA_BELIEVED_SHE_DROVE", "F_ADRIAN_THINKS_MARA_FORGOT", "!flag:main_done"]},
+    "timing": {"phase": "S09_LIVE"},
+    "outcomes": [
+      {"if": {"audience_has": ["mara", "daniel"]}, "do": [
+        {"tell": ["O_ADRIAN_CONFUSED", 2.5]}, {"line": "ADR_WHAT"}, {"line": "MARA_LOOK"}, {"flag": "main_done"},
+        {"set": ["char.daniel.stress", 3]}, {"flag": ["exposure_base", 2]}, {"beat": "BEAT_EXPOSED"}, {"music": "FINALE_LIVE"}]},
+      {"if": {"audience_lacks": ["mara"]}, "do": [
+        {"line": "ADR_WHAT"}, {"line": "DAN_CUT"}, {"stress": ["daniel", 1]}, {"flag": "main_consumed"}, {"hint": ["Мара не слышала. Подведи её ближе.", 3.0]}]},
+      {"else": true, "do": [
+        {"line": "ADR_WHAT"}, {"line": "MARA_DAN_SAID"}, {"line": "DAN_ENTERS"}, {"flag": "main_done"}, {"set": ["char.daniel.stress", 3]},
+        {"flag": ["exposure_base", 1]}, {"beat": "BEAT_EXPOSED"}, {"music": "FINALE_LIVE"}]}
+    ]
+  },
+  "TR_FINAL_DIRECT": {
+    "target": "daniel",
+    "bait": {"event": "claim_spoken", "claim": "C_FINAL_DIRECT", "addressee": "daniel"},
+    "requires": "F_DANIEL_TOLD_MARA",
+    "timing": {"phase": "S09_LIVE"},
+    "outcomes": [{"else": true, "do": [
+      {"line": "DAN_DENY"}, {"line": "ADR_DEFEND"}, {"stress": ["daniel", 1]},
+      {"if": "!special:exposed", "then": [{"flag": ["exposure_base", 1]}, {"beat": "BEAT_EXPOSED"}], "else": [{"finale_pressure": 1}]}]}]
+  },
+  "TR_FINAL_PHOTO": {
+    "target": "daniel",
+    "bait": {"event": "claim_spoken", "claim": "C_FINAL_PHOTO", "addressee": "adrian"},
+    "object": "ITEM_PHOTO_DANIEL_307",
+    "timing": {"phase": "S09_LIVE"},
+    "outcomes": [{"else": true, "do": [{"line": "ADR_PHOTO_FIN"}, {"flag": "adrian_doubts_daniel"}, {"flag": "photo_shown_finale"}, {"finale_pressure": 1}, {"stress": ["daniel", 1]}]}]
+  },
+  "TR_FINAL_WRONG": {
+    "target": "adrian",
+    "bait": {"event": "claim_spoken", "claim": "C_FINAL_WRONG", "addressee": "adrian"},
+    "timing": {"phase": "S09_LIVE"},
+    "outcomes": [{"else": true, "do": [{"line": "ADR_WRONG"}, {"trust": ["adrian", -1]}, {"stress": ["daniel", -1]}, {"flag": "wrong_bait_used"}]}]
+  },
+  "TR_FINAL_CARD_BAIT": {
+    "target": "daniel",
+    "bait": {"event": "card_bait"},
+    "object": {"cmp": ["finale.card_spot", "==", "table"]},
+    "timing": {"phase": "S09_LIVE"},
+    "outcomes": [{"else": true, "do": [{"tell": ["O_DANIEL_HAND_CARD", 3.0]}, {"npc": ["daniel", "pose", {"pose": "reach"}]}, {"flag": "card_bait_seen"}]}]
+  }
+}

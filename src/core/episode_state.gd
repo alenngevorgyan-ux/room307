@@ -313,7 +313,10 @@ func get_path_value(path: String) -> Variant:
 	var p := path.split(".")
 	match p[0]:
 		"finale":
-			return finale.get(p[1])
+			var v: Variant = finale.get(p[1])
+			if p.size() > 2 and typeof(v) == TYPE_DICTIONARY:
+				return v.get(p[2])
+			return v
 		"threat":
 			return threat.get(p[1])
 		"ending":

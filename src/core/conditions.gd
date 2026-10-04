@@ -223,6 +223,12 @@ static func token(t: String, ep: Node) -> bool:
 			return p.size() == 2 and ep.holder_of(p[0]) == p[1]
 		"trap":
 			return ep.trap_state.get(arg, {}).get("fired", false)
+		"special":
+			match arg:
+				"ending_d": return ep.ending_d_available()
+				"daniel_resolved": return ep.finale.daniel_state in ["confessed", "escaped"]
+				"exposed": return ep.finale.exposed
+			return false
 	push_warning("unknown condition token " + t)
 	return false
 

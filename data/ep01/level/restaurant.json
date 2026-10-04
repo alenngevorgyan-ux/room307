@@ -169,11 +169,51 @@
     "auto": false,
     "locked_if": {
      "any": [
+      "phase:S09_STAGING",
       "phase:S09_LIVE",
-      "flag:main_locked"
+      "flag:main_locked",
+      {
+       "all": [
+        "phase:S09_DECISION",
+        "ITEM_SD_CARD"
+       ]
+      }
      ]
     },
-    "locked_text": "Не сейчас"
+    "locked_text": "Не сейчас",
+    "locked_actions": [
+     {
+      "if": {
+       "all": [
+        "phase:S09_DECISION",
+        "ITEM_SD_CARD"
+       ]
+      },
+      "then": [
+       {
+        "if": "present:mara",
+        "then": [
+         {
+          "line": "BLOCK_DOOR"
+         }
+        ],
+        "else": [
+         {
+          "line": "BLOCK_DOOR_TH"
+         }
+        ]
+       }
+      ],
+      "else": [
+       {
+        "hint": [
+         "Не сейчас.",
+         1.5
+        ]
+       }
+      ]
+     }
+    ]
    },
    {
     "id": "REST_TERRACE",
@@ -318,6 +358,14 @@
    "chair_trip": [
     13.5,
     5.2
+   ],
+   "thug_in": [
+    16.4,
+    6.0
+   ],
+   "thug_in_2": [
+    16.4,
+    7.2
    ]
   },
   "rigs": {

@@ -213,6 +213,12 @@ func _on_command(id: String, cmd: String, args: Dictionary) -> void:
 			set_schedule("")
 			speed_name = String(args.get("speed", "walk"))
 			go_to(_D().marker(String(args.marker)), _D().marker_zone(String(args.marker)))
+		"goto_pos":
+			# world position in the NPC's current zone (keep-away, flee, seating)
+			speed_name = String(args.get("speed", speed_name))
+			if not sched.is_empty():
+				set_schedule("")
+			go_to(args.pos as Vector3, current_zone)
 		"pose":
 			body_vis.set_pose(String(args.get("pose", "rest")))
 		"follow":

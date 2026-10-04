@@ -140,7 +140,7 @@ func debug_jump(id: String) -> void:
 		ActionRunner.run(js.get("after_jump", []), {"source": "debug_jump"})
 		return
 	var order: Array = D.scenes.keys()
-	order.sort()
+	order.sort_custom(func(a, b): return ("ZZZ" if a == "EPI" else String(a)) < ("ZZZ" if b == "EPI" else String(b)))
 	# run seeds of all previous scenes in order so the jump has minimum state
 	for sid in order:
 		if sid == id:

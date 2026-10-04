@@ -1,0 +1,13 @@
+{
+  "C_FINAL_MAIN": {"text": "Скажи ей наконец…", "line": "MAIN", "verb": "PROVOKE", "about": "F_ADRIAN_THINKS_MARA_FORGOT", "is_true": true, "fears": {"daniel": "ADRIAN_LEARNS_TRUTH"},
+    "overrides": {"daniel": [{"if": true, "reaction": "DEFLECT"}], "mara": [{"if": true, "reaction": "DEFLECT"}], "thomas": [{"if": true, "reaction": "DEFLECT"}]}},
+  "C_FINAL_MAIN_AGAIN": {"text": "Повторите это при ней.", "line": "MAIN_AGAIN", "verb": "PROVOKE", "about": "F_ADRIAN_THINKS_MARA_FORGOT", "is_true": true},
+  "C_FINAL_DIRECT": {"text": "Это ты сказал ей…", "line": "DIRECT", "verb": "PROVOKE", "about": "F_DANIEL_TOLD_MARA", "is_true": true, "fears": {"daniel": "ADRIAN_LEARNS_TRUTH"},
+    "overrides": {"adrian": [{"if": true, "reaction": "DEFLECT"}], "mara": [{"if": true, "reaction": "DEFLECT"}]}},
+  "C_FINAL_PHOTO": {"text": "Ваш человек обыскивал её номер…", "line": "PHOTO", "verb": "PRESS", "about": "F_DANIEL_SEARCHED_307", "is_true_if": "ITEM_PHOTO_DANIEL_307", "fears": {"daniel": "ADRIAN_LEARNS_TRUTH"}},
+  "C_FINAL_WRONG": {"text": "Ты заплатил Дэниелу…", "line": "WRONG", "verb": "PROVOKE", "about": "F_ADRIAN_WAS_DRIVING", "is_true": false, "contradicted_by": []},
+  "C_HOSPITAL": {"text": "Расскажи им про больницу.", "line": "H_HOSPITAL", "verb": "PROVOKE", "about": "F_DANIEL_TOLD_MARA", "is_true": true, "fears": {"daniel": "ADRIAN_LEARNS_TRUTH"}},
+  "C_DOOR": {"text": "Ты смотришь на дверь, Дэниел.", "line": "H_DOOR", "verb": "PROVOKE", "about": "F_DANIEL_TOLD_MARA", "is_true": true, "fears": {"daniel": "LOSES_POSITION"}},
+  "C_LOOK_AT_HER": {"text": "Посмотри на неё. Она уже ушла.", "line": "H_LOOK_AT_HER", "verb": "PROVOKE", "about": "F_MARA_WILL_PUBLISH", "is_true": true, "fears": {"adrian": "LOSE_MARA"}},
+  "C_CARD_DONT": {"text": "Не трогай.", "line": "H_CARD", "verb": "PROVOKE", "about": "F_RECORDING_EXISTS", "is_true": true, "fears": {"daniel": "MARA_PUBLISHES"}}
+}

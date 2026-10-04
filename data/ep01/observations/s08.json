@@ -1,0 +1,7 @@
+{
+  "O_CLIP_RING": {"caption": "перстень на руке водителя", "anchor": {"zone": "ORCHID", "p": [4.5, 0.93, 2.72]}, "dist": 3.5, "focus": 0.3, "requires": "flag:clip_ring_visible"},
+  "O_CLIP_BACKSEAT": {"caption": "девочка спит на заднем сиденье", "anchor": {"zone": "ORCHID", "p": [4.62, 0.95, 2.72]}, "dist": 3.5, "focus": 0.3, "requires": "flag:clip_backseat_visible"},
+  "O_MARA_SCAR": {"caption": "большой палец — к шраму на лбу", "mode": "TELL", "anchor": {"npc": "mara", "part": "face"}, "dist": 6.0},
+  "O_MARA_HANDS": {"caption": "руки дрожат только на «убила»", "mode": "TELL", "anchor": {"npc": "mara", "part": "right_hand"}, "dist": 6.0},
+  "O_MARA_LAPTOP_GLANCE": {"caption": "взгляд на ноутбук", "mode": "TELL", "anchor": {"npc": "mara", "part": "face"}, "dist": 6.0}
+}

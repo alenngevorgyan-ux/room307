@@ -1,0 +1,221 @@
+{
+ "S08": {
+  "phase": "S08_MARA",
+  "hero": "ORCHID:hero_in",
+  "music": "MARA_THEME",
+  "mood": "night",
+  "npcs": {
+   "mara": {
+    "at": "ORCHID:mara_start",
+    "pose": "club",
+    "look": "hero"
+   }
+  },
+  "enter": [
+   {
+    "set": [
+     "char.mara.stress",
+     3
+    ]
+   },
+   {
+    "if": "flag:mara_wary",
+    "then": [
+     {
+      "trust": [
+       "mara",
+       -1
+      ]
+     }
+    ]
+   },
+   {
+    "flag": "chase_over"
+   },
+   {
+    "unflag": "chase_active"
+   },
+   {
+    "delay": 0.5,
+    "do": [
+     {
+      "beat": "BEAT_S8_START"
+     }
+    ]
+   }
+  ],
+  "rules": [
+   {
+    "id": "clip_fact",
+    "when": "flag:clip_impact",
+    "do": [
+     {
+      "give_fact": [
+       "F_ADRIAN_WAS_DRIVING",
+       "S08_CLIP"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "clip_guarantee",
+    "after": 45,
+    "when": {
+     "all": [
+      "flag:mara_lowered",
+      "!flag:clip_done",
+      "!flag:clip_playing"
+     ]
+    },
+    "do": [
+     {
+      "line": "MARA_PLAY_SELF"
+     },
+     {
+      "flag": "clip_autoplay"
+     }
+    ]
+   },
+   {
+    "id": "thomas_arrives",
+    "when": {
+     "any": [
+      "BEAT_S8_STORY_DONE",
+      {
+       "all": [
+        {
+         "cmp": [
+          "scene_clock",
+          ">=",
+          150
+         ]
+        },
+        "BEAT_S8_CLIP_DONE"
+       ]
+      }
+     ]
+    },
+    "do": [
+     {
+      "spawn": [
+       "thomas",
+       "ORCHID:thomas_in"
+      ]
+     },
+     {
+      "npc": [
+       "thomas",
+       "walk_to",
+       {
+        "marker": "ORCHID:thomas_stand"
+       }
+      ]
+     },
+     {
+      "delay": 1.5,
+      "do": [
+       {
+        "beat": "BEAT_S8_THOMAS"
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "two_stories",
+    "when": {
+     "all": [
+      "F_MARA_BELIEVED_SHE_DROVE",
+      "F_ADRIAN_THINKS_MARA_FORGOT"
+     ]
+    },
+    "do": [
+     {
+      "offer_thread": "T_TWO_STORIES"
+     }
+    ]
+   },
+   {
+    "id": "to_staging",
+    "when": "flag:plan_finale",
+    "hold": 3.0,
+    "do": [
+     {
+      "phase": "S09_STAGING"
+     },
+     {
+      "hint": [
+       "Ресторан. Вниз, через кухню.",
+       4.0
+      ]
+     },
+     {
+      "music": "FINALE_STAGING"
+     }
+    ]
+   },
+   {
+    "id": "to_s09",
+    "when": {
+     "all": [
+      "zone:RESTAURANT",
+      "flag:plan_finale"
+     ]
+    },
+    "do": [
+     {
+      "goto_scene": "S09"
+     }
+    ]
+   }
+  ],
+  "logic": "res://src/scenes_logic/s08_mara.gd",
+  "seed": [
+   {
+    "give_fact": [
+     "F_THOMAS_TOOK_BLAME",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_ADRIAN_WAS_DRIVING",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_RECORDING_EXISTS",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_ADRIAN_THINKS_MARA_FORGOT",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_THOMAS_NAME",
+     "debug"
+    ]
+   },
+   {
+    "give_fact": [
+     "F_THOMAS_LOCATION",
+     "debug"
+    ]
+   },
+   {
+    "give_item": [
+     "ITEM_VOLVO_KEYS",
+     "hero"
+    ]
+   },
+   {
+    "flag": "chase_over"
+   }
+  ]
+ }
+}

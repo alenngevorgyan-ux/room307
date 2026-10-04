@@ -127,3 +127,14 @@ func advance(conv: Node, sec: float, step: float = 0.1) -> void:
 		if is_instance_valid(_oh):
 			_oh.tick(step)
 		t += step
+
+
+## Advance until cond.call() is true (or max_sec). Returns whether it became true.
+func wait_until(conv: Node, cond: Callable, max_sec: float = 60.0, step: float = 0.1) -> bool:
+	var t := 0.0
+	while t < max_sec:
+		if cond.call():
+			return true
+		advance(conv, step, step)
+		t += step
+	return cond.call()

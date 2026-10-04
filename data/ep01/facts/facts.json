@@ -125,21 +125,42 @@
  "F_MARA_BELIEVED_SHE_DROVE": {
   "text": "Мара думала, что за рулём была она",
   "truth": true,
-  "required": true
+  "required": true,
+  "sources": [
+   "X_S08_STORY"
+  ],
+  "guaranteed_by": [
+   "X_S08_STORY"
+  ]
  },
  "F_DANIEL_TOLD_MARA": {
   "text": "Это Дэниел сказал ей",
   "truth": true,
-  "required": true
+  "required": true,
+  "sources": [
+   "X_S08_STORY"
+  ],
+  "guaranteed_by": [
+   "X_S08_STORY"
+  ]
  },
  "F_ADRIAN_NEVER_ASKED": {
   "text": "Адриан никого не просил внушать ей вину",
-  "truth": true
+  "truth": true,
+  "sources": [
+   "X_S08_THOMAS"
+  ]
  },
  "F_MARA_WILL_PUBLISH": {
   "text": "В восемь Мара всё расскажет журналисту",
   "truth": true,
-  "required": true
+  "required": true,
+  "sources": [
+   "X_S08_STORY"
+  ],
+  "guaranteed_by": [
+   "X_S08_STORY"
+  ]
  },
  "F_DANIEL_CONFESSED": {
   "text": "Дэниел признался",

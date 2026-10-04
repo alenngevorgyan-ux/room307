@@ -1,0 +1,24 @@
+{
+  "S09": {
+    "phase": "S09_STAGING", "hero": "RESTAURANT:kitchen_arrive", "music": "FINALE_STAGING", "mood": "dawn",
+    "npcs": {},
+    "keep_npcs": [],
+    "enter": [{"flag": "rain_stopped"}, {"hint": ["Подготовь зал. Потом — телефон [Tab].", 5.0]}],
+    "rules": [],
+    "logic": "res://src/scenes_logic/s09_finale.gd",
+    "seed": [
+      {"give_fact": ["F_MARA_BELIEVED_SHE_DROVE", "debug"]}, {"give_fact": ["F_DANIEL_TOLD_MARA", "debug"]}, {"give_fact": ["F_MARA_WILL_PUBLISH", "debug"]},
+      {"give_fact": ["F_ADRIAN_NEVER_ASKED", "debug"]}, {"flag": "plan_finale"}, {"flag": "rain_stopped"}
+    ],
+    "debug_hero": "RESTAURANT:kitchen_arrive"
+  },
+  "EPI": {
+    "phase": "EPILOGUE", "hero": "STREET:enter", "music": "EPILOGUE", "mood": "dawn",
+    "npcs": {},
+    "enter": [{"flag": "rain_stopped"}],
+    "rules": [],
+    "logic": "res://src/scenes_logic/epilogue.gd",
+    "seed": [{"ending": "A_MARA"}, {"set": ["finale.daniel_state", "confessed"]}],
+    "debug_hero": "STREET:enter"
+  }
+}

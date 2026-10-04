@@ -8,12 +8,14 @@ const DEFAULT_HEARING := 6.0
 static var pos: Dictionary = {}     # id -> Vector3 ("hero" included)
 static var zone: Dictionary = {}    # id -> zone id
 static var present: Dictionary = {} # id -> true while spawned in the world
+static var hearing_mult: Dictionary = {}   # zone -> multiplier (e.g. kitchen noise in the restaurant)
 
 
 static func clear() -> void:
 	pos.clear()
 	zone.clear()
 	present.clear()
+	hearing_mult.clear()
 
 
 static func place(id: String, zone_id: String, p: Vector3 = Vector3.ZERO) -> void:
@@ -51,7 +53,8 @@ static func hearing_radius(listener: String) -> float:
 static func hears(listener: String, speaker: String) -> bool:
 	if not present.has(listener) or not present.has(speaker):
 		return false
-	return distance(listener, speaker) <= hearing_radius(listener)
+	var m := float(hearing_mult.get(zone.get(listener, ""), 1.0))
+	return distance(listener, speaker) <= hearing_radius(listener) * m
 
 
 ## Everyone (except `exclude`) who can hear `speaker`.

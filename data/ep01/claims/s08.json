@@ -1,0 +1,5 @@
+{
+  "C_EVA_TOLD_ME": {"text": "Эва сказала, где ты.", "line": "H_EVA_TOLD", "verb": "BLUFF", "about": "F_MARA_LOCATION", "is_true": false, "contradicted_by": [],
+    "fears": {"mara": "TAKEN"}, "overrides": {"mara": [{"if": "flag:mara_wary", "reaction": "CALLED"}, {"if": true, "reaction": "DEFLECT"}]}},
+  "C_HIRED_HONEST": {"text": "Твой отец меня нанял.", "line": "H_HIRED", "verb": "CALM", "about": "F_HERO_WORKS_FOR_ADRIAN", "is_true": true}
+}

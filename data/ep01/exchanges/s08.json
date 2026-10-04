@@ -1,0 +1,76 @@
+{
+  "X_S08_DEFUSE": {
+    "npc": "mara", "scene": "S08", "trigger": {"type": "beat", "beat": "BEAT_S8_START"}, "priority": 2, "radius_leave": 20.0,
+    "on_end": [{"beat": "BEAT_S8_DEFUSED"}],
+    "nodes": {
+      "start": {"branch": [{"if": "flag:mara_wary", "next": "l_wary"}, {"else": true, "next": "l_01"}]},
+      "l_01": {"line": "MARA_01", "next": "d1"},
+      "l_wary": {"line": "MARA_WARY", "next": "d1"},
+      "d1": {"timeout": 7.0, "chips": [
+        {"id": "CH_MARA_HIRED", "verb": "CALM", "label": "Твой отец меня нанял", "claim": "C_HIRED_HONEST", "next_by_reaction": {"*": "hired"}},
+        {"id": "CH_MARA_EVA", "verb": "BLUFF", "label": "Эва сказала", "claim": "C_EVA_TOLD_ME", "next_by_reaction": {"CALLED": "flee", "*": "eva_ok"}}
+      ], "silence": "still", "leave": "still"},
+      "still": {"wait": 1.0, "next": "lowered_l", "movement": true},
+      "lowered_l": {"line": "MARA_LOWERS", "next": "lowered"},
+      "hired": {"line": "MARA_HIRED", "actions": [{"trust": ["mara", 1]}], "next": "lowered"},
+      "eva_ok": {"line": "MARA_EVA_OK", "next": "lowered"},
+      "flee": {"line": "MARA_EVA_CALLED", "actions": [{"flag": "mara_fleeing"}], "next": "f1"},
+      "f1": {"timeout": 7.0, "chips": [
+        {"id": "CH_MARA_WAIT", "verb": "CALM", "label": "Подожди", "line": "H_WAIT", "next": "stops"}
+      ], "silence": "stops", "leave": "stops"},
+      "stops": {"line": "MARA_STOPS", "actions": [{"unflag": "mara_fleeing"}], "next": "lowered"},
+      "lowered": {"actions": [{"npc": ["mara", "pose", {"pose": "rest"}]}, {"flag": "mara_lowered"}], "line": "MARA_CLIP", "next": "end"}
+    }
+  },
+  "X_S08_CLIP_OFFER": {
+    "npc": "mara", "scene": "S08", "trigger": {"type": "cond", "cond": {"all": ["flag:mara_lowered", "!flag:clip_done", "!flag:clip_playing"]}}, "priority": 1, "radius_leave": 20.0,
+    "nodes": {
+      "start": {"wait": 6.0, "next": "c1", "movement": true},
+      "c1": {"timeout": 8.0, "chips": [
+        {"id": "CH_MARA_SHOW", "verb": "CALM", "label": "Покажи сама", "line": "H_SHOW_ME", "next": "shows"}
+      ], "silence": "end", "leave": "end"},
+      "shows": {"line": "MARA_SHOWS", "actions": [{"trust": ["mara", 1]}, {"flag": "clip_autoplay"}], "next": "end"}
+    }
+  },
+  "X_S08_STORY": {
+    "npc": "mara", "scene": "S08", "trigger": {"type": "beat", "beat": "BEAT_S8_CLIP_DONE"}, "priority": 3, "radius_leave": 20.0, "npc_keeps_schedule": true,
+    "on_end": [{"beat": "BEAT_S8_STORY_DONE"}],
+    "nodes": {
+      "start": {"line": "MARA_DROVE", "actions": [{"give_fact": ["F_MARA_BELIEVED_SHE_DROVE", "X_S08_STORY"]}], "next": "s1"},
+      "s1": {"timeout": 6.0, "chips": [
+        {"id": "CH_MARA_REMEMBER", "verb": "PRESS", "label": "Ты помнишь?", "line": "H_REMEMBER_IT", "next": "remember"}
+      ], "silence": "daniel", "leave": "daniel"},
+      "remember": {"line": "MARA_REMEMBER", "next": "daniel"},
+      "daniel": {"line": ["MARA_DANIEL", "MARA_8AM"], "actions": [{"give_fact": ["F_DANIEL_TOLD_MARA", "X_S08_STORY"]}, {"give_fact": ["F_MARA_WILL_PUBLISH", "X_S08_STORY"]}, {"give_fact": ["F_DEADLINE_MORNING", "X_S08_STORY"]}], "next": "end"}
+    }
+  },
+  "X_S08_THOMAS": {
+    "npc": "thomas", "scene": "S08", "trigger": {"type": "beat", "beat": "BEAT_S8_THOMAS"}, "priority": 3, "radius_leave": 20.0,
+    "on_end": [{"beat": "BEAT_S8_THOMAS_DONE"}],
+    "nodes": {
+      "start": {"line": "TH_ARRIVES", "actions": [{"if": "flag:phone_confiscated", "then": [{"line": "TH_PHONE"}, {"give_item": ["ITEM_HERO_PHONE", "hero"]}, {"unflag": "phone_confiscated"}]}], "next": "talk"},
+      "talk": {"line": ["TH_WHAT", "MARA_TH", "TH_TO_MARA"], "actions": [{"give_fact": ["F_ADRIAN_NEVER_ASKED", "X_S08_THOMAS"]}, {"knows": ["thomas", "F_DANIEL_TOLD_MARA"]}], "next": "son"},
+      "son": {"branch": [{"if": "!F_THOMAS_PAID_SON", "next": "son_l"}, {"else": true, "next": "end"}]},
+      "son_l": {"line": "TH_SON_SHORT", "actions": [{"give_fact": ["F_THOMAS_PAID_SON", "X_S08_THOMAS"]}, {"give_fact": ["F_THOMAS_CONSENTED", "X_S08_THOMAS"]}], "next": "end"}
+    }
+  },
+  "X_S08_ASK": {
+    "npc": "mara", "scene": "S08", "trigger": {"type": "beat", "beat": "BEAT_S8_THOMAS_DONE"}, "priority": 3, "radius_leave": 20.0,
+    "on_end": [{"beat": "BEAT_S8_PLAN"}],
+    "nodes": {
+      "start": {"timeout": 10.0, "chips": [
+        {"id": "CH_MARA_HOUR", "verb": "CALM", "label": "Дай мне час", "line": "H_HOUR", "next_if": [{"if": {"npc_state": {"mara": {"trust_gte": 0}}}, "next": "plan"}, {"else": true, "next": "not_enough"}]},
+        {"id": "CH_MARA_PUBLISH", "verb": "PRESS", "label": "Публикуй сейчас", "line": "H_PUBLISH", "next": "not_before"},
+        {"id": "CH_MARA_CARD", "verb": "PRESS", "label": "Отдай карту", "line": "H_GIVE_CARD", "next_if": [{"if": {"npc_state": {"mara": {"trust_gte": 1}}}, "next": "gives"}, {"else": true, "next": "keeps"}]}
+      ], "silence": "plan", "leave": "plan"},
+      "not_enough": {"line": "MARA_NOT_ENOUGH", "next": "second"},
+      "second": {"timeout": 8.0, "chips": [
+        {"id": "CH_MARA_DANIEL_THERE", "verb": "PRESS", "label": "Дэниел тоже придёт", "line": "H_DANIEL_THERE", "next": "plan"}
+      ], "silence": "plan", "leave": "plan"},
+      "not_before": {"line": "MARA_NOT_BEFORE", "next": "plan"},
+      "gives": {"line": "MARA_GIVES_CARD", "actions": [{"give_item": ["ITEM_SD_CARD", "hero"]}], "next": "plan"},
+      "keeps": {"line": "MARA_KEEPS_CARD", "actions": [{"give_item": ["ITEM_SD_CARD", "mara"]}], "next": "plan"},
+      "plan": {"line": ["MARA_HOUR", "MARA_WHERE"], "actions": [{"flag": "plan_finale"}, {"flag": "rain_stopped"}], "next": "end"}
+    }
+  }
+}

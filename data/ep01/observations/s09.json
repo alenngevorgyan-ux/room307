@@ -1,0 +1,8 @@
+{
+  "O_DANIEL_EXIT_GLANCE": {"caption": "смотрит на выход", "mode": "TELL", "anchor": {"npc": "daniel", "part": "face"}, "dist": 7.0, "scene": "S09"},
+  "O_DANIEL_PHONE": {"caption": "берёт телефон", "mode": "TELL", "anchor": {"npc": "daniel", "part": "right_hand"}, "dist": 7.0, "scene": "S09"},
+  "O_DANIEL_AVOIDS_ADRIAN": {"caption": "перестал смотреть на Адриана", "mode": "TELL", "anchor": {"npc": "daniel", "part": "head"}, "dist": 7.0, "scene": "S09"},
+  "O_DANIEL_WEIGHT_SHIFT": {"caption": "перенёс вес — готов идти", "mode": "TELL", "anchor": {"npc": "daniel", "part": "feet"}, "dist": 7.0, "scene": "S09"},
+  "O_DANIEL_HAND_CARD": {"caption": "рука тянется к карте", "mode": "TELL", "anchor": {"npc": "daniel", "part": "right_hand"}, "dist": 7.0, "scene": "S09"},
+  "O_ADRIAN_CONFUSED": {"caption": "наклон головы — шаг к ней", "mode": "TELL", "anchor": {"npc": "adrian", "part": "face"}, "dist": 7.0, "scene": "S09"}
+}

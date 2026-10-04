@@ -1,0 +1,47 @@
+{
+  "X_S09_LIVE": {
+    "npc": "adrian", "scene": "S09", "trigger": {"type": "manual"}, "priority": 3, "radius_leave": 30.0, "npc_keeps_schedule": true,
+    "nodes": {
+      "start": {"wait": 0.5, "next": "talk", "movement": true},
+      "talk": {"timeout": 9.0, "chips": [
+        {"id": "CH_FIN_MAIN", "verb": "PROVOKE", "label": "Скажи ей наконец", "addressee": "@addressed", "requires": {"all": ["F_MARA_BELIEVED_SHE_DROVE", "F_ADRIAN_THINKS_MARA_FORGOT", "!flag:main_done", "!flag:main_consumed"]}, "claim": "C_FINAL_MAIN", "next_by_reaction": {"DEFLECT": "wrong_addr_main", "*": "loop"}},
+        {"id": "CH_FIN_AGAIN", "verb": "PROVOKE", "label": "Повторите при ней", "addressee": "@addressed", "requires": {"all": ["flag:main_consumed", "!flag:main_done"]}, "claim": "C_FINAL_MAIN_AGAIN", "next_by_reaction": {"*": "loop"}},
+        {"id": "CH_FIN_HOSPITAL", "verb": "PROVOKE", "label": "Про больницу", "addressee": "@addressed", "requires": {"all": ["F_DANIEL_TOLD_MARA", "special:exposed", "!flag:hospital_said"]}, "claim": "C_HOSPITAL", "next_by_reaction": {"*": "hospital"}},
+        {"id": "CH_FIN_DOOR", "verb": "PROVOKE", "label": "Смотришь на дверь", "addressee": "@addressed", "requires": {"all": ["O_DANIEL_EXIT_GLANCE", "special:exposed", "!flag:door_said"]}, "claim": "C_DOOR", "next_by_reaction": {"*": "door"}},
+        {"id": "CH_FIN_CARD", "verb": "PRESS", "label": "Не трогай", "addressee": "@addressed", "requires": {"all": ["flag:card_bait_seen", "!flag:card_called"]}, "claim": "C_CARD_DONT", "next_by_reaction": {"*": "card"}},
+        {"id": "CH_FIN_DIRECT", "verb": "PROVOKE", "label": "Это ты ей сказал", "addressee": "@addressed", "requires": {"all": ["F_DANIEL_TOLD_MARA", "!trap:TR_FINAL_DIRECT"]}, "claim": "C_FINAL_DIRECT", "next_by_reaction": {"DEFLECT": "wrong_addr_direct", "*": "loop"}},
+        {"id": "CH_FIN_PHOTO", "verb": "PRESS", "label": "Фото", "addressee": "@addressed", "requires": {"all": ["ITEM_PHOTO_DANIEL_307", "!trap:TR_FINAL_PHOTO"]}, "claim": "C_FINAL_PHOTO", "next_by_reaction": {"*": "loop"}},
+        {"id": "CH_FIN_LOOK", "verb": "PROVOKE", "label": "Посмотри на неё", "addressee": "@addressed", "requires": "!flag:look_said", "claim": "C_LOOK_AT_HER", "next_by_reaction": {"*": "look"}},
+        {"id": "CH_FIN_HOWMUCH", "verb": "PRESS", "label": "Сколько ещё?", "addressee": "@addressed", "requires": {"all": ["flag:s2_raise_price", "!flag:howmuch_said"]}, "line": "H_HOW_MUCH_MORE", "next": "howmuch"},
+        {"id": "CH_FIN_WRONG", "verb": "PROVOKE", "label": "Ты заплатил Дэниелу", "addressee": "@addressed", "requires": "!trap:TR_FINAL_WRONG", "claim": "C_FINAL_WRONG", "next_by_reaction": {"*": "loop"}}
+      ], "silence": "silence", "leave": "loop"},
+      "loop": {"wait": 0.8, "next": "talk", "movement": true},
+      "silence": {"branch": [
+        {"if": {"all": ["special:exposed", "!flag:mara_bed_said"]}, "next": "mara_bed"},
+        {"if": {"all": [{"cmp": ["finale.card_spot", "==", "table"]}, "!flag:card_bait_seen"]}, "next": "card_bait"},
+        {"else": true, "next": "loop"}
+      ]},
+      "mara_bed": {"line": "MARA_BED", "actions": [{"flag": "mara_bed_said"}, {"if": {"npc_state": {"mara": {"trust_gte": 1}}}, "then": [{"finale_pressure": 2}], "else": [{"finale_pressure": 1}]}], "next": "loop"},
+      "card_bait": {"wait": 0.5, "actions": [{"trap_bait": ["card_bait", {}]}], "next": "loop", "movement": true},
+      "hospital": {"actions": [{"flag": "hospital_said"}, {"if": "flag:addressed_daniel", "then": [{"finale_pressure": 2}], "else": [{"finale_pressure": 1}]}], "wait": 0.5, "next": "talk", "movement": true},
+      "door": {"actions": [{"flag": "door_said"}, {"finale_pressure": 1}], "wait": 0.5, "next": "talk", "movement": true},
+      "card": {"line": "DAN_HAND", "actions": [{"flag": "card_called"}, {"finale_pressure": 1}, {"flag": "adrian_doubts_daniel"}], "next": "loop"},
+      "look": {"line": "ADR_LOOKS", "actions": [{"flag": "look_said"}], "next": "loop"},
+      "howmuch": {"line": "ADR_HOW_MUCH", "actions": [{"flag": "howmuch_said"}], "next": "loop"},
+      "wrong_addr_main": {"branch": [{"if": "flag:addressed_mara", "next": "to_mara"}, {"else": true, "next": "to_dan"}]},
+      "to_mara": {"line": "MAIN_TO_MARA", "next": "loop"},
+      "to_dan": {"line": "MAIN_TO_DAN", "actions": [{"stress": ["daniel", 1]}], "next": "loop"},
+      "wrong_addr_direct": {"line": "DIRECT_TO_ADR", "next": "loop"}
+    }
+  },
+  "X_S09_ENDING_D": {
+    "npc": "adrian", "scene": "S09", "trigger": {"type": "npc_enters_radius", "radius": 2.2, "cond": {"all": ["phase:S09_DECISION", "special:ending_d", "!flag:d_said"]}}, "priority": 2, "radius_leave": 4.0,
+    "nodes": {
+      "start": {"timeout": 8.0, "chips": [
+        {"id": "CH_D_1", "verb": "PROVOKE", "label": "Ты потеряешь имя", "line": "D_1", "next": "d2"}
+      ], "silence": "end", "leave": "end"},
+      "d2": {"wait": 1.2, "next": "d2l", "movement": true},
+      "d2l": {"line": "D_2", "actions": [{"flag": "d_said"}, {"hint": ["Протяни ему телефон. [E]", 3.0]}], "next": "end"}
+    }
+  }
+}

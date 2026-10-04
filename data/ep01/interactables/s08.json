@@ -1,0 +1,11 @@
+{
+  "I_S8_LAPTOP": {"zone": "ORCHID", "p": [4.5, 0.8, 2.9], "scene": "S08", "radius": 1.8, "no_mesh": true,
+    "visible_if": {"all": ["flag:mara_lowered", "!flag:clip_done"]},
+    "variants": [
+      {"if": "!flag:clip_playing", "verb": "Смотреть", "prompt": "Запись (A/D — перемотка)", "actions": [{"flag": "clip_playing"}, {"decision": "clip"}]},
+      {"if": true, "verb": "Пауза", "prompt": "Запись", "actions": [{"unflag": "clip_playing"}]}
+    ]},
+  "I_S8_PHONE": {"zone": "ORCHID", "p": [3.9, 0.8, 3.4], "scene": "S08", "verb": "Положить на стол", "prompt": "Телефон Мары", "once": true, "no_mesh": true, "radius": 2.2,
+    "visible_if": "ITEM_MARA_PHONE",
+    "actions": [{"line": "H_FORGOT"}, {"line": "MARA_PHONE"}, {"take_item": ["ITEM_MARA_PHONE", "mara"]}, {"trust": ["mara", 1]}, {"flag": "phone_returned"}]}
+}
