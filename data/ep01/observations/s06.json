@@ -1,0 +1,7 @@
+{
+  "O_THOMAS_PHOTO": {"caption": "фото подростка на приборной панели", "anchor": {"zone": "LOADING_DOCK", "p": [14.2, 1.4, 3.4]}, "dist": 4.0, "scene": "S06"},
+  "O_THOMAS_WRIST": {"caption": "выцветшая тюремная татуировка на запястье", "anchor": {"npc": "thomas", "part": "left_wrist"}, "dist": 3.0, "scene": "S06"},
+  "O_THOMAS_HANDS": {"caption": "держит сигарету как руль", "anchor": {"npc": "thomas", "part": "right_hand"}, "dist": 4.0, "scene": "S06", "requires": "flag:th_stopped"},
+  "O_THOMAS_PILLS": {"caption": "счёт из клиники на сиденье", "anchor": {"zone": "LOADING_DOCK", "p": [16.4, 1.0, 3.4]}, "dist": 3.5, "scene": "S06"},
+  "O_THOMAS_LOOKAWAY": {"caption": "отводит глаза при этом имени", "mode": "TELL", "anchor": {"npc": "thomas", "part": "face"}, "dist": 5.0, "scene": "S06"}
+}

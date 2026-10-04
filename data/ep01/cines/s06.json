@@ -1,0 +1,8 @@
+{
+  "C_S6_VAN": {"dur": 8.0, "camera": "LOADING_DOCK:main",
+    "start": [{"sfx": "engine"}, {"music": "CHASE_START"}, {"camera_hint": {"shake": 0.4}},
+      {"spawn": ["brody", "LOADING_DOCK:brody_start"]}, {"spawn": ["sato", "LOADING_DOCK:sato_start"]},
+      {"npc": ["brody", "look", {"target": "hero"}]}, {"npc": ["sato", "look", {"target": "hero"}]}, {"line": "TH_GO"}],
+    "at": [{"t": 3.0, "do": [{"if": "ITEM_VOLVO_KEYS", "then": [{"set_schedule": ["thomas", "thomas_gate"]}], "else": [{"set_schedule": ["thomas", "thomas_drive"]}]}]}],
+    "after": [{"set": ["threat.daniel_knows_hero_met_thomas", true]}, {"goto_scene": "S07"}]}
+}

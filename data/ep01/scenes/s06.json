@@ -1,0 +1,15 @@
+{
+  "S06": {
+    "phase": "S06_THOMAS", "music": "THOMAS_SORROW", "debug_hero": "LOADING_DOCK:enter",
+    "npcs": {"thomas": {"at": "LOADING_DOCK:thomas_start", "schedule": "thomas_leave"}},
+    "enter": [{"flag": "th_entered"}],
+    "rules": [
+      {"id": "drove", "when": {"all": ["flag:th_drove", "!flag:th_stopped"]}, "do": [
+        {"spawn": ["brody", "LOADING_DOCK:van"]}, {"npc": ["brody", "look", {"target": "thomas"}]}, {"sfx": "engine"},
+        {"flag": "th_stopped"}, {"flag": "th_compressed"}, {"flag": "chase_close_start"}, {"start_exchange": "X_S06_TALK"}]},
+      {"id": "talk_guard", "when": {"all": ["flag:th_stopped", "!flag:th_done", "!seen:X_S06_TALK"]}, "hold": 3.0, "do": [{"start_exchange": "X_S06_TALK"}]}
+    ],
+    "logic": "res://src/scenes_logic/s06_thomas.gd",
+    "seed": [{"give_fact": ["F_THOMAS_LOCATION", "debug"]}, {"lead": ["A", "DONE"]}, {"lead": ["C", "DONE"]}, {"give_fact": ["F_MARA_MET_OLDER_MAN", "debug"]}, {"flag": "thomas_ready"}]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "TR_THOMAS_DANIEL": {
+    "target": "thomas",
+    "bait": {"event": "claim_spoken", "claim": "C_DANIEL_KNOWS_YOU_HERE", "addressee": "thomas"},
+    "timing": {"scene": "S06"},
+    "outcomes": [{"else": true, "do": [
+      {"npc": ["thomas", "look", {"target": "LOADING_DOCK:gate_chain"}]}, {"line": "TH_DANIEL_SCAN"},
+      {"set_var": ["thomas", "fear_daniel", true]}, {"flag": "th_fast"}, {"flag": "th_stopped"}, {"flag": ["th_method", "daniel"]}
+    ]}]
+  }
+}

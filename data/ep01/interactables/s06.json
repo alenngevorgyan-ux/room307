@@ -1,0 +1,6 @@
+{
+  "I_S6_KEYS": {"zone": "LOADING_DOCK", "p": [10.6, 1.2, 4.6], "scene": "S06", "verb": "Забрать", "prompt": "Ключи от Volvo", "once": true,
+    "visible_if": {"all": ["flag:keys_on_edge", "!flag:th_stopped"]}, "mesh": {"s": [0.08, 0.03, 0.06], "c": [0.9, 0.85, 0.4], "emit": 0.6}, "priority": 3,
+    "actions": [{"give_item": ["ITEM_VOLVO_KEYS", "hero"]}, {"trust": ["thomas", -1]}, {"flag": "th_stopped"}, {"flag": ["th_method", "keys"]},
+      {"set_schedule": ["thomas", "thomas_lean"]}, {"sfx": "chain"}, {"start_exchange": "X_S06_TALK"}]}
+}

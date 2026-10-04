@@ -1,0 +1,17 @@
+{
+  "thomas_leave": {"npc": "thomas", "mode": "once", "speed": "fast", "points": [
+    {"at": "LOADING_DOCK:thomas_start", "wait": 0.3, "pose": "rest"},
+    {"at": "LOADING_DOCK:thomas_edge", "wait": 4.0, "pose": "reach", "look": "LOADING_DOCK:gate_chain", "actions": [{"flag": "keys_on_edge"}, {"delay": 4.0, "do": [{"unflag": "keys_on_edge"}]}]},
+    {"at": "LOADING_DOCK:ramp_bottom", "wait": 0.1, "pose": "rest"},
+    {"at": "LOADING_DOCK:car_driver", "wait": 0.5, "pose": "wheel"}
+  ], "on_done": [{"if": "!flag:th_stopped", "then": [{"flag": "th_drove"}]}]},
+  "thomas_lean": {"npc": "thomas", "mode": "loop", "points": [
+    {"at": "LOADING_DOCK:thomas_lean", "wait": 30.0, "pose": "smoke", "look": "hero"}
+  ]},
+  "thomas_gate": {"npc": "thomas", "mode": "once", "speed": "fast", "points": [
+    {"at": "LOADING_DOCK:gate_chain", "wait": 0.2}
+  ], "on_done": [{"despawn": "thomas"}]},
+  "thomas_drive": {"npc": "thomas", "mode": "once", "points": [
+    {"at": "LOADING_DOCK:car_driver", "wait": 0.2}
+  ], "on_done": [{"despawn": "thomas"}]}
+}

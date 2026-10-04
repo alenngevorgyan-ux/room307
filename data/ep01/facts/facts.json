@@ -97,12 +97,24 @@
  "F_THOMAS_TOOK_BLAME": {
   "text": "Томас отсидел за аварию",
   "truth": true,
-  "required": true
+  "required": true,
+  "guaranteed_by": [
+   "X_S06_TALK"
+  ],
+  "sources": [
+   "X_S06_TALK"
+  ]
  },
  "F_ADRIAN_WAS_DRIVING": {
   "text": "За рулём был Адриан",
   "truth": true,
-  "required": true
+  "required": true,
+  "guaranteed_by": [
+   "X_S06_TALK"
+  ],
+  "sources": [
+   "X_S06_TALK"
+  ]
  },
  "F_THOMAS_PAID_SON": {
   "text": "Деньги Вейла спасли сына Томаса",
@@ -115,12 +127,24 @@
  "F_RECORDING_EXISTS": {
   "text": "Есть запись с регистратора",
   "truth": true,
-  "required": true
+  "required": true,
+  "guaranteed_by": [
+   "X_S06_TALK"
+  ],
+  "sources": [
+   "X_S06_TALK"
+  ]
  },
  "F_ADRIAN_THINKS_MARA_FORGOT": {
   "text": "Адриан думает, что Мара ничего не помнит",
   "truth": true,
-  "required": true
+  "required": true,
+  "guaranteed_by": [
+   "X_S06_TALK"
+  ],
+  "sources": [
+   "X_S06_TALK"
+  ]
  },
  "F_MARA_BELIEVED_SHE_DROVE": {
   "text": "Мара думала, что за рулём была она",

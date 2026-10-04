@@ -1,0 +1,60 @@
+{
+  "X_S06_STOP": {
+    "npc": "thomas", "scene": "S06", "trigger": {"type": "npc_enters_radius", "radius": 7.0, "cond": {"none": ["flag:th_stopped", "flag:th_drove"]}},
+    "priority": 2, "radius_leave": 12.0,
+    "on_end": [{"if": "flag:th_stopped", "then": [{"start_exchange": "X_S06_TALK"}]}],
+    "nodes": {
+      "start": {"timeout": 6.0, "chips": [
+        {"id": "CH_TH_MARA", "verb": "CALM", "label": "Мара.", "line": "H_MARA_NAME", "actions": [{"flag": "th_stopped"}, {"flag": ["th_method", "mara"]}, {"trust": ["thomas", 1]}], "next": "stop"},
+        {"id": "CH_TH_NAME_STOP", "verb": "CALM", "label": "Томас.", "requires": "F_THOMAS_NAME", "line": "H_THOMAS", "actions": [{"flag": "th_stopped"}, {"flag": ["th_method", "name"]}, {"flag": "th_named"}, {"trust": ["thomas", 1]}], "next": "stop"},
+        {"id": "CH_TH_DANIEL", "verb": "PROVOKE", "label": "Дэниел знает", "claim": "C_DANIEL_KNOWS_YOU_HERE", "next_by_reaction": {"*": "stop_d"}},
+        {"id": "CH_TH_POLICE", "verb": "BLUFF", "label": "Полиция едет", "claim": "C_POLICE_COMING", "next_by_reaction": {"*": "stop_p"}}
+      ], "silence": "end", "leave": "end"},
+      "stop": {"wait": 1.0, "actions": [{"set_schedule": ["thomas", "thomas_lean"]}], "next": "end", "movement": true},
+      "stop_d": {"wait": 0.5, "actions": [{"flag": "th_stopped"}, {"flag": ["th_method", "daniel"]}, {"set_schedule": ["thomas", "thomas_lean"]}], "next": "end", "movement": true},
+      "stop_p": {"wait": 0.5, "actions": [{"flag": "th_stopped"}, {"flag": ["th_method", "police"]}, {"flag": "th_cold"}, {"trust": ["thomas", -1]}, {"set_schedule": ["thomas", "thomas_lean"]}], "next": "end", "movement": true}
+    }
+  },
+  "X_S06_TALK": {
+    "npc": "thomas", "scene": "S06", "trigger": {"type": "manual"}, "priority": 3, "radius_leave": 45.0, "npc_keeps_schedule": true,
+    "on_end": [{"if": "flag:th_done", "then": [{"play_cine": "C_S6_VAN"}]}],
+    "nodes": {
+      "start": {"branch": [
+        {"if": "flag:th_compressed", "next": "cmp"},
+        {"if": {"cmp": ["flag.th_method", "==", "police"]}, "next": "f1p"},
+        {"if": {"cmp": ["flag.th_method", "==", "keys"]}, "next": "f1k"},
+        {"else": true, "next": "f1"}
+      ]},
+      "f1": {"line": "TH_01", "next": "c1"},
+      "f1p": {"line": "TH_POLICE", "next": "c1"},
+      "f1k": {"line": ["TH_KEYS", "TH_01"], "next": "c1"},
+      "c1": {"timeout": 5.5, "chips": [
+        {"id": "CH_TH_DRIVER", "verb": "PRESS", "label": "Водитель Вейлов", "requires": {"any": ["F_MARA_MET_OLDER_MAN", "F_THOMAS_NAME"]}, "line": "H_TH_DRIVER", "next": "f2"},
+        {"id": "CH_TH_NAME", "verb": "CALM", "label": "Томас.", "requires": {"all": ["F_THOMAS_NAME", "!flag:th_named"]}, "line": "H_THOMAS", "next": "named"}
+      ], "silence": "sil1", "leave": "sil1"},
+      "named": {"line": "TH_NAMED", "actions": [{"trust": ["thomas", 1]}, {"flag": "th_named"}], "next": "f2"},
+      "sil1": {"line": "TH_SILENCE", "actions": [{"trust": ["thomas", 1]}], "next": "f2"},
+      "f2": {"line": ["TH_IAM", "TH_BLAME"], "actions": [{"give_fact": "F_THOMAS_NAME"}, {"give_fact": "F_THOMAS_TOOK_BLAME"}, {"give_fact": "F_OLD_ACCIDENT"}, {"flag": "th_f2"}], "next": "c2"},
+      "c2": {"timeout": 5.5, "chips": [
+        {"id": "CH_TH_FORWHOM", "verb": "PRESS", "label": "За кого?", "line": "H_TH_FORWHOM", "next": "f3"}
+      ], "silence": "sil2", "leave": "f3"},
+      "sil2": {"line": "TH_CARDSHARK", "next": "f3"},
+      "f3": {"line": "TH_NOTME", "actions": [{"give_fact": "F_ADRIAN_WAS_DRIVING"}, {"flag": "th_f3"}], "next": "c3"},
+      "c3": {"timeout": 6.0, "chips": [
+        {"id": "CH_TH_ADRIAN", "verb": "PRESS", "label": "Адриан.", "line": "H_TH_ADRIAN", "next": "adr"},
+        {"id": "CH_TH_SON", "verb": "CALM", "label": "Твой сын?", "requires": {"all": ["O_THOMAS_PHOTO", "!flag:th_cold"]}, "line": "H_TH_SON", "next": "son"}
+      ], "silence": "f5", "leave": "f5"},
+      "adr": {"wait": 2.5, "movement": true, "actions": [{"tell": ["O_THOMAS_LOOKAWAY", 2.4]}, {"npc": ["thomas", "look", {"target": "LOADING_DOCK:gate_chain"}]}, {"believes": ["thomas", "F_ADRIAN_WAS_DRIVING"]}], "next": "c4"},
+      "c4": {"timeout": 6.0, "chips": [
+        {"id": "CH_TH_SON2", "verb": "CALM", "label": "Твой сын?", "requires": {"all": ["O_THOMAS_PHOTO", "!flag:th_cold"]}, "line": "H_TH_SON", "next": "son"}
+      ], "silence": "f5", "leave": "f5"},
+      "son": {"line": "TH_SON", "actions": [{"give_fact": "F_THOMAS_PAID_SON"}, {"give_fact": "F_THOMAS_CONSENTED"}, {"trust": ["thomas", 1]}], "next": "f5"},
+      "f5": {"line": "TH_CARD", "actions": [{"give_fact": "F_RECORDING_EXISTS"}, {"flag": "th_f5"}], "next": "f6"},
+      "f6": {"line": "TH_FORGOT", "actions": [{"give_fact": "F_ADRIAN_THINKS_MARA_FORGOT"}, {"flag": "th_f6"}], "next": "f7"},
+      "f7": {"line": ["TH_STOP", "H_FROM_WHAT", "TH_JUSTICE"], "actions": [{"flag": "th_done"}], "next": "end"},
+      "cmp": {"line": ["TH_SWEAR", "TH_IAM", "TH_BLAME", "TH_NOTME", "TH_CARD", "TH_FORGOT", "TH_STOP", "H_FROM_WHAT", "TH_JUSTICE"], "actions": [
+        {"give_fact": "F_THOMAS_NAME"}, {"give_fact": "F_THOMAS_TOOK_BLAME"}, {"give_fact": "F_OLD_ACCIDENT"}, {"give_fact": "F_ADRIAN_WAS_DRIVING"},
+        {"give_fact": "F_RECORDING_EXISTS"}, {"give_fact": "F_ADRIAN_THINKS_MARA_FORGOT"}, {"flag": "th_done"}], "next": "end"}
+    }
+  }
+}
