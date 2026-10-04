@@ -156,3 +156,87 @@ func check_security_catch_lands_at_reception() -> void:
 
 func get_root_data() -> Node:
 	return root.get_node("Data")
+
+
+# ================================================================== Pass 2: no NPC pop-in
+
+var _pops: Array = []
+
+
+func _watch_pops() -> void:
+	_pops = []
+	var B := root.get_node("Bus")
+	if not B.npc_popped.is_connected(_on_pop):
+		B.npc_popped.connect(_on_pop)
+
+
+func _on_pop(npc: String, kind: String, _info: Dictionary) -> void:
+	_pops.append("%s:%s" % [npc, kind])
+
+
+func _bar_with_hero_watching() -> void:
+	Services.scenes.goto_scene("S01")
+	await frames(30)
+	ActionRunner.reset()
+	Services.conversation.end_active("TEST")
+	var cam_hint := {"clear": true}
+	root.get_node("Bus").camera_hint.emit(cam_hint)
+	await _settle_hero_at(get_root_data().marker("BAR:hero_stand"), "BAR")
+	await frames(40)
+
+
+## Playtest finding 5: an NPC told to despawn while the hero can see them walks out of view
+## through a real exit; logic treats them as gone at once.
+func check_visible_despawn_walks_out() -> void:
+	await _bar_with_hero_watching()
+	_watch_pops()
+	var n: Node = Services.world.npc("selin")
+	expect(n.on_camera(), "setup: Selin is on camera")
+	root.get_node("Bus").npc_command.emit("selin", "despawn", {})
+	await frames(2)
+	expect(not Presence.is_present("selin"), "logic sees her gone immediately")
+	expect(n.visible and n.leaving, "her body is still there, walking out")
+	var t := 0
+	while n.leaving and t < 60 * 26:
+		await physics_frame
+		t += 1
+	expect(not n.leaving and not n.visible, "she has left (%.1f s)" % (t / 60.0))
+	expect(_pops.is_empty(), "no pop: %s" % [_pops])
+
+
+## A fresh spawn where the hero is looking enters through the nearest door and walks in.
+func check_visible_spawn_enters_through_door() -> void:
+	await _bar_with_hero_watching()
+	_watch_pops()
+	root.get_node("Bus").npc_command.emit("eva", "despawn", {})
+	await frames(2)
+	var target: Vector3 = get_root_data().marker("BAR:hale_b")
+	root.get_node("Bus").npc_command.emit("eva", "spawn", {"marker": "BAR:hale_b"})
+	await frames(2)
+	var n: Node = Services.world.npc("eva")
+	expect(n.global_position.distance_to(target) > 1.5, "she did not appear on her mark")
+	var t := 0
+	while n.global_position.distance_to(target) > 0.6 and t < 60 * 15:
+		await physics_frame
+		t += 1
+	expect(n.global_position.distance_to(target) <= 0.6, "she walked to her mark (%.1f s)" % (t / 60.0))
+	expect(_pops.is_empty(), "no pop: %s" % [_pops])
+	root.get_node("Bus").npc_command.emit("eva", "despawn", {})
+
+
+## A short teleport the hero would see becomes a brisk walk (staging, cines).
+func check_visible_short_teleport_walks() -> void:
+	await _bar_with_hero_watching()
+	_watch_pops()
+	var n: Node = Services.world.npc("adrian")
+	var target: Vector3 = get_root_data().marker("BAR:adrian_by_hero")
+	expect(n.global_position.distance_to(target) > 1.0, "setup: Adrian in his booth")
+	root.get_node("Bus").npc_command.emit("adrian", "teleport", {"marker": "BAR:adrian_by_hero"})
+	await frames(2)
+	expect(n.global_position.distance_to(target) > 1.0, "no instant jump")
+	var t := 0
+	while n.global_position.distance_to(target) > 0.6 and t < 60 * 12:
+		await physics_frame
+		t += 1
+	expect(n.global_position.distance_to(target) <= 0.6, "walked there (%.1f s)" % (t / 60.0))
+	expect(_pops.is_empty(), "no pop: %s" % [_pops])

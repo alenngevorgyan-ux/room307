@@ -284,6 +284,30 @@ func target_prompt() -> String:
 	return ""
 
 
+## Structured context prompt for the HUD: {key: "E"|"Space"|"", verb, what}. No character names
+## (playtest finding 6) — the subtitle is the only place a name appears.
+func target_prompt_parts() -> Dictionary:
+	match target_kind:
+		"interact":
+			var full: String = target.prompt_text()
+			var parts := full.split(" · ", true, 1)
+			var locked: bool = (target.def.has("requires") and not Conditions.check(target.def.requires)) \
+				or (target.def.has("blocked_if") and Conditions.check(target.def.blocked_if))
+			return {"key": "" if locked else ("Space" if target.uses_context_key() else "E"),
+				"verb": parts[0] if locked else parts[0].to_lower(),
+				"what": parts[1] if parts.size() > 1 else ""}
+		"npc":
+			return {"key": "E", "verb": "поговорить", "what": ""}
+		"door":
+			var door := target as Doorway
+			if door.is_locked():
+				return {"key": "", "verb": String(door.def.get("locked_text", "Заперто")), "what": ""}
+			return {"key": "E", "verb": door.label(), "what": ""}
+	if not input_locked() and not seated and Vector2(velocity.x, velocity.z).length() > 0.8 and vault_target() != null:
+		return {"key": "Space", "verb": "перепрыгнуть", "what": "", "at_hero": true}
+	return {}
+
+
 func hold_progress() -> float:
 	if _hold_target == null or _hold_target != target:
 		return 0.0
@@ -344,7 +368,8 @@ func _use_door(door: Doorway) -> void:
 
 # ================================================================== vault
 
-func _try_vault() -> bool:
+## The low obstacle a vault would clear right now (no side effects), or null.
+func vault_target() -> Node3D:
 	var dir := facing
 	var best: Node3D = null
 	var best_d := INF
@@ -364,6 +389,12 @@ func _try_vault() -> bool:
 		if d < best_d:
 			best_d = d
 			best = b
+	return best
+
+
+func _try_vault() -> bool:
+	var dir := facing
+	var best := vault_target()
 	if best == null:
 		return false
 	var sz: Vector3 = best.get_meta("box_size")

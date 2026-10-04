@@ -4,14 +4,22 @@ extends TestCase
 ## on the way (Room 307 is skipped entirely).
 
 var d: Dictionary
+var obj_trail: Array = []    # objective ids in the order the player would have seen them
 
 
 func before_each() -> void:
 	fresh()
+	obj_trail = []
+
+
+func _sample_objective() -> void:
+	var id := Objectives.current_id()
+	if obj_trail.is_empty() or obj_trail.back() != id:
+		obj_trail.append(id)
 
 
 func _until(cond: Callable, sec: float, what: String, step: float = 0.25) -> bool:
-	var ok := wait_until(d.conv, cond, sec, step)
+	var ok := wait_until(d.conv, func(): _sample_objective(); return cond.call(), sec, step)
 	check(ok, "timed out waiting for: " + what + " (scene %s phase %s x %s)" % [ep().scene_id, ep().phase_name(), d.conv.active_id])
 	return ok
 
@@ -135,19 +143,43 @@ func _finish(ending: String) -> void:
 	_until(func(): return ep().phase_name() == "DONE", 60.0, "cut to black")
 
 
+## The one current objective walks forward through the episode — never back, never a checklist —
+## and the hire hands over the episode goal (Найди Мару Вейл → Выясни, куда ушла Мара).
+func _check_objective_trail() -> void:
+	var order: Array = Objectives.ordered()
+	# (O_TO_RESTAURANT is skipped here: the SIM teleports into the restaurant before the 3 s hold)
+	var expected := ["O_BAR", "O_FOLLOW_ADRIAN", "O_FIND_MARA", "O_WHERE_MARA", "O_FIND_DRIVER", "O_STOP_THOMAS",
+		"O_HEAR_THOMAS", "O_ESCAPE", "O_MARA", "O_STAGE", "O_LIVE", "O_DECIDE", ""]
+	var last := -1
+	for id in obj_trail:
+		if id == "":
+			continue
+		var i := order.find(id)
+		check(i >= last, "objective went backwards: %s in %s" % [id, obj_trail])
+		last = maxi(last, i)
+	var j := 0
+	for id in obj_trail:
+		if j < expected.size() and id == expected[j]:
+			j += 1
+	eq(j, expected.size(), "objective trail %s covers %s" % [obj_trail, expected])
+
+
 func test_full_episode_ending_a() -> void:
 	play_to_decision(false)
 	_finish("A_MARA")
+	_check_objective_trail()
 
 
 func test_full_episode_ending_b() -> void:
 	play_to_decision(false)
 	_finish("B_THOMAS")
+	_check_objective_trail()
 
 
 func test_full_episode_ending_c() -> void:
 	play_to_decision(false)
 	_finish("C_DESTROY")
+	_check_objective_trail()
 
 
 func test_full_episode_ending_d_minimal_fear_route() -> void:
@@ -157,3 +189,4 @@ func test_full_episode_ending_d_minimal_fear_route() -> void:
 	check(a.trust >= 0, "trust %d" % a.trust)
 	check(ep().ending_d_available(), "Ending D available")
 	_finish("D_ADRIAN")
+	_check_objective_trail()

@@ -30,6 +30,7 @@ var ending := ""
 var _last_decision_t := 0.0
 var _stall_open := false
 var _summary_written := false
+var _objective := ""
 
 
 func _ready() -> void:
@@ -152,6 +153,10 @@ func _process(_d: float) -> void:
 		write("stall", {"phase": E.phase_name(), "since": snappedf(_last_decision_t, 0.1),
 			"leads": E.leads.duplicate(), "objective": get_node("/root/Debug").objective()})
 	var E := get_node("/root/Episode")
+	var obj := Objectives.current_id(E)
+	if obj != _objective:
+		_objective = obj
+		write("objective", {"id": obj, "text": String(get_node("/root/Data").objectives.get(obj, {}).get("text", ""))})
 	if E.threat.grabs != grabs and E.scene_id == "S07":
 		grabs = E.threat.grabs
 		write("chase_grab", {"grabs": grabs})

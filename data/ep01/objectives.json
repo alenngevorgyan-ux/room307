@@ -1,0 +1,86 @@
+{
+  "_doc": "ONE restrained current objective (playtest findings 1-3). Entries are checked in this order; the first whose `when` holds is current. `sub` is an optional second, smaller line (a place, never a solution). `nudges` are the level-3 hints: an EL thought after `after` seconds without progress (optionally only in `zone` / when `if` holds). Each nudge plays at most once per objective. Objectives never list steps.",
+
+  "O_BAR": {
+    "order": 10, "text": "Разберись, что произошло у бара.",
+    "when": "scene:S01",
+    "nudges": [
+      {"after": 75, "text": "Все говорят. Кто-то врёт. Надо смотреть, а не слушать."},
+      {"after": 150, "text": "Громче всех кричит тот, кому есть что прятать."}
+    ]
+  },
+  "O_FOLLOW_ADRIAN": {
+    "order": 20, "text": "Иди за Адрианом Вейлом.",
+    "when": {"all": ["scene:S02", "!seen:X_S02_A", "!flag:s2_adrian_left"]},
+    "nudges": [{"after": 40, "text": "Клиент ждёт. Не стоит заставлять его ждать."}]
+  },
+  "O_KEY_AT_DESK": {
+    "order": 30, "text": "Найди Мару Вейл.", "sub": "Ключ от 307 оставили на ресепшене.",
+    "when": {"all": ["scene:S02", "flag:keycard_at_reception", "!ITEM_KEYCARD_307"]},
+    "nudges": [{"after": 45, "text": "Ключ на ресепшене. Потом лифт."}]
+  },
+  "O_FIND_MARA": {
+    "order": 40, "text": "Найди Мару Вейл.", "sub": "Последнее известное место: номер 307.",
+    "when": {"any": ["scene:S02", {"all": ["scene:S03", "!flag:entered_room"]}]},
+    "nudges": [
+      {"after": 35, "zone": "HALL_3F", "text": "307 должна быть на этом этаже."},
+      {"after": 45, "zone": "LOBBY", "text": "Третий этаж. Лифт — у ресепшена."},
+      {"after": 45, "zone": "BAR", "text": "Адриан пошёл к лифтам."},
+      {"after": 90, "text": "Номер 307. Третий этаж."}
+    ]
+  },
+  "O_WHERE_MARA": {
+    "order": 50, "text": "Выясни, куда ушла Мара.",
+    "when": {"any": [{"all": ["scene:S03", "flag:entered_room"]}, {"all": ["scene:S04", "!flag:thomas_ready"]}]},
+    "nudges": [
+      {"after": 70, "zone": "ROOM_307", "text": "Здесь что-то не сходится. Надо присмотреться."},
+      {"after": 90, "if": {"all": ["scene:S04", "!lead:A"]}, "text": "Бармены видят всех, кто приходит и уходит."},
+      {"after": 150, "if": {"all": ["scene:S04", "!lead:B"]}, "text": "Курят на крыше. Там говорят то, чего не скажут внизу."},
+      {"after": 210, "if": {"all": ["scene:S04", "!lead:C"]}, "text": "В таком отеле камеры на каждом этаже. Кто-то их смотрит."}
+    ]
+  },
+  "O_FIND_THOMAS": {
+    "order": 60, "text": "Найди Томаса.", "sub": "Погрузочная зона — за прачечной.",
+    "when": {"all": ["scene:S04", "flag:thomas_ready", "F_THOMAS_NAME"]},
+    "nudges": [{"after": 60, "text": "Погрузка. Через служебный коридор, мимо прачечной."}]
+  },
+  "O_FIND_DRIVER": {
+    "order": 61, "text": "Найди водителя.", "sub": "Погрузочная зона — за прачечной.",
+    "when": {"all": ["scene:S04", "flag:thomas_ready"]},
+    "nudges": [{"after": 60, "text": "Погрузка. Через служебный коридор, мимо прачечной."}]
+  },
+  "O_STOP_THOMAS": {
+    "order": 70, "text": "Не дай ему уехать.",
+    "when": {"all": ["phase:S06_THOMAS", "!flag:th_stopped", "!flag:th_drove"]}
+  },
+  "O_HEAR_THOMAS": {
+    "order": 71, "text": "Выслушай его.",
+    "when": "phase:S06_THOMAS"
+  },
+  "O_ESCAPE": {
+    "order": 80, "text": "Уходи от них.", "sub": "Им нужна Мара. И запись.",
+    "when": "phase:S07_CHASE"
+  },
+  "O_MARA": {
+    "order": 90, "text": "Поговори с Марой.",
+    "when": {"all": ["scene:S08", "phase:S08_MARA"]}
+  },
+  "O_TO_RESTAURANT": {
+    "order": 100, "text": "Спустись в ресторан.", "sub": "Через кухню.",
+    "when": {"all": ["scene:S08", "phase:S09_STAGING"]},
+    "nudges": [{"after": 50, "text": "Ресторан внизу. Быстрее всего — через кухню."}]
+  },
+  "O_STAGE": {
+    "order": 110, "text": "Подготовь зал. Потом позови их.", "sub": "Телефон — Tab.",
+    "when": "phase:S09_STAGING",
+    "nudges": [{"after": 120, "text": "Расставить. Пригласить. Сесть за стол."}]
+  },
+  "O_LIVE": {
+    "order": 120, "text": "Пусть скажут это сами.",
+    "when": "phase:S09_LIVE"
+  },
+  "O_DECIDE": {
+    "order": 130, "text": "Реши, что будет с записью.",
+    "when": "phase:S09_DECISION"
+  }
+}

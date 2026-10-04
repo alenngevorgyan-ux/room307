@@ -10,7 +10,6 @@ const ARRIVE := 0.35
 var npc_id: String = ""
 var def: Dictionary = {}
 var body_vis: BodyVisual
-var bubble: Label3D
 var current_zone := ""
 var spawned := false
 var perception: Perception = null
@@ -38,9 +37,17 @@ var nav: NavigationAgent3D
 var _stuck_t := 0.0
 var _last_pos := Vector3.ZERO
 var _block_t := 0.0
-var _bubble_t := 0.0
 var _follow: Dictionary = {}
 var _lead_wait := false
+# Pass 2 — never appear / vanish / jump on camera
+var leaving := false               # logically despawned, the body is still walking out of view
+var _leave_target := Vector3.INF
+var _leave_t := 0.0
+var _stuck_seen_t := 0.0
+var _entering := false             # walking in from a door to where a script placed us
+const LEAVE_MAX := 25.0
+const ENTER_MAX_DIST := 16.0
+const WALK_TELEPORT_MAX := 14.0
 
 
 func setup(id: String, d: Dictionary) -> void:
@@ -62,14 +69,6 @@ func setup(id: String, d: Dictionary) -> void:
 	body_vis.name = "Body"
 	add_child(body_vis)
 	body_vis.build(Graybox.color(gb.get("color", [0.5, 0.5, 0.5])), float(gb.get("scale", 1.0)), gb)
-	bubble = Graybox.label3d("", 34, Color(1, 1, 0.95))
-	bubble.fixed_size = true
-	bubble.pixel_size = 0.00055
-	bubble.position = Vector3(0, 2.25 * float(gb.get("scale", 1.0)), 0)
-	bubble.visible = false
-	bubble.width = 600
-	bubble.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	add_child(bubble)
 	nav = NavigationAgent3D.new()
 	nav.path_desired_distance = 0.4
 	nav.target_desired_distance = ARRIVE
@@ -141,7 +140,151 @@ func on_hero_interact() -> void:
 
 # ================================================================== spawn / commands
 
+# ================================================================== on-camera probe (Pass 2)
+
+## Is this body actually on screen: the hero's zone, inside the camera frustum, and not hidden
+## behind walls? Spawning, despawning or jumping while this is true is a visible pop.
+func on_camera() -> bool:
+	if not (spawned or leaving) or not is_inside_tree() or Services.hero == null:
+		return false
+	return point_on_camera(global_position, current_zone)
+
+
+## Would a body standing at `p` in `zone_id` be seen right now?
+func point_on_camera(p0: Vector3, zone_id: String) -> bool:
+	if not is_inside_tree() or Services.hero == null:
+		return false
+	if Services.hero.current_zone != zone_id:
+		return false
+	if Services.hud and Services.hud.fade_rect.color.a > 0.85:
+		return false   # under a cut to black
+	var cam := get_viewport().get_camera_3d()
+	if cam == null:
+		return false
+	var space := get_world_3d().direct_space_state
+	for h in [1.55, 0.9, 0.3]:
+		var p := p0 + Vector3(0, h, 0)
+		if not cam.is_position_in_frustum(p):
+			continue
+		if _clear_line(space, cam.global_position, p):
+			return true
+	return false
+
+
+## Line of sight that ignores invisible geometry (the camera-side cutaway walls still collide).
+static func _clear_line(space: PhysicsDirectSpaceState3D, a: Vector3, b: Vector3) -> bool:
+	var exclude: Array[RID] = []
+	for i in 6:
+		var q := PhysicsRayQueryParameters3D.create(a, b, Graybox.LAYER_WORLD, exclude)
+		var hit := space.intersect_ray(q)
+		if hit.is_empty() or (hit.position as Vector3).distance_to(b) < 0.35:
+			return true
+		var col: Node = hit.collider
+		var vis: Node = col.get_node_or_null("Visual") if col else null
+		if vis is Node3D and not (vis as Node3D).visible:
+			exclude.append(hit.rid)
+			continue
+		return false
+	return false
+
+
+func _report_pop(kind: String, extra: Dictionary = {}) -> void:
+	var info := {"zone": current_zone, "schedule": schedule_id, "pos": global_position}
+	info.merge(extra)
+	var stack := get_stack()
+	var where: Array = []
+	for i in range(1, mini(stack.size(), 6)):
+		where.append("%s:%d %s" % [String(stack[i].source).get_file(), stack[i].line, stack[i].function])
+	info["where"] = where
+	get_node("/root/Bus").npc_popped.emit(npc_id, kind, info)
+
+
 func _despawn() -> void:
+	if spawned and on_camera() and not external_control:
+		_begin_leave()
+		return
+	_hard_despawn()
+
+
+## Logic sees the NPC gone at once (Presence, talkable, schedules); only the body walks to the
+## nearest exit — a real door or an `exit*` marker — and is removed there, or as soon as no one
+## can see it.
+func _begin_leave() -> void:
+	spawned = false
+	leaving = true
+	_leave_t = 0.0
+	Presence.remove(npc_id)
+	hold_reasons = {}
+	hold = false
+	_follow = {}
+	sched = {}
+	face_hero = false
+	look_override = null
+	goal = Vector3.INF
+	route = []
+	if not speed_name in ["fast", "run"]:
+		speed_name = "walk"
+	_leave_target = _nearest_exit(global_position, current_zone)
+	if _leave_target != Vector3.INF:
+		nav.target_position = _leave_target
+	if body_vis.pose in ["table", "club", "ear", "radio", "open"]:
+		body_vis.set_pose("rest")
+
+
+func _tick_leave(delta: float) -> void:
+	_leave_t += delta
+	if not on_camera() or _leave_t > LEAVE_MAX:
+		_hard_despawn()
+		return
+	if _leave_target == Vector3.INF:
+		return   # nowhere to go: stand until the camera looks away
+	var flat := _leave_target - global_position
+	flat.y = 0
+	if flat.length() < 0.55:
+		_hard_despawn()
+		return
+	if not is_on_floor():
+		velocity.y -= 18.0 * delta
+	var nxt := nav.get_next_path_position() - global_position
+	nxt.y = 0
+	if nxt.length() < 0.05 or nav.is_navigation_finished():
+		nxt = flat
+	var hv := nxt.normalized() * float(SPEEDS.get(speed_name, 1.45))
+	velocity.x = hv.x
+	velocity.z = hv.z
+	move_and_slide()
+	_update_facing(delta)
+
+
+## Nearest way out of a zone: a doorway that is a real door (not hidden) or an `exit*` marker.
+func _nearest_exit(from: Vector3, zone_id: String) -> Vector3:
+	var best := Vector3.INF
+	var best_d := INF
+	if Services.world:
+		var z: Zone = Services.world.zone_node(zone_id)
+		if z:
+			for did in z.doors:
+				var d: Doorway = z.doors[did]
+				if String(d.def.get("kind", "door")) == "hidden":
+					continue
+				var p := d.global_position + d.normal * 0.3
+				var dist := from.distance_to(p)
+				if dist < best_d:
+					best_d = dist
+					best = p
+	var marks: Dictionary = _D().zone(zone_id).get("markers", {})
+	for m in marks:
+		if String(m).begins_with("exit"):
+			var p: Vector3 = _D().marker(zone_id + ":" + String(m))
+			if from.distance_to(p) < best_d:
+				best_d = from.distance_to(p)
+				best = p
+	return best
+
+
+func _hard_despawn() -> void:
+	leaving = false
+	_entering = false
 	spawned = false
 	visible = false
 	process_mode = Node.PROCESS_MODE_DISABLED
@@ -149,29 +292,87 @@ func _despawn() -> void:
 	global_position = Vector3(0, -500, 0) if is_inside_tree() else position
 
 
-func spawn_at(p: Vector3, zone_id: String) -> void:
+## `cut`: the camera cuts here anyway (scene start with a hero placement) — place instantly.
+func spawn_at(p: Vector3, zone_id: String, cut: bool = false) -> void:
+	var was := spawned
+	var was_seen := on_camera()
+	var from := global_position
+	# a fresh spawn the hero would see appears through the nearest door and walks in
+	var enter_from := Vector3.INF
+	if not was and not cut and not external_control and point_on_camera(p, zone_id):
+		var ex := _nearest_entry(p, zone_id)
+		if ex != Vector3.INF and ex.distance_to(p) <= ENTER_MAX_DIST:
+			enter_from = ex
+	leaving = false
 	spawned = true
 	visible = true
 	process_mode = Node.PROCESS_MODE_INHERIT
-	global_position = p
+	global_position = p if enter_from == Vector3.INF else enter_from
 	velocity = Vector3.ZERO
 	current_zone = zone_id
+	if enter_from == Vector3.INF and ((not was and on_camera()) or (was and from.distance_to(p) > 1.5 and (was_seen or on_camera()))):
+		_report_pop("spawn" if not was else "teleport", {"to": p})
 	goal = Vector3.INF
 	route = []
+	if enter_from != Vector3.INF:
+		speed_name = "fast"
+		go_to(p, zone_id)
+		_entering = true
 	Presence.place(npc_id, zone_id, p)
 	var c: CharacterState = get_node("/root/Episode").ch(npc_id)
 	if c:
 		c.zone = zone_id
 
 
-## Public teleport (commands, scene logic): also cancels any walk in progress.
-func teleport(p: Vector3, zone_id: String) -> void:
+## Public teleport (commands, scene logic): also cancels any walk in progress. A short hop the
+## hero would see becomes a brisk walk instead (chase/finale-driven bodies excepted).
+func teleport(p: Vector3, zone_id: String, cut: bool = false) -> void:
+	if not cut and not external_control and zone_id == current_zone and spawned \
+			and global_position.distance_to(p) <= WALK_TELEPORT_MAX and global_position.distance_to(p) > 0.6 \
+			and (on_camera() or point_on_camera(p, zone_id)):
+		set_schedule("")
+		speed_name = "fast"
+		go_to(p, zone_id)
+		return
+	if not cut and not external_control and zone_id != current_zone and spawned and point_on_camera(p, zone_id):
+		# arriving where the hero is looking: step in through that zone's door
+		var ex := _nearest_entry(p, zone_id)
+		if ex != Vector3.INF and ex.distance_to(p) <= ENTER_MAX_DIST:
+			_entering = true
+			_place(ex, zone_id)
+			speed_name = "fast"
+			go_to(p, zone_id)
+			return
+	_entering = false
 	goal = Vector3.INF
 	route = []
 	_place(p, zone_id)
 
 
-func _place(p: Vector3, zone_id: String) -> void:
+## Where someone walking into a zone appears: the threshold of the door nearest to `p`.
+func _nearest_entry(p: Vector3, zone_id: String) -> Vector3:
+	if Services.world == null:
+		return Vector3.INF
+	var z: Zone = Services.world.zone_node(zone_id)
+	if z == null:
+		return Vector3.INF
+	var best := Vector3.INF
+	var best_d := INF
+	for did in z.doors:
+		var d: Doorway = z.doors[did]
+		if String(d.def.get("kind", "door")) == "hidden":
+			continue
+		var q := d.global_position + d.normal * 0.35
+		if q.distance_to(p) < best_d:
+			best_d = q.distance_to(p)
+			best = q
+	return best
+
+
+func _place(p: Vector3, zone_id: String, via_door: Doorway = null) -> void:
+	var was_seen := on_camera()
+	var from := global_position
+	var from_zone := current_zone
 	global_position = p
 	current_zone = zone_id
 	velocity = Vector3.ZERO
@@ -179,6 +380,16 @@ func _place(p: Vector3, zone_id: String) -> void:
 	var c: CharacterState = get_node("/root/Episode").ch(npc_id)
 	if c:
 		c.zone = zone_id
+	if from.distance_to(p) > 1.5 or from_zone != zone_id:
+		if via_door:
+			# walking through a real door is fine; vanishing into a hidden/npc-only one is not
+			var arrive: Doorway = via_door.target()
+			if String(via_door.def.get("kind", "")) == "hidden" and was_seen:
+				_report_pop("hidden_door_exit", {"door": via_door.door_id})
+			if arrive and String(arrive.def.get("kind", "")) == "hidden" and on_camera():
+				_report_pop("hidden_door_enter", {"door": arrive.door_id})
+		elif was_seen or (on_camera() and not _entering):
+			_report_pop("teleport", {"to": p, "from_zone": from_zone})
 
 
 func _D() -> Node:
@@ -191,18 +402,20 @@ func _on_command(id: String, cmd: String, args: Dictionary) -> void:
 	match cmd:
 		"spawn":
 			var m := String(args.get("marker", ""))
-			if m != "":
-				spawn_at(_D().marker(m), _D().marker_zone(m))
+			if m != "" and spawned:
+				teleport(_D().marker(m), _D().marker_zone(m), bool(args.get("cut", false)))   # re-staging
+			elif m != "":
+				spawn_at(_D().marker(m), _D().marker_zone(m), bool(args.get("cut", false)))
 			elif not spawned:
-				spawn_at(global_position, current_zone)
+				spawn_at(global_position, current_zone, bool(args.get("cut", false)))
 		"despawn":
 			_despawn()
 		"teleport":
 			var m := String(args.marker)
 			if not spawned:
-				spawn_at(_D().marker(m), _D().marker_zone(m))
+				spawn_at(_D().marker(m), _D().marker_zone(m), bool(args.get("cut", false)))
 			else:
-				teleport(_D().marker(m), _D().marker_zone(m))
+				teleport(_D().marker(m), _D().marker_zone(m), bool(args.get("cut", false)))
 		"schedule":
 			set_schedule(String(args.id))
 		"hold":
@@ -250,7 +463,7 @@ func _on_command(id: String, cmd: String, args: Dictionary) -> void:
 
 func set_schedule(id: String) -> void:
 	schedule_id = id
-	if id == "":
+	if id == "" and not _entering:
 		goal = Vector3.INF
 		route = []
 	sched = _D().schedules.get(id, {}) if id != "" else {}
@@ -303,10 +516,12 @@ func at_goal() -> bool:
 # ================================================================== physics
 
 func _physics_process(delta: float) -> void:
+	if leaving:
+		_tick_leave(delta)
+		return
 	if not spawned:
 		return
 	Presence.place(npc_id, current_zone, global_position)
-	_tick_bubble(delta)
 	if perception:
 		perception.update(delta)
 	if not is_on_floor():
@@ -362,7 +577,7 @@ func _move_dir() -> Vector3:
 				var tgt := door.target()
 				route.pop_front()
 				if tgt:
-					_place(tgt.spawn_point(), tgt.zone_id)
+					_place(tgt.spawn_point(), tgt.zone_id, door)
 					door.traversed.emit(door.door_id, npc_id)
 				_set_nav_target()
 				return Vector3.ZERO
@@ -383,10 +598,24 @@ func _move_dir() -> Vector3:
 	_stuck_t += get_physics_process_delta_time()
 	if _stuck_t > 1.0:
 		if global_position.distance_to(_last_pos) < 0.15:
-			if route.is_empty():
-				global_position = dest
+			if on_camera():
+				# never snap where it can be seen: wait; a final point can be accepted where we stand
+				_stuck_seen_t += _stuck_t
+				if route.is_empty() and _stuck_seen_t >= 2.0:
+					_stuck_seen_t = 0.0
+					_stuck_t = 0.0
+					goal = Vector3.INF
+					velocity = Vector3.ZERO
+					_on_goal_reached()
+					return Vector3.ZERO
 			else:
-				global_position = nav.target_position
+				_stuck_seen_t = 0.0
+				if route.is_empty():
+					global_position = dest
+				else:
+					global_position = nav.target_position
+		else:
+			_stuck_seen_t = 0.0
 		_stuck_t = 0.0
 		_last_pos = global_position
 	return d.normalized()
@@ -420,6 +649,7 @@ func _follow_dir() -> Vector3:
 
 
 func _on_goal_reached() -> void:
+	_entering = false
 	if not sched.is_empty():
 		_arrive()
 
@@ -560,9 +790,11 @@ func facing_dir() -> Vector3:
 
 # ================================================================== speech
 
-func _on_line(speaker: String, text: String, dur: float) -> void:
-	if speaker == npc_id:
-		say(text, dur)
+## Dialogue lines are subtitled by the HUD (bottom of the screen, never above heads); the body
+## only reacts. Barks (idle chatter, «Позвольте.») become subtitles when the hero is close by.
+func _on_line(speaker: String, _text: String, _dur: float) -> void:
+	if speaker == npc_id and spawned:
+		body_vis.set_pose(body_vis.pose)
 
 
 func _on_bark(id: String, text: String) -> void:
@@ -570,20 +802,15 @@ func _on_bark(id: String, text: String) -> void:
 		say(text, Data.line_duration(text))
 
 
+const BARK_HEAR := 9.0
+
+
 func say(text: String, dur: float) -> void:
 	if not spawned:
 		return
-	bubble.text = text
-	bubble.visible = true
-	_bubble_t = dur
 	body_vis.set_pose(body_vis.pose)
-
-
-func _tick_bubble(delta: float) -> void:
-	if _bubble_t > 0.0:
-		_bubble_t -= delta
-		if _bubble_t <= 0.0:
-			bubble.visible = false
+	if Services.hud and Presence.in_zone("hero") == current_zone and Presence.distance("hero", npc_id) <= BARK_HEAR:
+		Services.hud.show_bark(npc_id, text, dur)
 
 
 func _on_noise(pos: Vector3, radius: float, _src: String) -> void:

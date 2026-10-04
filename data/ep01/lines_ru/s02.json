@@ -1,4 +1,5 @@
 {
+  "ADR_NAME": {"speaker": "adrian", "text": "Адриан Вейл."},
   "ADR_01": {"speaker": "adrian", "text": "Мне сказали, вы умеете находить людей."},
   "ADR_WARY": {"speaker": "adrian", "text": "Надеюсь, со мной вы будете деликатнее."},
   "ADR_LEFT_EARLY": {"speaker": "adrian", "text": "Вы ушли до самого интересного."},

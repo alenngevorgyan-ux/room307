@@ -6,7 +6,7 @@ extends Node
 const ROOT := "res://data/ep01/"
 const CATEGORIES := ["facts", "observations", "threads", "claims", "characters", "items",
 	"exchanges", "traps", "overhears", "schedules", "interactables", "chase", "finale",
-	"lines_ru", "cines", "scenes", "level", "hints", "phone"]
+	"lines_ru", "cines", "scenes", "level", "hints", "phone", "objectives"]
 
 var facts: Dictionary = {}
 var observations: Dictionary = {}
@@ -27,6 +27,7 @@ var scenes: Dictionary = {}
 var level: Dictionary = {}
 var hints: Dictionary = {}
 var phone: Dictionary = {}
+var objectives: Dictionary = {}
 
 var load_errors: Array = []
 var _zone_origin_cache: Dictionary = {}

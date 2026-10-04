@@ -76,7 +76,14 @@ func stage(cmd: Dictionary) -> void:
 	_bus().trap_bait.emit("stage", cmd)
 
 
+## Playtest finding 5: any NPC appearing / vanishing / jumping on camera fails the run.
+func _on_pop(npc: String, kind: String, info: Dictionary) -> void:
+	log_step("NPC POP %s %s (zone %s) at %s" % [npc, kind, info.get("zone", ""), " < ".join(info.get("where", []))])
+	failed = true
+
+
 func run() -> void:
+	_bus().npc_popped.connect(_on_pop)
 	log_step("start, ending %s" % ending)
 	var E := _ep()
 	var conv: ConversationDirector = Services.conversation

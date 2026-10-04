@@ -84,7 +84,7 @@
   ]
  },
  "C_S2_OPEN": {
-  "dur": 9.5,
+  "dur": 11.0,
   "camera": "BAR:twoshot",
   "start": [
    {
@@ -103,6 +103,9 @@
       "line": "ADR_WARY"
      }
     ]
+   },
+   {
+    "line": "ADR_NAME"
    },
    {
     "line": "ADR_01"

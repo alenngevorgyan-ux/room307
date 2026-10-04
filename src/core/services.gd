@@ -10,6 +10,7 @@ static var hero: Node = null           # PlayerController
 static var read: Node = null           # ReadSystem
 static var chase: Node = null          # ChaseDirector
 static var hud: Node = null
+static var hints: Node = null          # HintDirector
 
 
 static func clear() -> void:
@@ -21,3 +22,4 @@ static func clear() -> void:
 	read = null
 	chase = null
 	hud = null
+	hints = null

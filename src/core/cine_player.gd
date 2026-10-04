@@ -2,6 +2,11 @@ class_name CinePlayer
 extends Node
 ## Short cinematic beats (≤ 15 s, asserted). Letterbox, input lock, optional camera rig, lines.
 ## cines.json: {id: {dur, lines:[keys], camera:"ZONE:rig", lock:true, after:[actions], at:[{t, do}]}}
+## A cine's lines are an authored sequence: they never expire from the queue, and the cine holds
+## (up to the 15 s cap) until they have been said — no line is cut or silently dropped.
+
+const MAX_DUR := 15.0
+const LINE_TTL := 30.0
 
 var active := ""
 var t_left := 0.0
@@ -24,7 +29,7 @@ func play(id: String) -> void:
 		_finish()
 	active = id
 	_def = c
-	t_left = minf(float(c.get("dur", 4.0)), 15.0)
+	t_left = minf(float(c.get("dur", 4.0)), MAX_DUR)
 	_elapsed = 0.0
 	_timed = c.get("at", []).duplicate(true)
 	var B := get_node("/root/Bus")
@@ -36,8 +41,8 @@ func play(id: String) -> void:
 	if c.has("camera"):
 		B.camera_hint.emit({"rig": String(c.camera), "dur": t_left + 0.3})
 	for k in c.get("lines", []):
-		ActionRunner.run([{"line": k}])
-	ActionRunner.run(c.get("start", []), {"source": id})
+		ActionRunner.run([{"line": k}], {"ttl": LINE_TTL})
+	ActionRunner.run(c.get("start", []), {"source": id, "ttl": LINE_TTL})
 
 
 func _process(delta: float) -> void:
@@ -49,13 +54,19 @@ func _process(delta: float) -> void:
 			_timed.erase(e)
 			ActionRunner.run(e.get("do", []), {"source": active})
 	t_left -= delta
-	if t_left <= 0.0:
+	if t_left <= 0.0 and not (_lines_pending() and _elapsed < MAX_DUR):
 		_finish()
+
+
+func _lines_pending() -> bool:
+	var conv: Node = Services.conversation
+	return conv != null and (not conv.current_line.is_empty() or not conv.world_queue.is_empty() or not conv.line_queue.is_empty())
 
 
 func skip() -> void:
 	if active != "":
 		t_left = 0.0
+		_elapsed = MAX_DUR
 
 
 func _finish() -> void:

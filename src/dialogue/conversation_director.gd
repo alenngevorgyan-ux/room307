@@ -140,6 +140,7 @@ func _tick_lines(delta: float) -> void:
 	line_t = float(l.dur)
 	var speaker := String(l.get("speaker", ""))
 	_bus().line_started.emit(speaker, String(l.get("text", "")), float(l.dur))
+	SpeakerNames.observe_line(String(l.get("text", "")))   # after the subtitle: a name is learnt as it is heard
 	if l.has("tell"):
 		var tl: Dictionary = l.tell
 		ActionRunner.run([{"delay": float(tl.get("at", 0.3)), "do": [{"tell": [tl.obs, float(tl.get("dur", 1.6))]}]}])
@@ -229,6 +230,7 @@ func end_active(outcome: String = "END") -> void:
 	awaiting_reaction = {}
 	waiting_lines = false
 	_ep().active_exchange_npc = ""
+	SpeakerNames.on_exchange_ended(npc)
 	if on_end != null:
 		ActionRunner.run(on_end, {"npc": npc, "source": xid, "outcome": outcome})
 	_bus().exchange_ended.emit(xid, outcome)

@@ -68,12 +68,15 @@ func goto_scene(id: String) -> void:
 		for npc in E.characters:
 			if not s.get("npcs", {}).has(npc) and not Array(s.get("keep_npcs", [])).has(npc):
 				ActionRunner.run([{"despawn": npc}])
+	# a scene that places the hero is a camera cut: its cast is simply there. A continuous scene
+	# (no hero placement) lets anyone the hero could see walk in through a door instead.
+	var cut: bool = s.has("hero")
 	for npc in s.get("npcs", {}):
 		var nd: Dictionary = s.npcs[npc]
 		if nd.has("if") and not Conditions.check(nd["if"], E):
 			ActionRunner.run([{"despawn": npc}])
 			continue
-		ActionRunner.run([{"spawn": [npc, String(nd.at)]}])
+		ActionRunner.run([{"spawn": [npc, String(nd.at), "cut"] if cut else [npc, String(nd.at)]}])
 		if nd.has("schedule"):
 			ActionRunner.run([{"set_schedule": [npc, String(nd.schedule)]}])
 		if nd.has("pose"):

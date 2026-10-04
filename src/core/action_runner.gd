@@ -200,7 +200,9 @@ static func _exec(verb: String, v: Variant, ctx: Dictionary) -> void:
 			Presence.present[String(v[0])] = true
 			if v.size() > 1 and data().has_marker(String(v[1])):
 				Presence.place(String(v[0]), data().marker_zone(String(v[1])), data().marker(String(v[1])))
-			B.npc_command.emit(String(v[0]), "spawn", {"marker": String(v[1]) if v.size() > 1 else ""})
+			# optional 3rd element "cut": the camera cuts here (scene start) — place instantly
+			B.npc_command.emit(String(v[0]), "spawn", {"marker": String(v[1]) if v.size() > 1 else "",
+				"cut": v.size() > 2 and String(v[2]) == "cut"})
 		"despawn":
 			Presence.remove(String(v))
 			B.npc_command.emit(String(v), "despawn", {})

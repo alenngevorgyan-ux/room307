@@ -160,7 +160,8 @@ func _on_stage(ev: String, d: Dictionary) -> void:
 	_refresh_labels()
 
 
-## Small in-world tags so the staging reads at a glance (place cards, recorder, card).
+## Small physical place cards on the table while staging (never floating name tags over people:
+## playtest finding 6). They are gone once the meeting starts; the recorder tag too.
 func _refresh_labels() -> void:
 	if Services.world == null:
 		return
@@ -182,14 +183,29 @@ func _refresh_labels() -> void:
 			_labels.erase(k)
 	for k in want:
 		if not _labels.has(k):
-			var l := Graybox.label3d("", 26, Color(1, 0.95, 0.85))
-			l.fixed_size = true
-			l.pixel_size = 0.0007
+			var l := Graybox.label3d("", 30, Color(0.16, 0.13, 0.1) if k != "rec" else Color(0.85, 0.2, 0.15))
+			l.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+			l.fixed_size = false
+			l.pixel_size = 0.0021
+			l.no_depth_test = false
+			l.outline_size = 0
+			l.rotation_degrees = Vector3(-24, 0, 0)   # a tent card leaning toward the room camera
 			Services.world.add_child(l)
+			if k != "rec":
+				var card := MeshInstance3D.new()
+				var qm := QuadMesh.new()
+				qm.size = Vector2(0.26, 0.09)
+				card.mesh = qm
+				var cm := StandardMaterial3D.new()
+				cm.albedo_color = Color(0.93, 0.9, 0.82)
+				cm.roughness = 0.9
+				card.material_override = cm
+				card.position = Vector3(0, 0, -0.003)
+				l.add_child(card)
 			_labels[k] = l
 		_labels[k].text = want[k][1]
 		_labels[k].global_position = want[k][0]
-		_labels[k].visible = ep().phase_name() == "S09_STAGING" or k == "rec"
+		_labels[k].visible = ep().phase_name() == "S09_STAGING"
 
 
 func _placed(n: String) -> bool:

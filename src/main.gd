@@ -39,6 +39,9 @@ func _ready() -> void:
 	var chase := ChaseDirector.new()
 	chase.name = "ChaseDirector"
 	add_child(chase)
+	var hints := HintDirector.new()
+	hints.name = "HintDirector"
+	add_child(hints)
 	var sm := SceneManager.new()
 	sm.name = "SceneManager"
 	add_child(sm)

@@ -206,7 +206,7 @@ func check_references() -> Array:
 				errs.append("%s: unknown tell obs %s" % [sid, p.tell.obs])
 	for k in D.lines_ru:
 		var sp := String(D.lines_ru[k].get("speaker", ""))
-		if sp != "hero" and sp != "voice" and sp != "pa" and not D.characters.has(sp):
+		if sp != "hero" and not SpeakerNames.PSEUDO.has(sp) and not D.characters.has(sp):
 			errs.append("line %s: unknown speaker %s" % [k, sp])
 	for zid in D.level:
 		for d in D.level[zid].get("doors", []):
