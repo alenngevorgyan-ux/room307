@@ -35,6 +35,8 @@ var _carry_mesh: MeshInstance3D
 var target: Node = null     # current context target (interactable / npc / door)
 var target_kind := ""
 var speed_mult := 1.0       # chase/blackout modifiers
+var arrival_door := ""      # door the hero just came through: no auto-traverse until stepped away
+var teleport_serial := 0    # bumped by every teleport (stale door transitions check it)
 
 
 func _ready() -> void:
@@ -104,8 +106,9 @@ func _physics_process(delta: float) -> void:
 	if stunned > 0.0:
 		stunned -= delta
 	var input := Vector2.ZERO
+	var raw := Vector2(Input.get_axis("move_left", "move_right"), Input.get_axis("move_back", "move_fwd"))
 	if not input_locked() and stunned <= 0.0:
-		input = Vector2(Input.get_axis("move_left", "move_right"), Input.get_axis("move_back", "move_fwd"))
+		input = raw
 	if seated:
 		if not has_meta("seat_mode") and (input.length() > 0.2 or Input.is_action_just_pressed("context")):
 			_stand_up()
@@ -113,7 +116,9 @@ func _physics_process(delta: float) -> void:
 		return
 	var cam := get_viewport().get_camera_3d()
 	var cam_yaw := cam.global_rotation.y if cam else 0.0
-	var dir := basis_helper.world_dir(input, cam_yaw)
+	var dir := Vector3.ZERO
+	if not (_locks.has("door") and raw.length() > 0.05):
+		dir = basis_helper.world_dir(input, cam_yaw)   # (a key held through a door fade keeps its carried basis)
 	# speed state
 	var want_crouch := Input.is_action_pressed("crouch") and not input_locked()
 	var running := Input.is_action_pressed("run") and dir.length() > 0.1 and not reading()
@@ -190,12 +195,18 @@ func _blocked_above() -> bool:
 # ================================================================== doors
 
 func _check_auto_doors(hv: Vector3) -> void:
+	if arrival_door != "" and Services.world:
+		var ad: Doorway = Services.world.door(arrival_door)
+		if ad == null or ad.zone_id != current_zone or Vector2(ad.global_position.x - global_position.x, ad.global_position.z - global_position.z).length() > 1.5:
+			arrival_door = ""
 	if hv.length() < 0.5 or input_locked() or Services.world == null:
 		return
 	for d in get_tree().get_nodes_in_group("doorways"):
 		var door := d as Doorway
 		if door.zone_id != current_zone or not door.auto() or door.def.get("npc_only", false):
 			continue
+		if door.door_id == arrival_door:
+			continue   # re-armed once the hero has stepped away from it (no door ping-pong)
 		var to := door.global_position - global_position
 		to.y = 0
 		if to.length() < 0.95 and absf(door.global_position.y - global_position.y) < 1.4 and hv.normalized().dot(-door.normal) > 0.45:
@@ -415,6 +426,8 @@ func _on_command(npc: String, cmd: String, args: Dictionary) -> void:
 
 
 func teleport_to(p: Vector3, zone_id: String) -> void:
+	teleport_serial += 1
+	arrival_door = ""
 	global_position = p
 	velocity = Vector3.ZERO
 	current_zone = zone_id
@@ -422,6 +435,12 @@ func teleport_to(p: Vector3, zone_id: String) -> void:
 	Presence.place("hero", zone_id, p)
 	seated = false
 	basis_helper.locked = false
+
+
+## Called by HotelWorld after a door traversal teleport.
+func arrive_through(door: Doorway, travel_dir: Vector3) -> void:
+	arrival_door = door.door_id
+	basis_helper.carry_through(travel_dir, door.normal)
 
 
 func sit_at(p: Vector3, zone_id: String) -> void:

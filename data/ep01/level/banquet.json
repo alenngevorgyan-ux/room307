@@ -682,7 +682,8 @@
     "kind": "door",
     "auto": false,
     "locked_if": "phase:S08_MARA",
-    "locked_text": "Не сейчас"
+    "locked_text": "Не сейчас",
+    "spawn_in": 0.45
    },
    {
     "id": "ORCHID_SERVICE",

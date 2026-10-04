@@ -3,6 +3,8 @@ extends SceneLogic
 ## Eva tail detection, Nico's smoke breaks, Daniel's shadow passes, the Adrian/Daniel argument.
 
 const BEHIND_DESK := Rect2(17.4, 0.0, 10.6, 2.6)   # LOBBY-local forbidden area
+const ESCORT_MARKER := "LOBBY:escort_out"
+const ESCORT_FADE := 0.3
 
 var video: VideoRoom
 var _door_t := 0.0
@@ -145,18 +147,22 @@ func caught(by: String) -> void:
 	if video.active:
 		_complete_video_failed()
 	var second: bool = c >= 1 or E.ch("pavel").suspicion >= 2
+	# The escort ends just outside the forbidden area, in front of reception — never across the lobby
+	# by the bar arch (playtest: "thrown back toward the start"). Cut to black first, move at black.
 	if not second:
-		run([{"suspicion": ["pavel", 1]}, {"teleport_npc": ["pavel", "LOBBY:pavel_reception"]},
-			{"hero": ["teleport", {"marker": "LOBBY:hero_lobby"}]}, {"fade": 0.3},
-			{"start_exchange": "X_S04_PAVEL_ESCORT"}, {"npc": ["pavel", "follow", {"target": "hero", "dist": 2.0}]}])
+		run([{"suspicion": ["pavel", 1]}, {"hero": ["lock", {"reason": "escort", "on": true}]}, {"fade": ESCORT_FADE},
+			{"delay": ESCORT_FADE, "do": [{"teleport_npc": ["pavel", "LOBBY:escort_pavel"]},
+				{"hero": ["teleport", {"marker": ESCORT_MARKER}]}, {"hero": ["lock", {"reason": "escort", "on": false}]},
+				{"start_exchange": "X_S04_PAVEL_ESCORT"}, {"npc": ["pavel", "follow", {"target": "hero", "dist": 2.0}]}]}])
 		_escort_t = 12.0
 	else:
-		run([{"ambient": "PAVEL_AGAIN"}, {"spawn": ["daniel", "LOBBY:daniel_elev"]}, {"teleport_npc": ["daniel", "LOBBY:hero_lobby"]},
-			{"hero": ["teleport", {"marker": "LOBBY:hero_lobby"}]}, {"fade": 0.3},
-			{"set_schedule": ["daniel", ""]}, {"start_exchange": "X_S04_DANIEL_ESCORT"},
-			{"delay": 8.0, "do": [{"set_schedule": ["daniel", "daniel_hub"]}]}])
+		run([{"ambient": "PAVEL_AGAIN"}, {"hero": ["lock", {"reason": "escort", "on": true}]}, {"fade": ESCORT_FADE},
+			{"delay": ESCORT_FADE, "do": [{"spawn": ["daniel", "LOBBY:daniel_elev"]}, {"teleport_npc": ["daniel", "LOBBY:escort_pavel"]},
+				{"hero": ["teleport", {"marker": ESCORT_MARKER}]}, {"hero": ["lock", {"reason": "escort", "on": false}]},
+				{"set_schedule": ["daniel", ""]}, {"start_exchange": "X_S04_DANIEL_ESCORT"},
+				{"delay": 8.0, "do": [{"set_schedule": ["daniel", "daniel_hub"]}]}]}])
 		_escort_t = 6.0
-	Presence.place("hero", "LOBBY", data().marker("LOBBY:hero_lobby"))
+	Presence.place("hero", "LOBBY", data().marker(ESCORT_MARKER))
 	E.hero_zone = "LOBBY"
 
 

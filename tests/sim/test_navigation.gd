@@ -52,3 +52,33 @@ func test_markers_inside_zones() -> void:
 			var p := Data.vec3(D.level[zid].markers[m])
 			check(p.x >= -0.5 and p.x <= float(size[0]) + 0.5 and p.z >= -2.0 and p.z <= float(size[1]) + 0.5,
 				"%s:%s inside (%s)" % [zid, m, p])
+
+
+## Playtest finding 8 ("thrown back"): a door must never deliver the hero into solid geometry
+## (physics depenetration shoves him) and its spawn must stay reachable on foot.
+func test_door_spawns_clear_of_solids() -> void:
+	var D := data()
+	for zid in D.level:
+		var z: Dictionary = D.level[zid]
+		for dd in z.get("doors", []):
+			if String(dd.get("kind", "")) == "hidden":
+				continue
+			var n := Vector3.ZERO
+			match String(dd.get("side", "N")):
+				"N", "F": n = Vector3(0, 0, 1)
+				"S": n = Vector3(0, 0, -1)
+				"W": n = Vector3(1, 0, 0)
+				"E": n = Vector3(-1, 0, 0)
+			var dp := Data.vec3(dd.p)
+			var sp := dp + n * float(dd.get("spawn_in", 1.1))
+			for b in z.get("boxes", []):
+				if b.get("nocol", false) or b.has("rot"):
+					continue
+				var bp: Array = b.p
+				var bs := Data.vec3(b.s)
+				var bottom := float(bp[1]) if bp.size() >= 3 else 0.0
+				if bottom > dp.y + 1.0 or bottom + bs.y <= dp.y + 0.25:
+					continue   # overhead, or a floor/landing within step height of the door
+				var c := Data.vec3(bp)
+				var inside := absf(sp.x - c.x) < bs.x / 2.0 + 0.3 and absf(sp.z - c.z) < bs.z / 2.0 + 0.3
+				check(not inside, "%s spawn %s inside %s:%s" % [dd.id, sp, zid, b.get("id", "?")])

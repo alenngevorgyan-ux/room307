@@ -132,9 +132,21 @@ func traverse_hero(d: Doorway) -> void:
 	B.sfx_requested.emit("door_" + String(d.def.get("kind", "door")), d.global_position)
 	if Services.hud:
 		Services.hud.fade(FADE / 2.0, true)
+	var serial := hero.teleport_serial
+	var travel := Vector3(hero.velocity.x, 0, hero.velocity.z)
+	if travel.length() < 0.3:
+		travel = -d.normal
 	var t := get_tree().create_timer(FADE / 2.0, true, false, true)
 	await t.timeout
+	if hero.teleport_serial != serial or hero.current_zone != d.zone_id:
+		# something else (catch, cine, chase grab, scene change) moved the hero mid-fade: it wins
+		if Services.hud:
+			Services.hud.fade(FADE / 2.0, false)
+		B.control_lock.emit("door", false)
+		traversing = false
+		return
 	hero.teleport_to(tgt.spawn_point(), tgt.zone_id)
+	hero.arrive_through(tgt, travel.normalized())
 	hero.facing = tgt.normal
 	hero.body_vis.rotation.y = atan2(-tgt.normal.x, -tgt.normal.z)
 	camera_director.snap()

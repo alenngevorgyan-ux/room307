@@ -98,3 +98,19 @@ func test_leads_terminal() -> void:
 	ep().set_lead("C", Episode.LeadState.ACTIVE)
 	check(ep().lead_done("C"), "FAILED_DONE is terminal and counts")
 	eq(ep().leads_completed(), 1)
+
+
+## Playtest finding 8: a key held through a door keeps walking INTO the new room even when the
+## arrival camera faces the other way (BAR_LOBBY <-> LOBBY_BAR used to ping-pong).
+func test_input_basis_carries_through_doors() -> void:
+	var b := InputBasis.new()
+	var key := Vector2(1, 0)                       # "right"
+	var bar_yaw := deg_to_rad(-150.0)
+	var d0 := b.world_dir(key, bar_yaw)             # walking toward the bar's W arch
+	check(d0.dot(Vector3(-1, 0, 0)) > 0.3, "setup: right walks west in the bar camera")
+	b.carry_through(d0, Vector3(1, 0, 0))   # arrive through the lobby's W arch (normal +x)
+	for cam_yaw in [0.0, deg_to_rad(-150.0), deg_to_rad(35.0), deg_to_rad(90.0)]:
+		var d := b.world_dir(key, cam_yaw)
+		check(d.dot(Vector3(1, 0, 0)) > 0.9, "held key walks into the room (cam %.0f°): %s" % [rad_to_deg(cam_yaw), d])
+	b.world_dir(Vector2.ZERO, 0.0)                  # release re-syncs to the live camera
+	check(b.world_dir(key, 0.0).dot(Vector3(1, 0, 0)) > 0.9 and not b.locked, "release unlocks")

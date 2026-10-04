@@ -109,7 +109,8 @@
     "to": "R307_308",
     "label": "Смежная дверь",
     "kind": "door",
-    "auto": false
+    "auto": false,
+    "spawn_in": 1.55
    },
    {
     "id": "R308_HALL",

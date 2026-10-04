@@ -30,3 +30,15 @@ func world_dir(input: Vector2, cam_yaw: float) -> Vector3:
 	var right := Vector3(cos(yaw), 0, -sin(yaw))
 	var d := right * input.x + fwd * input.y
 	return d.normalized() * minf(input.length(), 1.0)
+
+
+## Door traversal: the input that walked the hero along `from_dir` keeps walking along `to_dir`
+## (into the new room) until released, whatever the new camera's yaw. Without this, a held key
+## re-read in the arrival camera's basis can point straight back into the arrival doorway.
+func carry_through(from_dir: Vector3, to_dir: Vector3) -> void:
+	if from_dir.length() < 0.01 or to_dir.length() < 0.01:
+		return
+	var used := locked_yaw if locked else _last_cam_yaw
+	locked_yaw = used + angle_difference(atan2(-from_dir.x, -from_dir.z), atan2(-to_dir.x, -to_dir.z))
+	locked = true
+	_has_last = true

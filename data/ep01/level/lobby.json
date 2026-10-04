@@ -362,7 +362,8 @@
       "phase:EPILOGUE"
      ]
     },
-    "locked_text": "Не сейчас"
+    "locked_text": "Не сейчас",
+    "spawn_in": 1.5
    },
    {
     "id": "LOBBY_SEC",
@@ -465,6 +466,14 @@
    "hero_lobby": [
     5.0,
     9.0
+   ],
+   "escort_out": [
+    22.4,
+    5.0
+   ],
+   "escort_pavel": [
+    23.6,
+    3.6
    ],
    "elev_wait": [
     6.0,

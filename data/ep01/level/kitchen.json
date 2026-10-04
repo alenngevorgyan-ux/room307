@@ -191,7 +191,8 @@
       "phase:S09_DECISION"
      ]
     },
-    "locked_text": "Закрыто"
+    "locked_text": "Закрыто",
+    "spawn_in": 0.85
    },
    {
     "id": "KITCHEN_YARD",
