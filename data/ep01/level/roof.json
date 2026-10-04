@@ -1,0 +1,24 @@
+{
+  "ROOF_SMOKING": {
+    "origin": [400, 0, 300], "size": [18, 6], "height": 1.2, "mode": "CORRIDOR",
+    "tint": [0.2, 0.22, 0.26], "floor_color": [0.18, 0.19, 0.21], "ambience": "rain_heavy", "rain": true,
+    "boxes": [
+      {"id": "parapet", "p": [9.0, 0.3], "s": [18.0, 1.0, 0.4], "k": "wall"},
+      {"id": "hvac_1", "p": [4.0, 5.0], "s": [1.8, 1.4, 1.2], "k": "cover", "c": [0.45, 0.47, 0.5]},
+      {"id": "hvac_2", "p": [12.5, 5.0], "s": [2.2, 1.6, 1.2], "k": "cover", "c": [0.45, 0.47, 0.5]},
+      {"id": "ashtray", "p": [14.5, 2.0], "s": [0.4, 0.9, 0.4], "k": "metal"},
+      {"id": "canopy", "p": [15.5, 2.9, 2.0], "s": [3.0, 0.1, 2.6], "k": "dark", "nocol": true},
+      {"id": "door_box", "p": [0.8, 2.0, 3.0], "s": [1.6, 4.0, 3.0], "k": "wall", "nocol": true},
+      {"id": "skyline_1", "p": [6.0, -6.0, -40.0], "s": [8.0, 30.0, 4.0], "k": "dark", "nocol": true, "emit": 0.05},
+      {"id": "skyline_2", "p": [20.0, -6.0, -55.0], "s": [10.0, 40.0, 4.0], "k": "dark", "nocol": true},
+      {"id": "skyline_3", "p": [-8.0, -6.0, -50.0], "s": [6.0, 22.0, 4.0], "k": "dark", "nocol": true}
+    ],
+    "doors": [{"id": "ROOF_SSTAIR", "p": [0.0, 3.0], "side": "W", "to": "SSTAIR_ROOF", "label": "Лестница", "kind": "stair"}],
+    "markers": {"eva_smoke": [14.6, 2.6], "eva_door": [1.6, 3.0], "arrive": [1.4, 3.0], "behind_hvac": [12.5, 5.9], "daniel_door": [2.4, 2.4], "brody_door": [3.2, 3.4]},
+    "rigs": {"main": {"type": "follow", "offset": [0, 3.0, 9.0], "look": [0, 1.2, -2.0], "fov": 50, "clamp_x": [5.0, 13.0]}},
+    "lights": [
+      {"p": [15.5, 2.6, 2.0], "c": [1.0, 0.7, 0.4], "e": 1.2, "r": 6},
+      {"p": [5.0, 3.0, 3.0], "c": [0.5, 0.6, 0.8], "e": 0.6, "r": 8}
+    ]
+  }
+}

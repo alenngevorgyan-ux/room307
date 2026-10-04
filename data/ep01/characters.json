@@ -1,0 +1,146 @@
+{
+  "adrian": {
+    "display": "Адриан", "savvy": 1,
+    "fears": {"LOSE_MARA": 3, "LOSES_NAME": 2},
+    "feared_audience": ["mara"],
+    "knows": ["F_ADRIAN_WAS_DRIVING", "F_THOMAS_TOOK_BLAME", "F_THOMAS_PAID_SON", "F_RECORDING_EXISTS", "F_OLD_ACCIDENT"],
+    "start": {"trust": 0, "respect": 0, "suspicion": 0, "stress": 1, "disposition": "CALM"},
+    "graybox": {"color": [0.15, 0.25, 0.55], "ring": true},
+    "idle_barks": ["Новости?", "Я плачу за результат."]
+  },
+  "mara": {
+    "display": "Мара", "savvy": 1,
+    "fears": {"TAKEN": 3, "STILL_GUILTY": 2},
+    "feared_audience": [],
+    "knows": ["F_ADRIAN_WAS_DRIVING", "F_DANIEL_TOLD_MARA", "F_MARA_BELIEVED_SHE_DROVE", "F_MARA_LOCATION", "F_HERO_WORKS_FOR_ADRIAN"],
+    "start": {"trust": 0, "stress": 3, "disposition": "GUARDED"},
+    "graybox": {"color": [0.75, 0.12, 0.12]},
+    "idle_barks": ["Не подходи.", "Час. Не больше."]
+  },
+  "thomas": {
+    "display": "Томас", "savvy": 1,
+    "fears": {"SACRIFICE_WASTED": 3, "DANIEL": 2},
+    "feared_audience": [],
+    "knows": ["F_ADRIAN_WAS_DRIVING", "F_THOMAS_TOOK_BLAME", "F_RECORDING_EXISTS", "F_THOMAS_PAID_SON", "F_ADRIAN_NEVER_ASKED"],
+    "start": {"trust": 0, "stress": 1, "disposition": "GUARDED"},
+    "graybox": {"color": [0.45, 0.3, 0.15]},
+    "idle_barks": ["…", "Уходи, парень."]
+  },
+  "daniel": {
+    "display": "Дэниел", "savvy": 2,
+    "fears": {"ADRIAN_LEARNS_TRUTH": 3, "MARA_PUBLISHES": 2, "LOSES_POSITION": 1},
+    "feared_audience": ["adrian"],
+    "knows": ["F_ADRIAN_WAS_DRIVING", "F_DANIEL_TOLD_MARA", "F_ADRIAN_THINKS_MARA_FORGOT", "F_RECORDING_EXISTS", "F_DANIEL_SEARCHED_307", "F_HERO_NOT_STAFF"],
+    "start": {"trust": 0, "respect": 0, "suspicion": 0, "stress": 1, "disposition": "CALM"},
+    "graybox": {"color": [0.05, 0.05, 0.06], "pocket_stud": true},
+    "perception": {"cone": 80, "dist": 10, "periphery": 5, "detect": 1.0},
+    "tells": {"stress2": ["O_DANIEL_PHONE_DOWN"], "exposed": ["O_DANIEL_EXIT_GLANCE", "O_DANIEL_PHONE", "O_DANIEL_AVOIDS_ADRIAN", "O_DANIEL_WEIGHT_SHIFT"]},
+    "idle_barks": ["Всё в порядке?", "Мистер Вейл ждёт результатов."]
+  },
+  "eva": {
+    "display": "Эва", "savvy": 0, "hearing": 5,
+    "fears": {"MARA_FOUND": 3, "BETRAY_MARA": 2},
+    "feared_audience": ["daniel"],
+    "knows": ["F_MARA_LOCATION", "F_EVA_KNOWS_WHERE", "F_THOMAS_LOCATION", "F_MARA_WOULD_NOT_SAY"],
+    "start": {"trust": 0, "suspicion": 0, "stress": 1, "disposition": "GUARDED"},
+    "graybox": {"color": [0.95, 0.8, 0.1]},
+    "perception": {"cone": 100, "dist": 8, "periphery": 4, "detect": 1.0},
+    "idle_barks": ["Отвали.", "Я тороплюсь."]
+  },
+  "nico": {
+    "display": "Нико", "savvy": 1,
+    "fears": {"PRAGUE": 2, "JOB": 1},
+    "feared_audience": [],
+    "knows": ["F_MARA_MET_OLDER_MAN", "F_MARA_ASKED_CAMERAS", "F_DANIEL_ASKING", "F_THOMAS_LOCATION", "F_NICO_RECOMMENDED", "F_ADRIAN_NEVER_TALKS_STAFF"],
+    "start": {"trust": 0, "stress": 0, "disposition": "GUARDED"},
+    "graybox": {"color": [0.15, 0.6, 0.25], "apron": true},
+    "idle_barks": ["Я работаю, профессор.", "Потом."]
+  },
+  "lina": {
+    "display": "Лина", "savvy": 0,
+    "fears": {"TROUBLE_WITH_MANAGEMENT": 2},
+    "feared_audience": ["pavel", "daniel"],
+    "knows": ["F_MARA_LEFT_ALIVE", "F_SECURITY_IN_307", "F_SERVICE_STAIR", "F_HERO_NOT_STAFF"],
+    "start": {"trust": 0, "stress": 1, "disposition": "CALM"},
+    "graybox": {"color": [0.5, 0.75, 0.95]},
+    "vars": {"state": "NEUTRAL"},
+    "idle_barks": ["Извините, я работаю.", "Мне нельзя разговаривать с гостями."]
+  },
+  "pavel": {
+    "display": "Павел", "savvy": 1,
+    "fears": {"BLAME": 2},
+    "feared_audience": ["daniel"],
+    "knows": ["F_HERO_NOT_STAFF", "F_DOOR_CODE"],
+    "start": {"trust": 0, "suspicion": 0, "stress": 0, "disposition": "CALM"},
+    "graybox": {"color": [0.45, 0.45, 0.45], "cap": true},
+    "perception": {"cone": 70, "dist": 9, "periphery": 5, "detect": 1.2},
+    "idle_barks": ["Проходите, не задерживайтесь.", "Всё спокойно."]
+  },
+  "brody": {
+    "display": "Броди", "savvy": 0,
+    "fears": {}, "feared_audience": [],
+    "knows": [],
+    "start": {"stress": 1, "disposition": "HOSTILE"},
+    "graybox": {"color": [0.45, 0.08, 0.08], "scale": 1.15},
+    "perception": {"cone": 80, "dist": 12, "periphery": 4, "detect": 0.4},
+    "excuse": "С дороги."
+  },
+  "sato": {
+    "display": "Сато", "savvy": 1,
+    "fears": {}, "feared_audience": [],
+    "knows": [],
+    "start": {"stress": 1, "disposition": "HOSTILE"},
+    "graybox": {"color": [0.55, 0.12, 0.12]},
+    "perception": {"cone": 70, "dist": 14, "periphery": 5, "detect": 0.35},
+    "excuse": "С дороги."
+  },
+  "hale": {
+    "display": "Хейл", "savvy": 0, "hearing": 5,
+    "fears": {"EXPOSED": 3, "LOSE_SELIN": 2},
+    "feared_audience": ["selin"],
+    "knows": [],
+    "start": {"stress": 2, "disposition": "PRESSURED"},
+    "graybox": {"color": [0.85, 0.45, 0.1]},
+    "idle_barks": ["Это не твоё дело.", "Где мои часы?!"]
+  },
+  "selin": {
+    "display": "Селин", "savvy": 1, "hearing": 6,
+    "fears": {"EMBARRASSED": 1},
+    "feared_audience": [],
+    "knows": [],
+    "start": {"stress": 1, "disposition": "GUARDED"},
+    "graybox": {"color": [0.85, 0.3, 0.65]},
+    "idle_barks": ["Мне уже всё равно.", "Можно мы просто уйдём?"]
+  },
+  "kai": {
+    "display": "Кай", "savvy": 1,
+    "fears": {"POLICE": 1},
+    "feared_audience": [],
+    "knows": ["F_KAI_INNOCENT"],
+    "start": {"stress": 2, "disposition": "PRESSURED"},
+    "graybox": {"color": [0.3, 0.8, 0.7]},
+    "idle_barks": ["Я ничего не брал.", "Обыщите, если хотите."]
+  },
+  "jules": {
+    "display": "Жюль", "savvy": 0,
+    "fears": {"JOB": 3, "POLICE": 2},
+    "feared_audience": ["hale"],
+    "knows": ["F_WATCH_PAWNED", "F_DOME_DEAD"],
+    "start": {"stress": 2, "disposition": "PRESSURED"},
+    "graybox": {"color": [0.7, 0.7, 0.4], "apron": true},
+    "idle_barks": ["Что-нибудь налить?", "Я просто бармен."]
+  },
+  "receptionist": {
+    "display": "Администратор", "savvy": 1, "silhouette": false,
+    "fears": {}, "feared_audience": [], "knows": ["F_HERO_NOT_STAFF"],
+    "start": {}, "graybox": {"color": [0.3, 0.3, 0.4]},
+    "idle_barks": ["Доброй ночи.", "Чем могу помочь?"]
+  },
+  "guest_1": {"display": "Гость", "silhouette": true, "fears": {}, "knows": [], "start": {}, "graybox": {"color": [0.12, 0.12, 0.14]}},
+  "guest_2": {"display": "Гость", "silhouette": true, "fears": {}, "knows": [], "start": {}, "graybox": {"color": [0.12, 0.12, 0.14]}},
+  "staff_1": {"display": "Персонал", "silhouette": true, "fears": {}, "knows": [], "start": {}, "graybox": {"color": [0.6, 0.6, 0.62]}},
+  "staff_2": {"display": "Персонал", "silhouette": true, "fears": {}, "knows": [], "start": {}, "graybox": {"color": [0.6, 0.6, 0.62]}},
+  "staff_3": {"display": "Персонал", "silhouette": true, "fears": {}, "knows": [], "start": {}, "graybox": {"color": [0.6, 0.6, 0.62]}},
+  "staff_4": {"display": "Персонал", "silhouette": true, "fears": {}, "knows": [], "start": {}, "graybox": {"color": [0.6, 0.6, 0.62]}},
+  "laundry_worker": {"display": "Прачечная", "silhouette": true, "fears": {}, "knows": [], "start": {}, "graybox": {"color": [0.5, 0.55, 0.6]}}
+}

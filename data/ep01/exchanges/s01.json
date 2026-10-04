@@ -1,0 +1,121 @@
+{
+  "X_S01_HALE": {
+    "npc": "hale", "scene": "S01", "trigger": {"type": "talk", "cond": {"cmp": ["s1_resolution", "==", ""]}},
+    "repeatable": true, "radius_leave": 5.0,
+    "nodes": {
+      "start": {"timeout": 7.0, "chips": [
+        {"id": "CH_HALE_PAWN", "verb": "PRESS", "label": "Залог?", "requires": {"any": ["F_WATCH_PAWNED", "T_WATCH_NOT_STOLEN"]}, "claim": "C_YOU_PAWNED_IT", "next_by_reaction": {"TRAP": "end", "*": "deny"}},
+        {"id": "CH_HALE_CAMERAS", "verb": "PROVOKE", "label": "Камеры?", "claim": "C_CAMERAS_RECORDED", "next_by_reaction": {"TRAP": "end", "*": "cam_shrug"}},
+        {"id": "CH_HALE_WHERE", "verb": "PRESS", "label": "Где снял?", "line": "H_WHERE", "next": "where"},
+        {"id": "CH_HALE_STORY", "verb": "DEFLECT", "label": "Красивая история", "line": "H_STORY", "next": "story"},
+        {"id": "CH_HALE_SAW", "verb": "BLUFF", "label": "Я видел", "claim": "C_SAW_YOU", "next_by_reaction": {"TRAP": "end", "*": "saw"}}
+      ], "silence": "sil", "leave": "end"},
+      "where": {"line": "HALE_WHERE", "next": "chips2"},
+      "chips2": {"timeout": 6.0, "chips": [
+        {"id": "CH_HALE_CAMERAS2", "verb": "PROVOKE", "label": "Камеры?", "claim": "C_CAMERAS_RECORDED", "next_by_reaction": {"TRAP": "end", "*": "cam_shrug"}},
+        {"id": "CH_HALE_SAW2", "verb": "BLUFF", "label": "Я видел", "claim": "C_SAW_YOU", "next_by_reaction": {"TRAP": "end", "*": "saw"}},
+        {"id": "CH_HALE_STORY2", "verb": "DEFLECT", "label": "Красивая история", "line": "H_STORY", "next": "story"}
+      ], "silence": "sil", "leave": "end"},
+      "story": {"line": "HALE_STORY", "next": "end"},
+      "deny": {"line": "HALE_DENY", "next": "end"},
+      "cam_shrug": {"line": "HALE_CAM_SHRUG", "next": "end"},
+      "saw": {"line": "HALE_SAW_SLIP", "actions": [{"stress": ["hale", 1]}], "next": "end"},
+      "sil": {"line": "HALE_B3", "next": "end"}
+    }
+  },
+  "X_S01_HALE_ASIDE": {
+    "npc": "hale", "scene": "S01", "trigger": {"type": "manual"}, "radius_leave": 6.0, "npc_keeps_schedule": false, "priority": 2,
+    "nodes": {
+      "start": {"line": "HALE_CAM_ASIDE", "next": "offer"},
+      "offer": {"timeout": 7.0, "chips": [
+        {"id": "CH_HALE_PRIVATE", "verb": "CALM", "label": "Выкупи тихо", "line": "H_PRIVATE", "next": "ask"},
+        {"id": "CH_HALE_PAWN_A", "verb": "PRESS", "label": "Ты заложил их", "requires": "F_WATCH_PAWNED", "claim": "C_YOU_PAWNED_IT", "next_by_reaction": {"*": "end"}}
+      ], "silence": "panic", "leave": "panic"},
+      "ask": {"line": "HALE_PRIVATE", "next": "terms"},
+      "terms": {"timeout": 7.0, "chips": [
+        {"id": "CH_HALE_APOLOGY", "verb": "CALM", "label": "Извинись перед ним", "line": "H_APOLOGY", "next": "pays"}
+      ], "silence": "pays", "leave": "pays"},
+      "pays": {"line": "HALE_PAYS", "actions": [
+        {"if": {"cmp": ["s1_resolution", "==", ""]}, "then": [
+          {"s1": "PRIVATE_DEAL"}, {"trust": ["adrian", 1]}, {"flag": "jules_saved"}, {"give_fact": ["F_WATCH_PAWNED", "X_S01_HALE_ASIDE"]},
+          {"npc": ["kai", "pose", {"pose": "rest"}]}, {"decision": "resolution"}]}
+      ], "next": "end"},
+      "panic": {"line": "HALE_B2", "actions": [{"set_schedule": ["hale", "hale_restroom"]}, {"unflag": "s1_private_window"}], "next": "end"}
+    }
+  },
+  "X_S01_HALE_DEAL": {
+    "npc": "hale", "scene": "S01", "trigger": {"type": "manual"}, "radius_leave": 6.0, "npc_keeps_schedule": false, "priority": 2,
+    "nodes": {
+      "start": {"timeout": 7.0, "chips": [
+        {"id": "CH_HALE_APOLOGY_D", "verb": "CALM", "label": "Извинись перед ним", "line": "H_APOLOGY", "next": "pays"},
+        {"id": "CH_HALE_PRIVATE_D", "verb": "CALM", "label": "Выкупи тихо", "line": "H_PRIVATE", "next": "pays"}
+      ], "silence": "pays", "leave": "pays"},
+      "pays": {"line": "HALE_PAYS", "actions": [
+        {"if": {"cmp": ["s1_resolution", "==", ""]}, "then": [
+          {"s1": "PRIVATE_DEAL"}, {"trust": ["adrian", 1]}, {"flag": "jules_saved"}, {"give_fact": ["F_WATCH_PAWNED", "X_S01_HALE_DEAL"]},
+          {"decision": "resolution"}]}
+      ], "next": "end"}
+    }
+  },
+  "X_S01_JULES": {
+    "npc": "jules", "scene": "S01", "trigger": {"type": "talk", "cond": {"cmp": ["s1_resolution", "==", ""]}},
+    "repeatable": true, "radius_leave": 3.5,
+    "nodes": {
+      "start": {"timeout": 5.0, "chips": [
+        {"id": "CH_JULES_PAWN", "verb": "PRESS", "label": "Залог?", "requires": {"any": ["O_S1_JULES_UNDER", "O_S1_UNPAID_TAB"]}, "claim": "C_PAWNED", "next_by_reaction": {"TRAP": "end", "SLIP": "break", "TELL": "break", "*": "deflect"}},
+        {"id": "CH_JULES_CAM", "verb": "BLUFF", "label": "Камеры?", "claim": "C_CAMERAS_RECORDED", "next_by_reaction": {"CALLED": "cam_called", "*": "deflect"}},
+        {"id": "CH_JULES_POUR", "verb": "CALM", "label": "Налей", "line": "H_POUR", "next": "pour"}
+      ], "silence": "stare", "leave": "end"},
+      "stare": {"wait": 2.0, "next": "break_sil", "leave": "end", "movement": true},
+      "break_sil": {"line": "JULES_BREAK", "actions": [
+        {"give_fact": ["F_WATCH_PAWNED", "X_S01_JULES"]},
+        {"if": {"all": ["hears:selin:jules", {"cmp": ["s1_resolution", "==", ""]}]}, "then": [
+          {"line": "SELIN_LEAVES"}, {"s1": "PUBLIC_EXPOSE"}, {"respect": ["adrian", 1]}, {"set_schedule": ["selin", "selin_leave"]}, {"decision": "resolution"}]}
+      ], "next": "end"},
+      "break": {"line": "JULES_BREAK", "actions": [{"give_fact": ["F_WATCH_PAWNED", "X_S01_JULES"]}], "next": "end"},
+      "deflect": {"line": "JULES_DEFLECT", "next": "end"},
+      "cam_called": {"line": "JULES_CAM_CALLED", "actions": [{"notice": "O_S1_DOME_NO_LED"}], "next": "end"},
+      "pour": {"line": "JULES_POURS", "next": "end"}
+    }
+  },
+  "X_S01_SELIN": {
+    "npc": "selin", "scene": "S01", "trigger": {"type": "talk", "cond": {"cmp": ["s1_resolution", "==", ""]}},
+    "repeatable": true, "radius_leave": 4.5,
+    "nodes": {
+      "start": {"timeout": 6.0, "chips": [
+        {"id": "CH_SELIN_OFTEN", "verb": "PRESS", "label": "Часто так?", "line": "H_OFTEN", "next": "often"},
+        {"id": "CH_SELIN_LOST", "verb": "BLUFF", "label": "Проигрался?", "claim": "C_HALE_LOST_MONEY", "next_by_reaction": {"SLIP": "slip", "CALLED": "called", "*": "deflect"}},
+        {"id": "CH_SELIN_ICE", "verb": "CALM", "label": "Лёд?", "line": "H_ICE", "requires": "!flag:jules_away", "next": "ice"},
+        {"id": "CH_SELIN_ACCUSE", "verb": "PROVOKE", "label": "Это ты", "claim": "C_SELIN_TOOK", "next_by_reaction": {"*": "wrong"}}
+      ], "silence": "sil", "leave": "end"},
+      "often": {"line": "SELIN_OFTEN", "next": "end"},
+      "slip": {"line": "SELIN_SLIP", "actions": [{"stress": ["hale", 1]}, {"flag": "selin_suspects"}, {"npc": ["selin", "look", {"target": "hale"}]}], "next": "end"},
+      "called": {"line": "SELIN_CALLED", "next": "end"},
+      "deflect": {"line": "SELIN_DEFLECT", "next": "end"},
+      "ice": {"line": "JULES_ICE", "actions": [{"set_schedule": ["jules", "jules_ice"]}], "next": "end"},
+      "wrong": {"line": "SELIN_SLAP", "actions": [{"if": {"cmp": ["s1_resolution", "==", ""]}, "then": [
+        {"s1": "WRONG_ACCUSE"}, {"line": "KAI_SHOVE"}, {"hero": ["stun", {"dur": 0.8}]}, {"line": "JULES_PAVEL"},
+        {"suspicion": ["pavel", 1]}, {"spawn": ["pavel", "BAR:pavel_arrive"]}, {"set_schedule": ["pavel", "pavel_escort_kai"]},
+        {"npc": ["kai", "follow", {"target": "pavel", "dist": 1.3}]}, {"delay": 4.5, "do": [{"line": "PAVEL_ESCORT"}]}, {"decision": "resolution"}]}], "next": "end"},
+      "sil": {"line": "SELIN_B1", "next": "end"}
+    }
+  },
+  "X_S01_KAI": {
+    "npc": "kai", "scene": "S01", "trigger": {"type": "talk", "cond": {"cmp": ["s1_resolution", "==", ""]}},
+    "repeatable": true, "radius_leave": 4.5,
+    "nodes": {
+      "start": {"timeout": 6.0, "chips": [
+        {"id": "CH_KAI_HANDS", "verb": "PRESS", "label": "Руки", "line": "H_HANDS", "next": "hands"},
+        {"id": "CH_KAI_STAY", "verb": "PRESS", "label": "Почему не уходишь?", "line": "H_WHY_STAY", "next": "stay"},
+        {"id": "CH_KAI_ACCUSE", "verb": "PROVOKE", "label": "Это ты", "claim": "C_KAI_TOOK", "next_by_reaction": {"*": "wrong"}}
+      ], "silence": "sil", "leave": "end"},
+      "hands": {"line": "KAI_HANDS", "actions": [{"npc": ["kai", "pose", {"pose": "open"}]}], "next": "end"},
+      "stay": {"line": "KAI_STAY", "next": "end"},
+      "wrong": {"line": "KAI_SHOVE", "actions": [{"if": {"cmp": ["s1_resolution", "==", ""]}, "then": [
+        {"s1": "WRONG_ACCUSE"}, {"hero": ["stun", {"dur": 0.8}]}, {"sfx": "impact"}, {"camera_hint": {"shake": 0.6}}, {"line": "JULES_PAVEL"},
+        {"suspicion": ["pavel", 1]}, {"spawn": ["pavel", "BAR:pavel_arrive"]}, {"set_schedule": ["pavel", "pavel_escort_kai"]},
+        {"npc": ["kai", "follow", {"target": "pavel", "dist": 1.3}]}, {"delay": 4.5, "do": [{"line": "PAVEL_ESCORT"}]}, {"decision": "resolution"}]}], "next": "end"},
+      "sil": {"line": "KAI_B1", "next": "end"}
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "O_S1_WRIST_TAN": {"caption": "след от часов — ровный, без царапин", "anchor": {"npc": "hale", "part": "left_wrist"}, "view": "left", "dist": 3.5, "scene": "S01"},
+  "O_S1_HALE_LOOKS_SELIN": {"caption": "смотрит на неё, а не на него", "mode": "TELL", "anchor": {"npc": "hale", "part": "head"}, "scene": "S01"},
+  "O_S1_JULES_UNDER": {"caption": "смотрит под стойку", "mode": "TELL", "anchor": {"npc": "jules", "part": "head"}, "scene": "S01", "dist": 7.0},
+  "O_S1_KAI_STAYS": {"caption": "не делает ни шага к выходу", "anchor": {"npc": "kai", "part": "feet"}, "scene": "S01"},
+  "O_S1_UNPAID_TAB": {"caption": "счёт не оплачен", "anchor": {"zone": "BAR", "p": [9.0, 1.2, 4.85]}, "requires": "flag:receipt_read", "scene": "S01"},
+  "O_S1_DOME_NO_LED": {"caption": "камера без индикатора", "anchor": {"zone": "BAR", "p": [8.0, 3.25, 6.0]}, "dist": 7.0, "focus": 0.4},
+  "O_S1_ADRIAN_DRINK": {"caption": "не притронулся к стакану", "anchor": {"zone": "BAR", "p": [12.3, 0.9, 1.7]}, "dist": 7.5, "scene": "S01"},
+  "O_S1_EMPTY_WALLET": {"caption": "бумажник пуст", "anchor": {"zone": "BAR", "p": [9.0, 0.9, 6.3]}, "requires": "flag:coat_checked", "scene": "S01"}
+}

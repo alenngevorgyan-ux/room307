@@ -1,0 +1,46 @@
+{
+  "TR_S1_CAMERAS": {
+    "target": "hale",
+    "bait": {"event": "claim_spoken", "claim": ["C_CAMERAS_RECORDED", "C_SAW_YOU"], "addressee": "hale"},
+    "timing": {"scene": "S01"},
+    "requires": {"cmp": ["s1_resolution", "==", ""]},
+    "outcomes": [
+      {"if": {"audience_has": ["selin"]}, "do": [
+        {"npc": ["hale", "pose", {"pose": "grab"}]}, {"line": "HALE_CAM_REACT"}, {"line": "JULES_BREAK"},
+        {"give_fact": ["F_WATCH_PAWNED", "TR_S1_CAMERAS"]}, {"line": "SELIN_LEAVES"}, {"line": "SELIN_ASKS"}, {"line": "H_PAST"},
+        {"s1": "PUBLIC_EXPOSE"}, {"respect": ["adrian", 1]}, {"set_schedule": ["selin", "selin_leave"]}, {"music": "TENSION_LOW"},
+        {"npc": ["hale", "pose", {"pose": "rest"}]}, {"decision": "resolution"}
+      ]},
+      {"else": true, "do": [
+        {"npc": ["hale", "pose", {"pose": "grab"}]}, {"line": "HALE_CAM_REACT"}, {"flag": "s1_private_window"},
+        {"music": "TENSION_LOW"}, {"delay": 3.2, "do": [{"start_exchange": "X_S01_HALE_ASIDE"}]}
+      ]}
+    ]
+  },
+  "TR_S1_PAWN_PUBLIC": {
+    "target": "jules",
+    "bait": {"event": "claim_spoken", "claim": ["C_PAWNED", "C_YOU_PAWNED_IT"]},
+    "timing": {"scene": "S01"},
+    "audience": {"require": ["selin"]},
+    "requires": {"cmp": ["s1_resolution", "==", ""]},
+    "outcomes": [
+      {"else": true, "do": [
+        {"line": "JULES_BREAK"}, {"give_fact": ["F_WATCH_PAWNED", "TR_S1_PAWN_PUBLIC"]}, {"line": "SELIN_LEAVES"},
+        {"line": "SELIN_ASKS"}, {"line": "H_PAST"}, {"s1": "PUBLIC_EXPOSE"}, {"respect": ["adrian", 1]},
+        {"set_schedule": ["selin", "selin_leave"]}, {"stress": ["hale", 1]}, {"decision": "resolution"}
+      ]}
+    ]
+  },
+  "TR_S1_PAWN_PRIVATE": {
+    "target": "hale",
+    "bait": {"event": "claim_spoken", "claim": "C_YOU_PAWNED_IT", "addressee": "hale"},
+    "timing": {"scene": "S01"},
+    "audience": {"forbid": ["selin"]},
+    "requires": {"cmp": ["s1_resolution", "==", ""]},
+    "outcomes": [
+      {"else": true, "do": [
+        {"npc": ["hale", "look", {"target": "hero"}]}, {"line": "HALE_PRIVATE"}, {"delay": 2.6, "do": [{"start_exchange": "X_S01_HALE_DEAL"}]}
+      ]}
+    ]
+  }
+}

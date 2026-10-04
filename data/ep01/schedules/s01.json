@@ -1,0 +1,37 @@
+{
+  "hale_pace": {"npc": "hale", "mode": "loop", "points": [
+    {"at": "BAR:hale_a", "wait": 4, "pose": "gesture", "look": "kai"},
+    {"at": "BAR:hale_b", "wait": 3, "pose": "rest", "look": "selin", "tell": {"obs": "O_S1_HALE_LOOKS_SELIN", "at": 0.3, "dur": 1.8}},
+    {"at": "BAR:hale_c", "wait": 4, "pose": "gesture", "look": "kai", "bark": "HALE_B1"},
+    {"at": "BAR:hale_a", "wait": 3, "pose": "rest", "look": "selin", "tell": {"obs": "O_S1_HALE_LOOKS_SELIN", "at": 0.3, "dur": 1.8}},
+    {"at": "BAR:hale_b", "wait": 4, "pose": "gesture", "look": "kai"},
+    {"at": "BAR:hale_c", "wait": 3, "pose": "rest", "look": "selin", "tell": {"obs": "O_S1_HALE_LOOKS_SELIN", "at": 0.3, "dur": 1.8}, "bark": "HALE_B3"}
+  ]},
+  "hale_restroom": {"npc": "hale", "mode": "once", "points": [
+    {"at": "BAR:restroom_door", "wait": 0.2, "bark": "HALE_B2"},
+    {"at": "BAR:restroom", "wait": 22, "pose": "ear", "look": "BAR:restroom_door"},
+    {"at": "BAR:hale_b", "wait": 0.5, "pose": "rest"}
+  ], "on_done": [{"set_schedule": ["hale", "hale_pace"]}]},
+  "selin_coat": {"npc": "selin", "mode": "loop", "points": [
+    {"at": "BAR:selin_spot", "wait": 7, "pose": "rest", "look": "hale"},
+    {"at": "BAR:selin_coat", "wait": 4, "pose": "carry", "look": "BAR:hale_a"},
+    {"at": "BAR:selin_spot", "wait": 6, "pose": "behind", "look": "hale"}
+  ]},
+  "selin_leave": {"npc": "selin", "mode": "once", "speed": "fast", "points": [
+    {"at": "BAR:hale_c", "wait": 0.5, "pose": "carry", "look": "hale"},
+    {"at": "LOBBY:street_exit", "wait": 0.1}
+  ], "on_done": [{"despawn": "selin"}]},
+  "jules_polish": {"npc": "jules", "mode": "loop", "points": [
+    {"at": "BAR:jules_a", "wait": 6, "pose": "polish", "look": "hale", "activity": "polish_glass"},
+    {"at": "BAR:jules_drawer", "wait": 2.5, "pose": "rest", "look": "hero"},
+    {"at": "BAR:jules_b", "wait": 5, "pose": "polish", "look": "hale"}
+  ]},
+  "jules_ice": {"npc": "jules", "mode": "once", "speed": "fast", "points": [
+    {"at": "BAR:hatch", "wait": 12, "pose": "carry", "look": "BAR:hatch", "actions": [{"flag": "jules_away"}]},
+    {"at": "BAR:jules_a", "wait": 0.1, "actions": [{"unflag": "jules_away"}]}
+  ], "on_done": [{"set_schedule": ["jules", "jules_polish"]}]},
+  "pavel_escort_kai": {"npc": "pavel", "mode": "once", "points": [
+    {"at": "BAR:kai_spot", "wait": 3, "look": "hero", "pose": "radio"},
+    {"at": "LOBBY:street_exit", "wait": 0.1}
+  ], "on_done": [{"despawn": "pavel"}, {"despawn": "kai"}]}
+}

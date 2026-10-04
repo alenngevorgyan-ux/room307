@@ -1,0 +1,10 @@
+{
+  "I_S1_RECEIPT": {"zone": "BAR", "p": [9.0, 1.1, 4.85], "scene": "S01", "verb": "Посмотреть", "prompt": "Чек на шпажке", "once": true,
+    "actions": [{"flag": "receipt_read"}, {"notice": "O_S1_UNPAID_TAB"}, {"hint": ["«18 400 ₽. Не оплачен.»", 3.0]}, {"sfx": "paper"}]},
+  "I_S1_DRAWER": {"zone": "BAR", "p": [7.0, 0.8, 4.45], "scene": "S01", "verb": "Открыть", "prompt": "Ящик под стойкой", "once": true,
+    "requires": "flag:jules_away", "locked_text": "Жюль у стойки", "locked_actions": [{"bark": ["jules", "Туда нельзя."]}],
+    "actions": [{"give_fact": ["F_WATCH_PAWNED", "I_S1_DRAWER"]}, {"give_item": ["ITEM_WATCH", "hero"]}, {"hint": ["Часы. Завёрнуты в салфетку.", 3.0]}, {"sfx": "paper"}]},
+  "I_S1_COAT": {"zone": "BAR", "p": [9.0, 0.78, 6.3], "scene": "S01", "verb": "Проверить", "prompt": "Пальто Хейла", "once": true,
+    "mesh": {"s": [0.45, 0.12, 0.35], "c": [0.25, 0.25, 0.3], "emit": 0.1},
+    "actions": [{"flag": "coat_checked"}, {"notice": "O_S1_EMPTY_WALLET"}, {"hint": ["Бумажник. Пустой.", 2.5]}, {"sfx": "paper"}]}
+}

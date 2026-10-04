@@ -1,0 +1,47 @@
+{
+  "LOBBY": {
+    "origin": [100, 0, 0], "size": [28, 14], "height": 5.0, "mode": "ROOM",
+    "tint": "accent_gold", "floor_color": [0.22, 0.2, 0.18], "ambience": "fountain", "public": true,
+    "boxes": [
+      {"id": "reception", "p": [21.0, 2.2], "s": [6.0, 1.15, 1.0], "k": "counter"},
+      {"id": "elev_frame", "p": [6.0, 0.3], "s": [3.4, 3.0, 0.4], "k": "metal", "nocol": true},
+      {"id": "fountain", "p": [14.0, 6.8], "s": [3.0, 0.8, 3.0], "k": "furn", "c": [0.4, 0.45, 0.5]},
+      {"id": "fountain_jet", "p": [14.0, 0.8, 6.8], "s": [0.3, 1.0, 0.3], "k": "glass", "nocol": true},
+      {"id": "pillar_1", "p": [6.0, 11.0], "s": [0.9, 5.0, 0.9], "k": "wall"},
+      {"id": "pillar_2", "p": [14.0, 11.0], "s": [0.9, 5.0, 0.9], "k": "wall"},
+      {"id": "pillar_3", "p": [22.0, 11.0], "s": [0.9, 5.0, 0.9], "k": "wall"},
+      {"id": "planter", "p": [19.6, 11.6], "s": [1.4, 1.2, 1.4], "k": "cover", "c": [0.25, 0.35, 0.18]},
+      {"id": "armchair_1", "p": [12.4, 12.4], "s": [1.0, 0.9, 1.0], "k": "furn", "c": [0.35, 0.18, 0.15]},
+      {"id": "armchair_2", "p": [15.6, 12.6], "s": [1.0, 0.9, 1.0], "k": "furn", "c": [0.35, 0.18, 0.15]},
+      {"id": "low_table", "p": [14.0, 13.2], "s": [1.0, 0.45, 0.6], "k": "furn"},
+      {"id": "sofa", "p": [4.0, 7.6], "s": [2.4, 0.8, 0.9], "k": "furn", "c": [0.35, 0.18, 0.15]},
+      {"id": "tv", "p": [2.0, 1.6, 0.25], "s": [1.6, 0.9, 0.08], "k": "dark", "nocol": true},
+      {"id": "mezz_rail", "p": [14.0, 4.6, 0.6], "s": [12.0, 0.3, 0.3], "k": "metal", "nocol": true}
+    ],
+    "labels": [{"p": [21.0, 2.8, 1.4], "t": "RECEPTION", "s": 36}, {"p": [14.0, 4.2, 0.2], "t": "HOTEL MERIDIAN", "s": 60, "c": [0.9, 0.75, 0.45]}],
+    "doors": [
+      {"id": "LOBBY_BAR", "p": [0.0, 7.0], "side": "W", "to": "BAR_LOBBY", "label": "Бар", "kind": "arch", "w": 1.8},
+      {"id": "LOBBY_REST", "p": [28.0, 7.0], "side": "E", "to": "REST_LOBBY", "label": "Ресторан", "kind": "door", "open_if": {"any": ["phase:S09_STAGING", "phase:S09_LIVE", "phase:S09_DECISION", "phase:S07_CHASE"]}, "locked_text": "Ресторан закрыт"},
+      {"id": "LOBBY_ELEV", "p": [6.0, 0.0], "side": "N", "to": "ELEV_A_DOOR", "label": "Лифт", "kind": "elevator", "auto": false, "w": 1.6},
+      {"id": "LOBBY_GSTAIR", "p": [10.5, 0.0], "side": "N", "to": "MEZZ_STAIR", "label": "Лестница", "kind": "stair"},
+      {"id": "LOBBY_RECBACK", "p": [25.6, 0.0], "side": "N", "to": "RECBACK_LOBBY", "label": "Служебное", "kind": "door", "auto": false, "open_if": "flag:reception_back_open", "locked_text": "Только для персонала"},
+      {"id": "LOBBY_STREET", "p": [14.0, 14.0], "side": "S", "to": "STREET_DOOR", "label": "Выход", "kind": "door", "auto": false, "open_if": {"any": ["phase:EPILOGUE"]}, "locked_text": "Не сейчас"}
+    ],
+    "markers": {
+      "arrive_bar": [1.6, 7.0], "adrian_mid": [9.0, 8.5], "adrian_elev": [6.0, 1.4], "daniel_far": [24.5, 6.5], "daniel_phone": [25.0, 9.5],
+      "receptionist": [21.0, 1.3], "pavel_planter": [18.4, 10.0], "pavel_fountain": [15.8, 6.0], "pavel_elev": [7.4, 2.0],
+      "pavel_reception": [24.2, 3.4], "pavel_recback": [25.6, 1.2], "keypad_peek": [19.6, 12.9], "armchair": [12.4, 11.6],
+      "adrian_armchair": [12.6, 12.2], "behind_p2": [14.0, 12.4], "eva_lobby": [9.0, 10.5], "lina_lobby": [3.5, 9.5],
+      "street_exit": [14.0, 12.8], "hero_lobby": [5.0, 9.0], "elev_wait": [6.0, 2.4], "daniel_elev": [7.6, 2.6], "adrian_report": [13.0, 10.5]
+    },
+    "rigs": {
+      "main": {"type": "follow", "offset": [0, 5.0, 9.5], "look": [0, 1.0, -2.0], "fov": 52, "clamp_x": [6.0, 22.0], "clamp_z": [10.0, 22.0]}
+    },
+    "lights": [
+      {"p": [7.0, 4.2, 6.0], "c": [1.0, 0.85, 0.65], "e": 1.2, "r": 10},
+      {"p": [20.0, 4.2, 6.0], "c": [1.0, 0.85, 0.65], "e": 1.2, "r": 10},
+      {"p": [14.0, 3.6, 11.5], "c": [1.0, 0.8, 0.55], "e": 0.9, "r": 7},
+      {"p": [21.0, 2.6, 2.2], "c": [0.9, 0.95, 1.0], "e": 0.8, "r": 5}
+    ]
+  }
+}

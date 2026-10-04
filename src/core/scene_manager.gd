@@ -1,0 +1,148 @@
+class_name SceneManager
+extends Node
+## Scene flow driven by data/ep01/scenes.json. Spawns NPCs, places the hero, runs enter actions,
+## evaluates data rules each tick, owns the active SceneLogic, auto-checkpoints at scene starts.
+## Works headless for SIM tests (world-less: NPC commands just go unheard; Presence is updated).
+
+var logic: SceneLogic = null
+var current := ""
+var _rule_hold: Dictionary = {}
+var paused := false
+var autosave := true
+
+
+func _ready() -> void:
+	Services.scenes = self
+
+
+func _exit_tree() -> void:
+	if Services.scenes == self:
+		Services.scenes = null
+
+
+func _ep() -> Node:
+	return get_node("/root/Episode")
+
+
+func _data() -> Node:
+	return get_node("/root/Data")
+
+
+func _process(delta: float) -> void:
+	if not paused:
+		tick(delta)
+
+
+func tick(delta: float) -> void:
+	if current == "":
+		return
+	_eval_rules(delta)
+	if logic:
+		logic.tick(delta)
+
+
+func goto_scene(id: String) -> void:
+	var D := _data()
+	var E := _ep()
+	if not D.scenes.has(id):
+		push_error("unknown scene " + id)
+		return
+	if logic:
+		logic.exit()
+		logic.queue_free()
+		logic = null
+	var s: Dictionary = D.scenes[id]
+	current = id
+	E.scene_id = id
+	if s.has("phase"):
+		E.set_phase_name(String(s.phase))
+	E.scene_clock = 0.0
+	_rule_hold = {}
+	if Services.conversation:
+		Services.conversation.end_active("SCENE")
+	# NPCs
+	if s.get("despawn_others", true):
+		for npc in E.characters:
+			if not s.get("npcs", {}).has(npc) and not Array(s.get("keep_npcs", [])).has(npc):
+				ActionRunner.run([{"despawn": npc}])
+	for npc in s.get("npcs", {}):
+		var nd: Dictionary = s.npcs[npc]
+		if nd.has("if") and not Conditions.check(nd["if"], E):
+			ActionRunner.run([{"despawn": npc}])
+			continue
+		ActionRunner.run([{"spawn": [npc, String(nd.at)]}])
+		if nd.has("schedule"):
+			ActionRunner.run([{"set_schedule": [npc, String(nd.schedule)]}])
+		if nd.has("pose"):
+			ActionRunner.run([{"npc": [npc, "pose", {"pose": nd.pose}]}])
+		if nd.has("look"):
+			ActionRunner.run([{"npc": [npc, "look", {"target": nd.look}]}])
+	# hero
+	if s.has("hero") and Services.world:
+		Services.world.place_hero(String(s.hero), bool(s.get("hero_seated", false)))
+	if s.has("hero"):
+		Presence.place("hero", D.marker_zone(String(s.hero)), D.marker(String(s.hero)))
+		E.hero_zone = D.marker_zone(String(s.hero))
+	if s.has("mood") and Services.world:
+		Services.world.set_mood(String(s.mood))
+	if s.has("music"):
+		get_node("/root/Bus").music_requested.emit(String(s.music))
+	get_node("/root/Bus").scene_changed.emit(id)
+	ActionRunner.run(s.get("enter", []), {"source": id})
+	if s.has("logic"):
+		var scr: GDScript = load(String(s.logic))
+		if scr:
+			logic = scr.new()
+			logic.name = "Logic_" + id
+			logic.scene_id = id
+			logic.def = s
+			add_child(logic)
+			logic.enter()
+	if autosave and s.get("checkpoint", true) and Services.world:
+		E.save_game()
+
+
+func _eval_rules(delta: float) -> void:
+	var E := _ep()
+	var sc := current
+	var s: Dictionary = _data().scenes.get(current, {})
+	for r in s.get("rules", []):
+		var key := "rule:%s:%s" % [current, r.get("id", "")]
+		if not r.get("repeat", false) and E.flags.get(key, false):
+			continue
+		if r.has("after") and E.scene_clock < float(r.after):
+			continue
+		var ok := Conditions.check(r.get("when"), E)
+		if r.has("hold"):
+			if ok:
+				_rule_hold[key] = float(_rule_hold.get(key, 0.0)) + delta
+				ok = _rule_hold[key] >= float(r.hold)
+			else:
+				_rule_hold[key] = 0.0
+		if ok:
+			E.flags[key] = true
+			if r.get("repeat", false):
+				_rule_hold[key] = 0.0
+			ActionRunner.run(r.get("do", []), {"source": String(r.get("source", current))})
+			if current != sc:
+				return   # the rule changed the scene
+
+
+## F2: seed the minimum state for a scene, then jump.
+func debug_jump(id: String) -> void:
+	var D := _data()
+	var order: Array = D.scenes.keys()
+	order.sort()
+	# run seeds of all previous scenes in order so the jump has minimum state
+	for sid in order:
+		if sid == id:
+			break
+		ActionRunner.run(D.scenes[sid].get("seed", []), {"source": "debug_seed"})
+	goto_scene(id)
+
+
+func respawn_current() -> void:
+	var sid: String = _ep().scene_id
+	var saved: Dictionary = _ep().to_dict()
+	goto_scene(sid)
+	_ep().from_dict(saved)

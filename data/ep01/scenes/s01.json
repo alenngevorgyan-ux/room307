@@ -1,0 +1,36 @@
+{
+  "S01": {
+    "phase": "S01_WATCH", "title": "ROOM 307", "hero": "BAR:hero_stool", "hero_seated": true, "music": "BAR_AMBIENT", "mood": "night",
+    "npcs": {
+      "hale": {"at": "BAR:hale_a", "schedule": "hale_pace"},
+      "selin": {"at": "BAR:selin_spot", "schedule": "selin_coat"},
+      "kai": {"at": "BAR:kai_spot", "pose": "open", "look": "hale"},
+      "jules": {"at": "BAR:jules_a", "schedule": "jules_polish"},
+      "adrian": {"at": "BAR:adrian_booth", "pose": "table", "look": "hero"},
+      "guest_1": {"at": "BAR:silh_1"},
+      "guest_2": {"at": "BAR:silh_2"}
+    },
+    "enter": [
+      {"camera_hint": {"rig": "BAR:start", "dur": 600}},
+      {"delay": 0.6, "do": [{"line": "HALE_01"}]},
+      {"delay": 5.5, "do": [{"line": "KAI_01"}]},
+      {"delay": 9.0, "do": [{"line": "SELIN_01"}]},
+      {"delay": 12.5, "do": [{"line": "JULES_01"}]}
+    ],
+    "rules": [
+      {"id": "restroom_1", "after": 70, "when": {"cmp": ["s1_resolution", "==", ""]}, "do": [{"set_schedule": ["hale", "hale_restroom"]}]},
+      {"id": "restroom_2", "after": 150, "when": {"cmp": ["s1_resolution", "==", ""]}, "do": [{"set_schedule": ["hale", "hale_restroom"]}]},
+      {"id": "hint_read", "after": 20, "when": {"none": ["O_S1_WRIST_TAN", "O_S1_HALE_LOOKS_SELIN", "O_S1_JULES_UNDER", "O_S1_KAI_STAYS", "O_S1_DOME_NO_LED", "O_S1_ADRIAN_DRINK", "O_S1_UNPAID_TAB"]},
+        "do": [{"hint": ["Удерживай ПКМ или F — смотреть", 5.0]}]},
+      {"id": "hint_talk", "after": 45, "when": {"none": ["seen:X_S01_HALE", "seen:X_S01_JULES", "seen:X_S01_SELIN", "seen:X_S01_KAI"]},
+        "do": [{"hint": ["[E] рядом с человеком — заговорить", 4.0]}]},
+      {"id": "observe_only", "after": 270, "when": {"cmp": ["s1_resolution", "==", ""]},
+        "do": [{"line": "JULES_SELF_BREAK"}, {"give_fact": ["F_WATCH_PAWNED", "S01"]}, {"s1": "OBSERVE_ONLY"}, {"respect": ["adrian", 1]}, {"decision": "resolution"}]},
+      {"id": "left_early", "when": {"all": ["zone:LOBBY", {"cmp": ["s1_resolution", "==", ""]}]},
+        "do": [{"flag": "s1_left_early"}, {"goto_scene": "S02"}]},
+      {"id": "resolved", "when": {"cmp": ["s1_resolution", "!=", ""]}, "hold": 5.0, "do": [{"play_cine": "C_S1_ADRIAN"}]}
+    ],
+    "logic": "res://src/scenes_logic/s01_watch.gd",
+    "seed": [{"s1": "PRIVATE_DEAL"}, {"trust": ["adrian", 1]}, {"give_fact": ["F_WATCH_PAWNED", "debug"]}]
+  }
+}

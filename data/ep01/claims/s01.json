@@ -1,0 +1,19 @@
+{
+  "C_CAMERAS_RECORDED": {
+    "text": "Камеры всё записали.", "line": "H_CAMERAS", "verb": "BLUFF", "about": "F_CAMERA_FOOTAGE",
+    "is_true_if": "ITEM_PHOTO_DANIEL_307", "contradicted_by": ["F_DOME_DEAD"],
+    "fears": {"hale": "EXPOSED", "daniel": "ADRIAN_LEARNS_TRUTH"}, "available_to": ["hale", "jules", "daniel"]
+  },
+  "C_SAW_YOU": {"text": "Я видел, как ты их снял.", "line": "H_SAW", "verb": "BLUFF", "about": "F_WATCH_PAWNED", "is_true": false, "contradicted_by": [], "fears": {"hale": "EXPOSED"}},
+  "C_PAWNED": {"text": "Он ведь оставил их тебе?", "line": "H_PAWN_JULES", "verb": "PRESS", "about": "F_WATCH_PAWNED", "is_true": true, "fears": {"jules": "JOB"}},
+  "C_YOU_PAWNED_IT": {"text": "Ты заложил их Жюлю.", "line": "H_PAWN_HALE", "verb": "PRESS", "about": "F_WATCH_PAWNED", "is_true": true, "fears": {"hale": "EXPOSED"}},
+  "C_HALE_LOST_MONEY": {
+    "text": "Он сказал мне, что проигрался.", "line": "H_LOST", "verb": "BLUFF", "about": "F_HALE_BROKE", "is_true": false, "contradicted_by": [],
+    "overrides": {"selin": [
+      {"if": {"any": ["O_S1_UNPAID_TAB", "O_S1_EMPTY_WALLET"]}, "reaction": "SLIP"},
+      {"if": true, "reaction": "CALLED"}
+    ]}
+  },
+  "C_KAI_TOOK": {"text": "Это ты взял.", "line": "H_ACCUSE_KAI", "verb": "PROVOKE", "about": "F_KAI_INNOCENT", "is_true": false, "contradicted_by": []},
+  "C_SELIN_TOOK": {"text": "Это ты их взяла.", "line": "H_ACCUSE_SELIN", "verb": "PROVOKE", "about": "F_KAI_INNOCENT", "is_true": false, "contradicted_by": []}
+}

@@ -1,0 +1,11 @@
+{
+  "T_WATCH_NOT_STOLEN": {"text": "ЧАСЫ НЕ УКРАДЕНЫ", "offer_when": {"any_n": 2, "of": ["O_S1_WRIST_TAN", "O_S1_JULES_UNDER", "O_S1_UNPAID_TAB", "O_S1_HALE_LOOKS_SELIN", "O_S1_EMPTY_WALLET"]}, "truth": true},
+  "T_EX_BOYFRIEND": {"text": "ЕЁ ШАНТАЖИРУЕТ БЫВШИЙ", "truth": false, "unlocks_chips": ["CH_EVA_LUKAS", "CH_NICO_LUKAS"]},
+  "T_ADRIAN_FEARS_WHAT_SHE_HAS": {"text": "ОН БОИТСЯ ТОГО, ЧТО У НЕЁ ЕСТЬ", "offer_when": {"any": ["O_S2_POCKET_TOUCH", "O_S2_GRAB"]}, "truth": true},
+  "T_307_STAGED": {"text": "НОМЕР 307 ПОСТАВЛЕН", "offer_when": {"any_n": 2, "of": ["O_307_GLASS_ONE_USED", {"all": ["O_307_TOWELS_DRY", "O_307_MSG_CONDENSATION"]}, "O_307_SILL_DRY", "O_307_SHOE_CLEAN"]}, "truth": true},
+  "T_SHE_LEFT_BY_WINDOW": {"text": "ОНА УШЛА ЧЕРЕЗ ОКНО", "offer_when": {"all": ["O_307_ONE_WET_SHOE", "flag:window_seen_open"], "none": ["O_307_SILL_DRY", "O_307_NO_ESCAPE"]}, "truth": false},
+  "T_SOMEONE_SEARCHED_307": {"text": "КТО-ТО ОБЫСКАЛ 307", "offer_when": {"any_n": 2, "of": ["O_307_MATTRESS_SHIFTED", "O_307_ZIP_WRONG", "O_307_VENT_SCRATCH", "F_SECURITY_IN_307"]}, "truth": true},
+  "T_EVA_KNOWS": {"text": "ЭВА ЗНАЕТ, ГДЕ ОНА", "offer_when": {"all": ["O_EVA_POCKET"], "any": ["F_EVA_ROOM_308", "flag:eva_lied_twice"]}, "truth": true},
+  "T_DANIEL_HIDES_SOMETHING": {"text": "ДЭНИЕЛ ЧТО-ТО СКРЫВАЕТ", "offer_when": {"any_n": 2, "of": ["O_DANIEL_GLANCE_307", "O_DANIEL_SCREWDRIVER", "O_DANIEL_PHONE_DOWN", "O_DANIEL_CAMERA_CONCERN", "F_DANIEL_ASKING", "flag:daniel_escorted"]}, "truth": true},
+  "T_TWO_STORIES": {"text": "ОНА ДУМАЛА, ЧТО ВИНОВАТА / ОН ДУМАЛ, ЧТО ОНА НЕ ПОМНИТ", "offer_when": {"all": ["F_MARA_BELIEVED_SHE_DROVE", "F_ADRIAN_THINKS_MARA_FORGOT"]}, "truth": true, "auto_pin": true}
+}

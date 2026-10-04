@@ -1,0 +1,236 @@
+class_name HotelWorld
+extends Node3D
+## The whole hotel as one world (LEVEL_LAYOUT §1): every block built from data and kept loaded.
+## Also spawns the hero, all NPC bodies (despawned until a scene places them), interactables,
+## static observables, the camera director, READ, environment and audio buses.
+
+const FADE := 0.25
+
+var zones: Dictionary = {}
+var doors: Dictionary = {}
+var npcs: Dictionary = {}
+var hero: PlayerController
+var camera_director: CameraDirector
+var read_system: ReadSystem
+var env: WorldEnvironment
+var sun: DirectionalLight3D
+var traversing := false
+var bake_nav := true
+
+
+func _ready() -> void:
+	Services.world = self
+	_setup_audio_buses()
+	_build_environment()
+	var D := get_node("/root/Data")
+	for zid in D.level:
+		var z := LevelBuilder.build(zid, D.level[zid])
+		add_child(z)
+		zones[zid] = z
+		for did in z.doors:
+			doors[did] = z.doors[did]
+	if bake_nav:
+		_bake_navigation()
+	for iid in D.interactables:
+		var d: Dictionary = D.interactables[iid]
+		var it := Interactable.new()
+		add_child(it)
+		it.setup(iid, d)
+		if d.has("zone"):
+			it.global_position = D.zone_origin(String(d.zone)) + Data.vec3(d.get("p", [0, 0, 0]))
+		if d.has("npc"):
+			it.set_meta("follow_npc", String(d.npc))
+	hero = PlayerController.new()
+	hero.name = "Hero"
+	add_child(hero)
+	for npc_id in D.characters:
+		var cd: Dictionary = D.characters[npc_id]
+		var n := NPC.new()
+		add_child(n)
+		n.setup(npc_id, cd)
+		npcs[npc_id] = n
+	for oid in D.observations:
+		var od: Dictionary = D.observations[oid]
+		var anc: Dictionary = od.get("anchor", {})
+		var o := Observable.new()
+		o.setup(oid, od)
+		if anc.has("npc") and npcs.has(String(anc.npc)):
+			npcs[String(anc.npc)].attach_observable(o, String(anc.get("part", "body")), Data.vec3(anc.get("off", [0, 0, 0])))
+		elif anc.has("zone"):
+			add_child(o)
+			o.global_position = D.zone_origin(String(anc.zone)) + Data.vec3(anc.get("p", [0, 1, 0]))
+		elif anc.has("interact"):
+			add_child(o)
+			o.set_meta("follow_interact", String(anc.interact))
+		else:
+			add_child(o)
+			o.visible = false
+	camera_director = CameraDirector.new()
+	camera_director.name = "CameraDirector"
+	add_child(camera_director)
+	read_system = ReadSystem.new()
+	read_system.name = "ReadSystem"
+	add_child(read_system)
+
+
+func _exit_tree() -> void:
+	if Services.world == self:
+		Services.world = null
+
+
+func _process(_delta: float) -> void:
+	# interactables/observables bound to moving NPCs or interactables
+	for it in get_tree().get_nodes_in_group("interactables"):
+		if it.has_meta("follow_npc"):
+			var n: NPC = npcs.get(it.get_meta("follow_npc"))
+			if n and n.spawned:
+				it.global_position = n.global_position + Vector3(0, 0.0, 0)
+	for o in get_tree().get_nodes_in_group("observables"):
+		if o.has_meta("follow_interact"):
+			var it := get_node_or_null("I_" + String(o.get_meta("follow_interact")))
+			if it:
+				o.global_position = it.global_position + Vector3(0, 0.15, 0)
+
+
+# ------------------------------------------------------------------ lookups
+
+func zone_node(zid: String) -> Zone:
+	return zones.get(zid)
+
+
+func zone_def(zid: String) -> Dictionary:
+	var z: Zone = zones.get(zid)
+	return z.def if z else {}
+
+
+func door(did: String) -> Doorway:
+	return doors.get(did)
+
+
+func npc(id: String) -> NPC:
+	return npcs.get(id)
+
+
+func zone_at(p: Vector3) -> String:
+	for zid in zones:
+		if zones[zid].contains(p):
+			return zid
+	return ""
+
+
+# ------------------------------------------------------------------ transitions
+
+func traverse_hero(d: Doorway) -> void:
+	if traversing:
+		return
+	var tgt := d.target()
+	if tgt == null:
+		return
+	traversing = true
+	var B := get_node("/root/Bus")
+	B.control_lock.emit("door", true)
+	B.sfx_requested.emit("door_" + String(d.def.get("kind", "door")), d.global_position)
+	if Services.hud:
+		Services.hud.fade(FADE / 2.0, true)
+	var t := get_tree().create_timer(FADE / 2.0, true, false, true)
+	await t.timeout
+	hero.teleport_to(tgt.spawn_point(), tgt.zone_id)
+	hero.facing = tgt.normal
+	hero.body_vis.rotation.y = atan2(-tgt.normal.x, -tgt.normal.z)
+	camera_director.snap()
+	d.traversed.emit(d.door_id, "hero")
+	get_node("/root/Episode").hero_zone = tgt.zone_id
+	B.player_decision.emit("door")
+	if Services.hud:
+		Services.hud.fade(FADE / 2.0, false)
+	await get_tree().create_timer(FADE / 2.0, true, false, true).timeout
+	B.control_lock.emit("door", false)
+	traversing = false
+
+
+func place_hero(marker_ref: String, seated: bool = false) -> void:
+	var D := get_node("/root/Data")
+	if seated:
+		hero.sit_at(D.marker(marker_ref), D.marker_zone(marker_ref))
+	else:
+		hero.teleport_to(D.marker(marker_ref), D.marker_zone(marker_ref))
+	camera_director.snap()
+
+
+# ------------------------------------------------------------------ environment
+
+func _build_environment() -> void:
+	env = WorldEnvironment.new()
+	var e := Environment.new()
+	e.background_mode = Environment.BG_COLOR
+	e.background_color = Color(0.03, 0.035, 0.05)
+	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+	e.ambient_light_color = Color(0.45, 0.5, 0.62)
+	e.ambient_light_energy = 0.9
+	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
+	e.glow_enabled = false
+	e.fog_enabled = true
+	e.fog_light_color = Color(0.06, 0.07, 0.1)
+	e.fog_density = 0.008
+	env.environment = e
+	add_child(env)
+	sun = DirectionalLight3D.new()
+	sun.rotation_degrees = Vector3(-55, -30, 0)
+	sun.light_energy = 0.25
+	sun.light_color = Color(0.6, 0.68, 0.85)
+	sun.shadow_enabled = false
+	add_child(sun)
+
+
+func set_mood(mood: String) -> void:
+	var e := env.environment
+	match mood:
+		"dawn":
+			e.ambient_light_color = Color(0.62, 0.62, 0.72)
+			e.ambient_light_energy = 0.8
+			sun.light_color = Color(0.95, 0.75, 0.6)
+			sun.light_energy = 0.55
+		"blackout":
+			e.ambient_light_energy = 0.08
+		_:
+			e.ambient_light_color = Color(0.45, 0.5, 0.62)
+			e.ambient_light_energy = 0.9
+			sun.light_color = Color(0.6, 0.68, 0.85)
+			sun.light_energy = 0.25
+
+
+func _setup_audio_buses() -> void:
+	for b in ["Ambience", "Music", "SFX", "Dialogue"]:
+		if AudioServer.get_bus_index(b) < 0:
+			AudioServer.add_bus()
+			var i := AudioServer.bus_count - 1
+			AudioServer.set_bus_name(i, b)
+			AudioServer.set_bus_send(i, "Master")
+			if b == "Ambience":
+				var lp := AudioEffectLowPassFilter.new()
+				lp.cutoff_hz = 900
+				AudioServer.add_bus_effect(i, lp)
+				AudioServer.set_bus_effect_enabled(i, 0, false)
+
+
+# ------------------------------------------------------------------ navigation
+
+func _bake_navigation() -> void:
+	for zid in zones:
+		var z: Zone = zones[zid]
+		var region := NavigationRegion3D.new()
+		region.name = "Nav"
+		var nm := NavigationMesh.new()
+		nm.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
+		nm.geometry_collision_mask = Graybox.LAYER_WORLD
+		nm.cell_size = 0.25
+		nm.cell_height = 0.25
+		nm.agent_radius = 0.25
+		nm.agent_height = 1.75
+		nm.agent_max_climb = 0.5
+		nm.agent_max_slope = 50.0
+		z.add_child(region)
+		var src := NavigationMeshSourceGeometryData3D.new()
+		NavigationServer3D.parse_source_geometry_data(nm, src, z.get_node("Geometry"))
+		NavigationServer3D.bake_from_source_geometry_data(nm, src)
+		region.navigation_mesh = nm

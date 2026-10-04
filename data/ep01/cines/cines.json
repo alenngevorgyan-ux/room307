@@ -1,0 +1,13 @@
+{
+  "C_S1_ADRIAN": {"dur": 6.0, "camera": "BAR:twoshot",
+    "start": [
+      {"hero": ["sit", {"marker": "BAR:hero_stool"}]}, {"teleport_npc": ["adrian", "BAR:adrian_by_hero"]},
+      {"npc": ["adrian", "look", {"target": "hero"}]}, {"npc": ["adrian", "pose", {"pose": "table"}]},
+      {"if": "s1:PUBLIC_EXPOSE", "then": [{"line": "ADRIAN_S1_PUBLIC"}]},
+      {"if": "s1:PRIVATE_DEAL", "then": [{"line": "ADRIAN_S1_PRIVATE"}]},
+      {"if": "s1:WRONG_ACCUSE", "then": [{"line": "ADRIAN_S1_WRONG"}]},
+      {"if": "s1:OBSERVE_ONLY", "then": [{"line": "ADRIAN_S1_OBSERVE"}, {"line": "H_OBSERVE"}]},
+      {"give_fact": ["F_HERO_READS_PEOPLE", "C_S1_ADRIAN"]}
+    ],
+    "after": [{"goto_scene": "S02"}]}
+}

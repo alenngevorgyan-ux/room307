@@ -1,0 +1,18 @@
+{
+  "ITEM_HERO_PHONE": {"short": "телефон", "start_holder": "hero", "hidden": true},
+  "ITEM_KEYCARD_307": {"short": "ключ 307"},
+  "ITEM_MARA_PHONE": {"short": "телефон Мары", "start_holder": "world:307_bed"},
+  "ITEM_VOLVO_KEYS": {"short": "ключи Volvo"},
+  "ITEM_PHOTO_DANIEL_307": {"short": "фото: Дэниел у 307"},
+  "ITEM_SD_CARD": {"short": "карта памяти", "start_holder": "mara"},
+  "ITEM_STAFF_KEYCARD": {"short": "служебная карта"},
+  "ITEM_CART": {"short": "тележка", "hidden": true},
+  "ITEM_WATCH": {"short": "часы", "start_holder": "world:drawer", "hidden": true},
+  "ITEM_BOTTLE": {"short": "бутылка"},
+  "ITEM_RADIO": {"short": "рация"},
+  "ITEM_TERRACE_KEY": {"short": "ключ от террасы"},
+  "ITEM_MAIN_KEY": {"short": "ключ от зала"},
+  "ITEM_PLACE_CARD": {"short": "карточка", "hidden": true},
+  "ITEM_RECORDER": {"short": "диктофон", "hidden": true},
+  "ITEM_GLASSES_307": {"short": "бокалы", "start_holder": "world:307_desk", "hidden": true}
+}
