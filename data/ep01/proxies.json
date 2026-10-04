@@ -1,146 +1,676 @@
 {
   "_doc": "Temporary character proxies (Visual Integration V1.6) built from VESPER_EP01_CHARACTER_CANON_v1: height, build, silhouette, wardrobe colours, hair mass and identity cues. NOT final characters — each id is replaced by a production rig later (see docs/VISUAL_INTEGRATION_V1.md). Colours are the canon sheets' values, kept inside the CIR-25D value range. Collision and gameplay never depend on these numbers.",
-
   "hero": {
-    "name": "EL (ЭЛ)", "canon": "01/02 EL", "height": 1.8, "build": "lean", "skin": "c69a7c",
-    "hair": {"style": "curly_volume", "color": "1b1512"},
-    "top": "1c1a19", "jacket": {"style": "overshirt", "color": "2b231d"},
-    "lower": {"style": "trousers_wide", "color": "1f1c1b"}, "shoes": "17120f",
-    "acc": ["ring", "watch", "stubble"],
-    "posture": {"slump": 0.15, "lean": 0.0, "chin": -0.05, "hands": "pockets"}
+    "name": "EL (ЭЛ)",
+    "canon": "01/02 EL",
+    "height": 1.8,
+    "build": "lean",
+    "skin": "c69a7c",
+    "hair": {
+      "style": "curly_volume",
+      "color": "1b1512"
+    },
+    "top": "1c1a19",
+    "jacket": {
+      "style": "overshirt",
+      "color": "2b231d"
+    },
+    "lower": {
+      "style": "trousers_wide",
+      "color": "1f1c1b"
+    },
+    "shoes": "17120f",
+    "acc": [
+      "ring",
+      "watch",
+      "stubble"
+    ],
+    "posture": {
+      "slump": 0.15,
+      "lean": 0.0,
+      "chin": -0.05,
+      "hands": "pockets"
+    },
+    "moods": {
+      "default": "",
+      "rules": []
+    }
   },
   "adrian": {
-    "name": "Adrian Vale", "canon": "03", "height": 1.86, "build": "broad", "skin": "c09477",
-    "hair": {"style": "swept_back", "color": "8a8580"},
-    "top": "e6dfd2", "jacket": {"style": "suit_open", "color": "26262a"},
-    "lower": {"style": "trousers", "color": "26262a"}, "shoes": "151313",
-    "acc": ["pocket_square", "watch", "stubble_grey"],
-    "posture": {"slump": 0.0, "lean": -0.04, "chin": 0.06, "hands": "front"}
+    "name": "Adrian Vale",
+    "canon": "03",
+    "height": 1.86,
+    "build": "broad",
+    "skin": "c09477",
+    "hair": {
+      "style": "swept_back",
+      "color": "8a8580"
+    },
+    "top": "e6dfd2",
+    "jacket": {
+      "style": "suit_open",
+      "color": "26262a"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "26262a"
+    },
+    "shoes": "151313",
+    "acc": [
+      "pocket_square",
+      "watch",
+      "stubble_grey"
+    ],
+    "posture": {
+      "slump": 0.0,
+      "lean": -0.04,
+      "chin": 0.06,
+      "hands": "front"
+    },
+    "moods": {
+      "default": "authority",
+      "rules": [
+        {
+          "when": {
+            "any": [
+              {
+                "npc_state": {
+                  "adrian": {
+                    "stress_gte": 3
+                  }
+                }
+              },
+              {
+                "cmp": [
+                  "finale.exposed",
+                  "==",
+                  true
+                ]
+              }
+            ]
+          },
+          "mood": "control_breaking"
+        }
+      ]
+    }
   },
   "mara": {
-    "name": "Mara Vale", "canon": "04", "height": 1.66, "build": "slight", "skin": "d4ab8f",
-    "hair": {"style": "messy_updo", "color": "2a1c16"},
-    "top": "151214", "jacket": {"style": "cardigan", "color": "201c1d"},
-    "lower": {"style": "slip_dress", "color": "151214"}, "shoes": "141112",
-    "acc": ["necklace", "earrings"],
-    "posture": {"slump": 0.2, "lean": 0.03, "chin": -0.08, "hands": "crossed"}
+    "name": "Mara Vale",
+    "canon": "04",
+    "height": 1.66,
+    "build": "slight",
+    "skin": "d4ab8f",
+    "hair": {
+      "style": "messy_updo",
+      "color": "2a1c16"
+    },
+    "top": "151214",
+    "jacket": {
+      "style": "cardigan",
+      "color": "201c1d"
+    },
+    "lower": {
+      "style": "slip_dress",
+      "color": "151214"
+    },
+    "shoes": "141112",
+    "acc": [
+      "necklace",
+      "earrings"
+    ],
+    "posture": {
+      "slump": 0.2,
+      "lean": 0.03,
+      "chin": -0.08,
+      "hands": "crossed"
+    },
+    "moods": {
+      "default": "guarded",
+      "rules": [
+        {
+          "when": {
+            "any": [
+              "phase:S09_LIVE",
+              "phase:S09_DECISION"
+            ]
+          },
+          "mood": "defiant"
+        },
+        {
+          "when": {
+            "npc_state": {
+              "mara": {
+                "trust_lt": 0
+              }
+            }
+          },
+          "mood": "defiant"
+        }
+      ]
+    }
   },
   "nico": {
-    "name": "Nico (corrected)", "canon": "05", "height": 1.8, "build": "average", "skin": "c39878",
-    "hair": {"style": "shoulder_wavy", "color": "1e1714"},
-    "top": "ddd3c3", "jacket": {"style": "vest", "color": "231d1b"},
-    "lower": {"style": "trousers", "color": "1c1a1a"}, "shoes": "141111",
-    "acc": ["tie:5a2027", "apron_long:221c1a", "goatee", "rings", "sleeves_rolled"],
-    "posture": {"slump": 0.1, "lean": 0.05, "chin": 0.0, "hands": "work"}
+    "name": "Nico (corrected)",
+    "canon": "05",
+    "height": 1.8,
+    "build": "average",
+    "skin": "c39878",
+    "hair": {
+      "style": "shoulder_wavy",
+      "color": "1e1714"
+    },
+    "top": "ddd3c3",
+    "jacket": {
+      "style": "vest",
+      "color": "231d1b"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "1c1a1a"
+    },
+    "shoes": "141111",
+    "acc": [
+      "tie:5a2027",
+      "apron_long:221c1a",
+      "goatee",
+      "rings",
+      "sleeves_rolled"
+    ],
+    "posture": {
+      "slump": 0.1,
+      "lean": 0.05,
+      "chin": 0.0,
+      "hands": "work"
+    },
+    "moods": {
+      "default": "",
+      "rules": [],
+      "work_while_talking": true
+    }
   },
   "daniel": {
-    "name": "Daniel — Head of Security", "canon": "06", "height": 1.87, "build": "broad", "skin": "bf9273",
-    "hair": {"style": "short_neat", "color": "2a201b"},
-    "top": "e4ddd0", "jacket": {"style": "suit_closed", "color": "1f1e21"},
-    "lower": {"style": "trousers", "color": "1f1e21"}, "shoes": "121111",
-    "acc": ["tie:141315", "earpiece", "badge", "stubble"],
-    "posture": {"slump": 0.0, "lean": 0.0, "chin": 0.04, "hands": "behind"}
+    "name": "Daniel — Head of Security",
+    "canon": "06",
+    "height": 1.87,
+    "build": "broad",
+    "skin": "bf9273",
+    "hair": {
+      "style": "short_neat",
+      "color": "2a201b"
+    },
+    "top": "e4ddd0",
+    "jacket": {
+      "style": "suit_closed",
+      "color": "1f1e21"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "1f1e21"
+    },
+    "shoes": "121111",
+    "acc": [
+      "tie:141315",
+      "earpiece",
+      "badge",
+      "stubble"
+    ],
+    "posture": {
+      "slump": 0.0,
+      "lean": 0.0,
+      "chin": 0.04,
+      "hands": "behind"
+    },
+    "moods": {
+      "default": "still",
+      "rules": [
+        {
+          "when": {
+            "any": [
+              {
+                "npc_state": {
+                  "daniel": {
+                    "stress_gte": 2
+                  }
+                }
+              },
+              {
+                "cmp": [
+                  "finale.daniel_pressure",
+                  ">=",
+                  3
+                ]
+              }
+            ]
+          },
+          "mood": "stress"
+        }
+      ]
+    }
   },
   "eva": {
-    "name": "Eva", "canon": "07", "height": 1.58, "build": "slight", "skin": "d1a688",
-    "hair": {"style": "short_messy", "color": "2b1d16"},
-    "top": "181617", "jacket": {"style": "cropped", "color": "2a2523"},
-    "lower": {"style": "cargo", "color": "1d1b1b"}, "shoes": "141212",
-    "acc": ["bag", "necklace"],
-    "posture": {"slump": 0.25, "lean": 0.06, "chin": -0.1, "hands": "pocket_guard"}
+    "name": "Eva",
+    "canon": "07",
+    "height": 1.58,
+    "build": "slight",
+    "skin": "d1a688",
+    "hair": {
+      "style": "short_messy",
+      "color": "2b1d16"
+    },
+    "top": "181617",
+    "jacket": {
+      "style": "cropped",
+      "color": "2a2523"
+    },
+    "lower": {
+      "style": "cargo",
+      "color": "1d1b1b"
+    },
+    "shoes": "141212",
+    "acc": [
+      "bag",
+      "necklace"
+    ],
+    "posture": {
+      "slump": 0.25,
+      "lean": 0.06,
+      "chin": -0.1,
+      "hands": "pocket_guard"
+    },
+    "moods": {
+      "default": "restless",
+      "rules": []
+    }
   },
   "thomas": {
-    "name": "Thomas — former driver", "canon": "08", "height": 1.78, "build": "heavy", "skin": "b98a6b",
-    "hair": {"style": "short_curly", "color": "4a433d"},
-    "top": "4d5560", "jacket": {"style": "waxed", "color": "2f2720"},
-    "lower": {"style": "trousers", "color": "26231f"}, "shoes": "1c1712",
-    "acc": ["watch", "stubble_grey"],
-    "posture": {"slump": 0.3, "lean": 0.04, "chin": -0.1, "hands": "pockets"}
+    "name": "Thomas — former driver",
+    "canon": "08",
+    "height": 1.78,
+    "build": "heavy",
+    "skin": "b98a6b",
+    "hair": {
+      "style": "short_curly",
+      "color": "4a433d"
+    },
+    "top": "4d5560",
+    "jacket": {
+      "style": "waxed",
+      "color": "2f2720"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "26231f"
+    },
+    "shoes": "1c1712",
+    "acc": [
+      "watch",
+      "stubble_grey"
+    ],
+    "posture": {
+      "slump": 0.3,
+      "lean": 0.04,
+      "chin": -0.1,
+      "hands": "pockets"
+    },
+    "moods": {
+      "default": "withdrawn",
+      "rules": [
+        {
+          "when": {
+            "any": [
+              "flag:th_stopped",
+              "phase:S09_LIVE",
+              "phase:S09_DECISION"
+            ]
+          },
+          "mood": "cornered"
+        }
+      ]
+    }
   },
   "lina": {
-    "name": "Housekeeping employee (night shift)", "canon": "09", "height": 1.62, "build": "average", "skin": "c79c80",
-    "hair": {"style": "bun", "color": "231a16"},
-    "top": "c9b79a", "jacket": {"style": "none", "color": "c9b79a"},
-    "lower": {"style": "trousers", "color": "232021"}, "shoes": "151313",
-    "acc": ["apron_bib:2b2726", "towel", "name_badge"],
-    "posture": {"slump": 0.15, "lean": 0.05, "chin": 0.0, "hands": "front"}
+    "name": "Housekeeping employee (night shift)",
+    "canon": "09",
+    "height": 1.62,
+    "build": "average",
+    "skin": "c79c80",
+    "hair": {
+      "style": "bun",
+      "color": "231a16"
+    },
+    "top": "c9b79a",
+    "jacket": {
+      "style": "none",
+      "color": "c9b79a"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "232021"
+    },
+    "shoes": "151313",
+    "acc": [
+      "apron_bib:2b2726",
+      "towel",
+      "name_badge"
+    ],
+    "posture": {
+      "slump": 0.15,
+      "lean": 0.05,
+      "chin": 0.0,
+      "hands": "front"
+    }
   },
   "pavel": {
-    "name": "Vesper security (Richard type)", "canon": "10", "height": 1.84, "build": "broad", "skin": "bd8f70",
-    "hair": {"style": "short_neat", "color": "6e6862"},
-    "top": "e2dbcf", "jacket": {"style": "suit_closed", "color": "1d1c1f"},
-    "lower": {"style": "trousers", "color": "1d1c1f"}, "shoes": "121111",
-    "acc": ["tie:151416", "earpiece", "badge", "radio", "moustache"],
-    "posture": {"slump": 0.05, "lean": 0.0, "chin": 0.03, "hands": "front"}
+    "name": "Vesper security (Richard type)",
+    "canon": "10",
+    "height": 1.84,
+    "build": "broad",
+    "skin": "bd8f70",
+    "hair": {
+      "style": "short_neat",
+      "color": "6e6862"
+    },
+    "top": "e2dbcf",
+    "jacket": {
+      "style": "suit_closed",
+      "color": "1d1c1f"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "1d1c1f"
+    },
+    "shoes": "121111",
+    "acc": [
+      "tie:151416",
+      "earpiece",
+      "badge",
+      "radio",
+      "moustache"
+    ],
+    "posture": {
+      "slump": 0.05,
+      "lean": 0.0,
+      "chin": 0.03,
+      "hands": "front"
+    }
   },
   "receptionist": {
-    "name": "Front desk (Maya type)", "canon": "10", "height": 1.68, "build": "slight", "skin": "cfa286",
-    "hair": {"style": "bun", "color": "1d1613"},
-    "top": "e2dbcf", "jacket": {"style": "suit_closed", "color": "1f1d20"},
-    "lower": {"style": "trousers", "color": "1f1d20"}, "shoes": "121111",
-    "acc": ["tie:141315", "badge"],
-    "posture": {"slump": 0.0, "lean": 0.0, "chin": 0.0, "hands": "front"}
+    "name": "Front desk (Maya type)",
+    "canon": "10",
+    "height": 1.68,
+    "build": "slight",
+    "skin": "cfa286",
+    "hair": {
+      "style": "bun",
+      "color": "1d1613"
+    },
+    "top": "e2dbcf",
+    "jacket": {
+      "style": "suit_closed",
+      "color": "1f1d20"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "1f1d20"
+    },
+    "shoes": "121111",
+    "acc": [
+      "tie:141315",
+      "badge"
+    ],
+    "posture": {
+      "slump": 0.0,
+      "lean": 0.0,
+      "chin": 0.0,
+      "hands": "front"
+    }
   },
   "brody": {
-    "name": "Daniel's man (Jonas type, heavy)", "canon": "10", "height": 1.9, "build": "heavy", "skin": "c09173",
-    "hair": {"style": "buzz", "color": "2a221d"},
-    "top": "d9d2c6", "jacket": {"style": "suit_closed", "color": "1a191c"},
-    "lower": {"style": "trousers", "color": "1a191c"}, "shoes": "111010",
-    "acc": ["earpiece", "stubble"],
-    "posture": {"slump": 0.0, "lean": 0.08, "chin": -0.05, "hands": "front"}
+    "name": "Daniel's man (Jonas type, heavy)",
+    "canon": "10",
+    "height": 1.9,
+    "build": "heavy",
+    "skin": "c09173",
+    "hair": {
+      "style": "buzz",
+      "color": "2a221d"
+    },
+    "top": "d9d2c6",
+    "jacket": {
+      "style": "suit_closed",
+      "color": "1a191c"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "1a191c"
+    },
+    "shoes": "111010",
+    "acc": [
+      "earpiece",
+      "stubble"
+    ],
+    "posture": {
+      "slump": 0.0,
+      "lean": 0.08,
+      "chin": -0.05,
+      "hands": "front"
+    }
   },
   "sato": {
-    "name": "Daniel's man (Jonas type)", "canon": "10", "height": 1.8, "build": "lean", "skin": "c8a083",
-    "hair": {"style": "short_neat", "color": "15110f"},
-    "top": "d9d2c6", "jacket": {"style": "suit_closed", "color": "1a191c"},
-    "lower": {"style": "trousers", "color": "1a191c"}, "shoes": "111010",
-    "acc": ["earpiece"],
-    "posture": {"slump": 0.0, "lean": 0.05, "chin": 0.0, "hands": "front"}
+    "name": "Daniel's man (Jonas type)",
+    "canon": "10",
+    "height": 1.8,
+    "build": "lean",
+    "skin": "c8a083",
+    "hair": {
+      "style": "short_neat",
+      "color": "15110f"
+    },
+    "top": "d9d2c6",
+    "jacket": {
+      "style": "suit_closed",
+      "color": "1a191c"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "1a191c"
+    },
+    "shoes": "111010",
+    "acc": [
+      "earpiece"
+    ],
+    "posture": {
+      "slump": 0.0,
+      "lean": 0.05,
+      "chin": 0.0,
+      "hands": "front"
+    }
   },
   "hale": {
-    "name": "Hale (bar guest, S01)", "canon": "—", "height": 1.78, "build": "heavy", "skin": "c98f72",
-    "hair": {"style": "receding", "color": "5b4a3c"},
-    "top": "d8cdb8", "jacket": {"style": "blazer", "color": "6a4b2c"},
-    "lower": {"style": "trousers", "color": "2d2925"}, "shoes": "2a1d14",
-    "acc": ["bare_wrist"],
-    "posture": {"slump": -0.05, "lean": 0.08, "chin": 0.1, "hands": "gesture"}
+    "name": "Hale (bar guest, S01)",
+    "canon": "—",
+    "height": 1.78,
+    "build": "heavy",
+    "skin": "c98f72",
+    "hair": {
+      "style": "receding",
+      "color": "5b4a3c"
+    },
+    "top": "d8cdb8",
+    "jacket": {
+      "style": "blazer",
+      "color": "6a4b2c"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "2d2925"
+    },
+    "shoes": "2a1d14",
+    "acc": [
+      "bare_wrist"
+    ],
+    "posture": {
+      "slump": -0.05,
+      "lean": 0.08,
+      "chin": 0.1,
+      "hands": "gesture"
+    },
+    "moods": {
+      "default": "control_breaking",
+      "rules": []
+    }
   },
   "selin": {
-    "name": "Selin (bar guest, S01)", "canon": "—", "height": 1.7, "build": "slight", "skin": "d6ae92",
-    "hair": {"style": "long_straight", "color": "3a2418"},
-    "top": "4a2a3e", "jacket": {"style": "none", "color": "4a2a3e"},
-    "lower": {"style": "dress", "color": "4a2a3e"}, "shoes": "1c1416",
-    "acc": ["earrings", "clutch"],
-    "posture": {"slump": 0.0, "lean": -0.03, "chin": 0.05, "hands": "front"}
+    "name": "Selin (bar guest, S01)",
+    "canon": "—",
+    "height": 1.7,
+    "build": "slight",
+    "skin": "d6ae92",
+    "hair": {
+      "style": "long_straight",
+      "color": "3a2418"
+    },
+    "top": "4a2a3e",
+    "jacket": {
+      "style": "none",
+      "color": "4a2a3e"
+    },
+    "lower": {
+      "style": "dress",
+      "color": "4a2a3e"
+    },
+    "shoes": "1c1416",
+    "acc": [
+      "earrings",
+      "clutch"
+    ],
+    "posture": {
+      "slump": 0.0,
+      "lean": -0.03,
+      "chin": 0.05,
+      "hands": "front"
+    }
   },
   "kai": {
-    "name": "Kai (bar guest, S01)", "canon": "—", "height": 1.76, "build": "lean", "skin": "a87a5c",
-    "hair": {"style": "short_messy", "color": "141010"},
-    "top": "3c4a46", "jacket": {"style": "bomber", "color": "2c3a37"},
-    "lower": {"style": "trousers", "color": "26282b"}, "shoes": "c9c2b4",
+    "name": "Kai (bar guest, S01)",
+    "canon": "—",
+    "height": 1.76,
+    "build": "lean",
+    "skin": "a87a5c",
+    "hair": {
+      "style": "short_messy",
+      "color": "141010"
+    },
+    "top": "3c4a46",
+    "jacket": {
+      "style": "bomber",
+      "color": "2c3a37"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "26282b"
+    },
+    "shoes": "c9c2b4",
     "acc": [],
-    "posture": {"slump": 0.1, "lean": 0.0, "chin": 0.1, "hands": "open"}
+    "posture": {
+      "slump": 0.1,
+      "lean": 0.0,
+      "chin": 0.1,
+      "hands": "open"
+    }
   },
   "jules": {
-    "name": "Jules (bartender, S01)", "canon": "—", "height": 1.72, "build": "average", "skin": "c79a7c",
-    "hair": {"style": "receding", "color": "2a2420"},
-    "top": "ddd3c3", "jacket": {"style": "vest", "color": "2f2a26"},
-    "lower": {"style": "trousers", "color": "1c1a1a"}, "shoes": "141111",
-    "acc": ["tie:2a2830", "apron_long:2a2422"],
-    "posture": {"slump": 0.2, "lean": 0.05, "chin": -0.05, "hands": "work"}
+    "name": "Jules (bartender, S01)",
+    "canon": "—",
+    "height": 1.72,
+    "build": "average",
+    "skin": "c79a7c",
+    "hair": {
+      "style": "receding",
+      "color": "2a2420"
+    },
+    "top": "ddd3c3",
+    "jacket": {
+      "style": "vest",
+      "color": "2f2a26"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "1c1a1a"
+    },
+    "shoes": "141111",
+    "acc": [
+      "tie:2a2830",
+      "apron_long:2a2422"
+    ],
+    "posture": {
+      "slump": 0.2,
+      "lean": 0.05,
+      "chin": -0.05,
+      "hands": "work"
+    },
+    "moods": {
+      "default": "",
+      "rules": [],
+      "work_while_talking": true
+    }
   },
   "guest": {
-    "name": "Background guest", "canon": "—", "height": 1.75, "build": "average", "skin": "b58e74",
-    "hair": {"style": "short_neat", "color": "231c18"},
-    "top": "bfb6a6", "jacket": {"style": "suit_open", "color": "2a2a2e"},
-    "lower": {"style": "trousers", "color": "26262a"}, "shoes": "151313",
-    "acc": [], "posture": {"slump": 0.1, "lean": 0.0, "chin": 0.0, "hands": "front"}
+    "name": "Background guest",
+    "canon": "—",
+    "height": 1.75,
+    "build": "average",
+    "skin": "b58e74",
+    "hair": {
+      "style": "short_neat",
+      "color": "231c18"
+    },
+    "top": "bfb6a6",
+    "jacket": {
+      "style": "suit_open",
+      "color": "2a2a2e"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "26262a"
+    },
+    "shoes": "151313",
+    "acc": [],
+    "posture": {
+      "slump": 0.1,
+      "lean": 0.0,
+      "chin": 0.0,
+      "hands": "front"
+    }
   },
   "staff": {
-    "name": "Background staff", "canon": "09", "height": 1.72, "build": "average", "skin": "bf9478",
-    "hair": {"style": "short_neat", "color": "2a221d"},
-    "top": "c9b79a", "jacket": {"style": "none", "color": "c9b79a"},
-    "lower": {"style": "trousers", "color": "232021"}, "shoes": "151313",
-    "acc": ["apron_bib:2b2726"], "posture": {"slump": 0.15, "lean": 0.05, "chin": 0.0, "hands": "front"}
+    "name": "Background staff",
+    "canon": "09",
+    "height": 1.72,
+    "build": "average",
+    "skin": "bf9478",
+    "hair": {
+      "style": "short_neat",
+      "color": "2a221d"
+    },
+    "top": "c9b79a",
+    "jacket": {
+      "style": "none",
+      "color": "c9b79a"
+    },
+    "lower": {
+      "style": "trousers",
+      "color": "232021"
+    },
+    "shoes": "151313",
+    "acc": [
+      "apron_bib:2b2726"
+    ],
+    "posture": {
+      "slump": 0.15,
+      "lean": 0.05,
+      "chin": 0.0,
+      "hands": "front"
+    }
   }
 }

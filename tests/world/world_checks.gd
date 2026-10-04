@@ -326,3 +326,22 @@ func check_dressing_adds_no_collision() -> void:
 					bad.append(String(c.get_path()))
 	expect(dressed > 500, "the hotel is dressed (%d visual nodes)" % dressed)
 	expect(bad.is_empty(), "collision inside visual dressing: %s" % [bad.slice(0, 5)])
+
+
+## V1.7: authored body-language states follow the game state (data rules + hero reactions).
+func check_body_language_states() -> void:
+	Services.scenes.debug_jump("S04")
+	await frames(10)
+	var n: Node = Services.world.npc("adrian")
+	n.spawn_at(get_root_data().marker("LOBBY:adrian_mid"), "LOBBY", true)
+	await frames(30)
+	expect(n.body_vis.mood == "authority", "Adrian: controlled authority (got %s)" % n.body_vis.mood)
+	root.get_node("Episode").ch("adrian").stress = 3
+	await frames(30)
+	expect(n.body_vis.mood == "control_breaking", "Adrian: control breaking under stress (got %s)" % n.body_vis.mood)
+	root.get_node("Episode").ch("adrian").stress = 1
+	root.get_node("Bus").observation_noticed.emit("O_TEST")
+	await frames(30)
+	expect(hero().body_vis.mood == "attention", "EL: sudden attention on a READ notice (got %s)" % hero().body_vis.mood)
+	await frames(150)
+	expect(hero().body_vis.mood == "", "EL: back to relaxed observation")

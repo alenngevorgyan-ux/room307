@@ -42,6 +42,9 @@ func _ready() -> void:
 	var hints := HintDirector.new()
 	hints.name = "HintDirector"
 	add_child(hints)
+	var bl: Node = preload("res://src/npc/body_language.gd").new()
+	bl.name = "BodyLanguage"
+	add_child(bl)
 	var sm := SceneManager.new()
 	sm.name = "SceneManager"
 	add_child(sm)
