@@ -140,3 +140,45 @@ func s_07_room_read() -> void:
 	hero_at("ROOM_307:desk")
 	await wait(1.5)
 	await shot("07_room307_prompt")
+
+
+# ------------------------------------------------------------------ shots (V1.3 camera)
+
+func s_10_social() -> void:
+	await _quiet()
+	Services.scenes.goto_scene("S01")
+	await wait(0.5)
+	await _quiet()
+	root.get_node("Bus").camera_hint.emit({"clear": true})
+	hero_at("BAR:hale_a")
+	Services.hero.teleport_to(D().marker("BAR:hale_a") + Vector3(1.2, 0, 1.0), "BAR")
+	Services.world.camera_director.snap()
+	await wait(1.0)
+	await shot("10a_explore_bar")
+	Services.conversation.start("X_S01_HALE", true)
+	await wait(3.0)
+	await shot("10b_social_bar")
+
+
+func s_11_read() -> void:
+	await jump("S03")
+	hero_at("ROOM_307:desk")
+	await wait(0.8)
+	Input.action_press("read")
+	await wait(1.5)
+	await shot("11_read_focus")
+	Input.action_release("read")
+
+
+func s_12_finale() -> void:
+	await jump("S09")
+	hero_at("RESTAURANT:S4")
+	E().set_phase_name("S09_LIVE")
+	await wait(2.0)
+	await shot("12_finale_stage")
+
+
+func s_13_chase() -> void:
+	await jump("S07")
+	await wait(2.5)
+	await shot("13_chase_wide")

@@ -175,6 +175,12 @@ func _on_pop(npc: String, kind: String, _info: Dictionary) -> void:
 
 
 func _bar_with_hero_watching() -> void:
+	var cine: Node = main.get_node_or_null("CinePlayer")
+	if cine and cine.active != "":
+		cine.skip()
+		await frames(3)
+	ActionRunner.reset()
+	root.get_node("Episode").reset()   # earlier checks seed later scenes (S01 would count as resolved)
 	Services.scenes.goto_scene("S01")
 	await frames(30)
 	ActionRunner.reset()
@@ -240,3 +246,41 @@ func check_visible_short_teleport_walks() -> void:
 		t += 1
 	expect(n.global_position.distance_to(target) <= 0.6, "walked there (%.1f s)" % (t / 60.0))
 	expect(_pops.is_empty(), "no pop: %s" % [_pops])
+
+
+# ================================================================== V1.3: camera language
+
+func _cam() -> Node:
+	return Services.world.camera_director
+
+
+## The five camera modes engage from game state and keep the zone rig's direction (2.5D).
+func check_camera_modes() -> void:
+	await _bar_with_hero_watching()
+	await frames(30)
+	expect(_cam().mode_name == "explore", "explore by default (got %s)" % _cam().mode_name)
+	var yaw0: float = _cam().cam.global_rotation.y
+	var fov0: float = _cam().cam.fov
+	# B social: a conversation with someone close
+	await _settle_hero_at(get_root_data().marker("BAR:hale_a") + Vector3(1.2, 0, 1.0), "BAR")
+	Services.conversation.auto_triggers = false
+	Services.conversation.start("X_S01_HALE", true)
+	await frames(90)
+	expect(_cam().mode_name == "social", "social while talking (got %s)" % _cam().mode_name)
+	expect(_cam().cam.fov < fov0 - 1.0, "social pushes in (fov %.1f -> %.1f)" % [fov0, _cam().cam.fov])
+	expect(absf(angle_difference(_cam().cam.global_rotation.y, yaw0)) < deg_to_rad(20), "direction stays (2.5D)")
+	Services.conversation.end_active("TEST")
+	Services.conversation.auto_triggers = true
+	await frames(90)
+	expect(_cam().mode_name == "explore", "back to explore")
+	# E finale: live meeting at the table
+	Services.scenes.debug_jump("S09")
+	await frames(10)
+	await _settle_hero_at(get_root_data().marker("RESTAURANT:S4"), "RESTAURANT")
+	root.get_node("Episode").set_phase_name("S09_LIVE")
+	await frames(60)
+	expect(_cam().mode_name == "finale", "finale stage at the table (got %s)" % _cam().mode_name)
+	# D chase
+	Services.scenes.debug_jump("S07")
+	await frames(120)
+	expect(_cam().mode_name == "chase", "chase wide in S07 (got %s)" % _cam().mode_name)

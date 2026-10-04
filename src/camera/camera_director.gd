@@ -1,6 +1,14 @@
 class_name CameraDirector
 extends Node3D
 ## One Camera3D driven by CameraZones -> CameraRigs with 0.6 s blends (no free camera).
+## Five camera modes shape the zone rig's framing without ever swinging its direction (2.5D):
+##   explore — the zone rig as authored (Exploration Wide);
+##   social  — in conversation: drift toward the hero/speaker midpoint, push in (Social Medium);
+##   read    — READ held: tighter, a slight lean toward what is being studied (READ Focus);
+##   chase   — S07: higher, wider, more lead so routes and pursuers stay readable (Chase Wide);
+##   finale  — S09 live/decision near the table: the table orbit, favouring the hero's side
+##             (Finale Social Stage).
+## Cines (camera_hint rigs) override all of them.
 ## Rig (zone-local): {type: follow|fixed|orbit, offset, look, fov, clamp_x, clamp_z, lock_x/lock_y/lock_z,
 ##                    pos, at, center, radius, height, yaw, arc, lead, damp}
 
@@ -15,6 +23,10 @@ var _override: Dictionary = {}
 var _override_t := 0.0
 var _read_push := 0.0
 var shake := 0.0
+var mode_name := "explore"
+var _social := 0.0               # 0..1 eased weights so modes glide in and out
+var _chase := 0.0
+const FINALE_STAGE_RADIUS := 6.5
 
 
 func _ready() -> void:
@@ -68,8 +80,34 @@ func current_rig() -> Dictionary:
 	var zone: Zone = Services.world.zone_node(hero.current_zone)
 	if zone == null:
 		return {}
+	if _finale_stage(zone):
+		return {"zone": zone, "rig": zone.rig("table"), "key": zone.zone_id + ":table"}
 	var rid := zone.rig_id_at(hero.global_position)
 	return {"zone": zone, "rig": zone.rig(rid), "key": zone.zone_id + ":" + rid}
+
+
+## E — the live meeting and the decision are staged around the table while the hero is near it.
+func _finale_stage(zone: Zone) -> bool:
+	if zone.zone_id != "RESTAURANT" or not zone.rigs.has("table"):
+		return false
+	var ph: String = get_node("/root/Episode").phase_name()
+	if ph != "S09_LIVE" and ph != "S09_DECISION":
+		return false
+	var c := zone.global_position + Data.vec3(zone.rigs.table.get("center", [0, 0, 0]))
+	var h: Vector3 = Services.hero.global_position
+	return Vector2(h.x - c.x, h.z - c.z).length() <= FINALE_STAGE_RADIUS
+
+
+func _conversation_partner() -> Node3D:
+	var conv: Node = Services.conversation
+	if conv == null or not conv.is_active() or Services.world == null:
+		return null
+	var n: Node3D = Services.world.npc(String(conv.active.get("npc", "")))
+	if n == null or not n.spawned or n.current_zone != Services.hero.current_zone:
+		return null
+	if n.global_position.distance_to(Services.hero.global_position) > 6.0:
+		return null
+	return n
 
 
 func _desired() -> Dictionary:
@@ -128,11 +166,74 @@ func _desired() -> Dictionary:
 			if r.has("look_lock_y"):
 				look.y = o.y + float(r.look_lock_y)
 			pos = o + lp
+	var fov := float(r.get("fov", 50.0))
+	var is_follow := String(r.get("type", "follow")) == "follow"
+	if _override.is_empty():
+		# B — Social Medium: frame the pair, a little closer; same direction as the zone rig
+		var partner := _conversation_partner()
+		if _social > 0.001:
+			var mid := hp
+			if partner:
+				mid = (hp + partner.global_position) * 0.5
+				_last_mid = mid
+			else:
+				mid = _last_mid
+			var shift := (mid - hp) * (0.8 if is_follow else 0.0)
+			shift.y = 0.0
+			pos += shift * _social
+			look = look.lerp(look + (mid - hp) * 0.9, _social)
+			if is_follow:
+				pos = look + (pos - look) * lerpf(1.0, 0.8, _social)
+			fov *= lerpf(1.0, 0.93, _social)
+		# D — Chase Wide: higher and wider, routes and pursuers in frame
+		if _chase > 0.001 and is_follow:
+			pos = look + (pos - look) * lerpf(1.0, 1.14, _chase) + Vector3(0, 0.7, 0) * _chase
+			fov += 4.0 * _chase
+		# C — READ Focus: tighter, leaning slightly toward what is being studied
+		if _read_push > 0.001:
+			var f: Variant = _read_target()
+			if f != null:
+				look = look.lerp(f as Vector3, 0.22 * _read_push)
+			if is_follow:
+				pos = look + (pos - look) * lerpf(1.0, 0.9, _read_push)
+			fov *= lerpf(1.0, 0.88, _read_push)
+		# E — the table orbit keeps the hero in the picture as he moves around the table
+		if String(r.get("type", "")) == "orbit":
+			look = look.lerp(hp + Vector3(0, 1.0, 0), 0.25)
 	var xf := Transform3D.IDENTITY.translated(pos)
 	if pos.distance_to(look) > 0.01:
 		xf = xf.looking_at(look, Vector3.UP)
-	var fov := float(r.get("fov", 50.0)) * (1.0 - 0.05 * _read_push)
 	return {"xf": xf, "fov": fov, "key": cr.key, "damp": float(r.get("damp", 6.0))}
+
+
+var _last_mid := Vector3.ZERO
+
+
+func _read_target() -> Variant:
+	var rs: Node = Services.read
+	if rs and rs.focus and is_instance_valid(rs.focus):
+		return rs.focus.global_position
+	return null
+
+
+func _update_mode(real_dt: float) -> void:
+	var reading: bool = Services.read != null and Services.read.active
+	var chasing: bool = Services.chase != null and Services.chase.get("active") == true
+	var talking := _conversation_partner() != null and not chasing
+	_social = move_toward(_social, 1.0 if talking else 0.0, real_dt / 0.9)
+	_chase = move_toward(_chase, 1.0 if chasing else 0.0, real_dt / 1.2)
+	if not _override.is_empty():
+		mode_name = "cine"
+	elif chasing:
+		mode_name = "chase"
+	elif reading:
+		mode_name = "read"
+	elif String(current_rig().get("key", "")).ends_with(":table"):
+		mode_name = "finale"
+	elif talking:
+		mode_name = "social"
+	else:
+		mode_name = "explore"
 
 
 func _process(delta: float) -> void:
@@ -144,6 +245,7 @@ func _process(delta: float) -> void:
 			_start_blend()
 	var reading: bool = Services.read != null and Services.read.active
 	_read_push = move_toward(_read_push, 1.0 if reading else 0.0, real_dt * 4.0)
+	_update_mode(real_dt)
 	var d := _desired()
 	if d.is_empty():
 		return
