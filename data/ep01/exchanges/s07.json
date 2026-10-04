@@ -1,0 +1,22 @@
+{
+  "X_S07_INTERROG": {
+    "npc": "sato", "scene": "S07", "trigger": {"type": "manual"}, "priority": 5, "radius_leave": 60.0, "npc_keeps_schedule": true,
+    "nodes": {
+      "start": {"line": ["SATO_WHERE", "SATO_PATDOWN"], "next": "i1"},
+      "i1": {"timeout": 7.0, "chips": [
+        {"id": "CH_INT_ADRIAN", "verb": "BLUFF", "label": "Запись у Адриана", "line": "H_INT_ADRIAN", "next": "radio"},
+        {"id": "CH_INT_SIXTH", "verb": "BLUFF", "label": "Шестой этаж", "line": "H_INT_SIXTH", "next": "sixth"},
+        {"id": "CH_INT_PROVOKE", "verb": "PROVOKE", "label": "За мышцы?", "line": "H_INT_PROVOKE", "next": "provoke"}
+      ], "silence": "silent", "leave": "silent"},
+      "radio": {"line": "SATO_RADIO", "actions": [{"flag": "interrog_window"}, {"npc": ["brody", "look", {"target": "sato"}]}, {"hint": ["Броди отвернулся. [Пробел] — ящики", 3.0]}], "next": "end"},
+      "sixth": {"line": "BRODY_SIXTH", "actions": [{"flag": "sixth_lie"}, {"flag": "interrog_window"}, {"npc": ["brody", "look", {"target": "sato"}]}, {"hint": ["Броди отвернулся. [Пробел] — ящики", 3.0]}], "next": "end"},
+      "provoke": {"line": "BRODY_ANGRY", "actions": [{"add": ["flag.interrog_bad", 1]}, {"camera_hint": {"shake": 0.5}}, {"sfx": "impact"}], "next": "i2"},
+      "silent": {"line": "SATO_SILENT", "actions": [{"add": ["flag.interrog_bad", 1]}], "next": "i2"},
+      "i2": {"timeout": 7.0, "chips": [
+        {"id": "CH_INT_ADRIAN2", "verb": "BLUFF", "label": "Запись у Адриана", "line": "H_INT_ADRIAN", "next": "radio"},
+        {"id": "CH_INT_SIXTH2", "verb": "BLUFF", "label": "Шестой этаж", "line": "H_INT_SIXTH", "next": "sixth"}
+      ], "silence": "silent2", "leave": "silent2"},
+      "silent2": {"line": "SATO_SILENT", "actions": [{"add": ["flag.interrog_bad", 1]}], "next": "end"}
+    }
+  }
+}

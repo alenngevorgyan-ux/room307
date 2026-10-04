@@ -30,6 +30,9 @@ func _ready() -> void:
 	var audio := AudioDirector.new()
 	audio.name = "AudioDirector"
 	add_child(audio)
+	var chase := ChaseDirector.new()
+	chase.name = "ChaseDirector"
+	add_child(chase)
 	var sm := SceneManager.new()
 	sm.name = "SceneManager"
 	add_child(sm)

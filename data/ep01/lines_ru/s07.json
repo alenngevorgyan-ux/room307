@@ -1,0 +1,23 @@
+{
+  "BRODY_GRAB": {"speaker": "brody", "text": "Попался."},
+  "SATO_SEE": {"speaker": "sato", "text": "Вон он! Броди, слева!"},
+  "SATO_WHERE": {"speaker": "sato", "text": "Где она? Где запись?"},
+  "H_INT_ADRIAN": {"speaker": "hero", "text": "Запись у Адриана. Он вам не сказал?"},
+  "SATO_RADIO": {"speaker": "sato", "text": "Шеф… он говорит, запись у Вейла. Шеф?"},
+  "H_INT_SIXTH": {"speaker": "hero", "text": "Шестой этаж."},
+  "BRODY_SIXTH": {"speaker": "brody", "text": "Шестой. Сато, скажи нашим."},
+  "H_INT_PROVOKE": {"speaker": "hero", "text": "Броди, тебе платят за мышцы?"},
+  "BRODY_ANGRY": {"speaker": "brody", "text": "Ещё слово."},
+  "SATO_SILENT": {"speaker": "sato", "text": "Молчишь? Хорошо. Время у нас есть."},
+  "SATO_PATDOWN": {"speaker": "sato", "text": "Телефон — сюда. Вот так."},
+  "THOMAS_SAVE": {"speaker": "thomas", "text": "Эй! Отпусти парня."},
+  "H_RADIO_BLUFF": {"speaker": "hero", "text": "Дэниел сказал прекратить. Проверь телефон."},
+  "BRODY_DOUBT": {"speaker": "brody", "text": "…Шеф? Шеф, приём."},
+  "BRODY_CALLED": {"speaker": "brody", "text": "Ага. Конечно."},
+  "SATO_DOUBT": {"speaker": "sato", "text": "Подожди. Проверю."},
+  "SATO_CALLED": {"speaker": "sato", "text": "Дэниел не звонит. Никогда."},
+  "SATO_ELEV": {"speaker": "sato", "text": "Он в лифте! Лестница, быстро!"},
+  "SATO_SEARCH": {"speaker": "sato", "text": "Где-то здесь…"},
+  "MARA_PULL": {"speaker": "mara", "text": "Тсс. Сюда."},
+  "RADIO_LOST": {"speaker": "sato", "text": "Потеряли. Проверь крышу."}
+}

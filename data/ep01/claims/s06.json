@@ -1,0 +1,4 @@
+{
+  "C_POLICE_COMING": {"text": "Полиция уже едет.", "line": "H_POLICE", "verb": "BLUFF", "about": "F_POLICE_COMING", "is_true": false, "contradicted_by": [], "fears": {"thomas": "SACRIFICE_WASTED"}},
+  "C_DANIEL_KNOWS_YOU_HERE": {"text": "Дэниел знает, что ты здесь.", "line": "H_DANIEL_KNOWS", "verb": "PROVOKE", "about": "F_THOMAS_LOCATION", "is_true": true, "fears": {"thomas": "DANIEL"}}
+}
