@@ -1,0 +1,105 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.7.2"
+
+jobs:
+  test-and-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot + export templates
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-v1
+
+      - name: Install Godot ${{ env.GODOT_VERSION }}
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          mkdir -p ~/godot ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          base=https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable
+          curl -sSL -o /tmp/godot.zip "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+          curl -sSL -o /tmp/templates.tpz "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q /tmp/templates.tpz -d /tmp/tpl
+          mv /tmp/tpl/templates/* ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+
+      - name: Import project
+        run: ~/godot/godot --headless --path . --import || true
+
+      - name: Tests (AUTO + SIM)
+        run: GODOT=~/godot/godot ./run_tests.sh
+
+      - name: Export builds
+        run: |
+          set -e
+          mkdir -p build/web build/windows build/linux build/macos
+          ~/godot/godot --headless --path . --export-release "Web" build/web/index.html
+          ~/godot/godot --headless --path . --export-release "Windows" build/windows/Room307.exe
+          ~/godot/godot --headless --path . --export-release "Linux" build/linux/Room307.x86_64
+          ~/godot/godot --headless --path . --export-release "macOS" build/macos/Room307.zip
+          cd build
+          (cd web && zip -qr ../Room307-web.zip .)
+          (cd windows && zip -qr ../Room307-windows.zip .)
+          (cd linux && zip -qr ../Room307-linux.zip .)
+          cp macos/Room307.zip Room307-macos.zip
+          ls -la
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: room307-builds
+          path: build/*.zip
+
+      - name: Publish rolling "playtest" release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: playtest
+          name: "Room 307 · Episode 01 — playtest build"
+          body: |
+            Latest graybox build of Episode 01 from `${{ github.sha }}`.
+            Web: unzip Room307-web.zip and serve the folder (e.g. `python3 -m http.server`), then open index.html.
+            Desktop: Windows / macOS / Linux zips.
+          artifacts: build/*.zip
+          allowUpdates: true
+          removeArtifacts: true
+          replacesArtifacts: true
+          commit: ${{ github.sha }}
+          makeLatest: true
+
+      - name: Upload Pages artifact
+        if: ${{ !github.event.repository.private }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  pages:
+    if: ${{ !github.event.repository.private }}
+    needs: test-and-export
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
