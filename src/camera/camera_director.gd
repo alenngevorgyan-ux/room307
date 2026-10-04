@@ -24,6 +24,9 @@ var _override_t := 0.0
 var _read_push := 0.0
 var shake := 0.0
 var mode_name := "explore"
+var _faded: Dictionary = {}      # occluder body -> current fade
+var _occ_t := 0.0
+var _occ_want: Dictionary = {}
 var _social := 0.0               # 0..1 eased weights so modes glide in and out
 var _chase := 0.0
 const FINALE_STAGE_RADIUS := 6.5
@@ -266,6 +269,46 @@ func _process(delta: float) -> void:
 	if shake > 0.0:
 		shake = maxf(0.0, shake - real_dt)
 		cam.global_position += Vector3(randf_range(-1, 1), randf_range(-1, 1), 0) * 0.04 * shake
+	_update_occluders(real_dt)
+
+
+## Anything tagged "occluder" between the camera and the hero dithers out (never a hard pop).
+func _update_occluders(dt: float) -> void:
+	var hero: Node3D = Services.hero
+	if hero == null or not is_inside_tree():
+		return
+	_occ_t -= dt
+	if _occ_t <= 0.0:
+		_occ_t = 0.1
+		_occ_want = {}
+		var space := cam.get_world_3d().direct_space_state
+		for h in [0.4, 1.0, 1.7]:
+			var target := hero.global_position + Vector3(0, h, 0)
+			var exclude: Array[RID] = []
+			for i in 6:
+				var q := PhysicsRayQueryParameters3D.create(cam.global_position, target, Graybox.LAYER_WORLD, exclude)
+				var hit := space.intersect_ray(q)
+				if hit.is_empty():
+					break
+				var body: Object = hit.collider
+				if body and body.has_meta("occluder"):
+					_occ_want[body] = true
+				exclude.append(hit.rid)
+	for b in _occ_want:
+		if not _faded.has(b):
+			_faded[b] = 0.0
+	for b in _faded.keys():
+		if not is_instance_valid(b):
+			_faded.erase(b)
+			continue
+		var f: float = move_toward(float(_faded[b]), 0.82 if _occ_want.has(b) else 0.0, dt * 3.5)
+		var mi: MeshInstance3D = b.get_meta("occluder")
+		if mi and mi.material_override is ShaderMaterial:
+			(mi.material_override as ShaderMaterial).set_shader_parameter("fade", f)
+		if f <= 0.0 and not _occ_want.has(b):
+			_faded.erase(b)
+		else:
+			_faded[b] = f
 
 
 func blending() -> bool:

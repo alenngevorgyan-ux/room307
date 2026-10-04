@@ -284,3 +284,21 @@ func check_camera_modes() -> void:
 	Services.scenes.debug_jump("S07")
 	await frames(120)
 	expect(_cam().mode_name == "chase", "chase wide in S07 (got %s)" % _cam().mode_name)
+
+
+## V1.4: a tall prop between the 2.5D camera and the hero dithers out instead of hiding him.
+func check_occluder_fades() -> void:
+	Services.scenes.debug_jump("S04")
+	await frames(10)
+	var lobby: Node = Services.world.zone_node("LOBBY")
+	var pillar: Node = lobby.get_node("Geometry/pillar_2")
+	if not pillar.has_meta("occluder"):
+		expect(false, "pillar_2 is tagged as an occluder (art layer on)")
+		return
+	await _settle_hero_at(lobby.global_position + Vector3(14.0, 0, 8.6), "LOBBY")
+	await frames(40)
+	var mat: ShaderMaterial = (pillar.get_meta("occluder") as MeshInstance3D).material_override
+	expect(float(mat.get_shader_parameter("fade")) > 0.5, "pillar in front of the hero fades (%.2f)" % float(mat.get_shader_parameter("fade")))
+	await _settle_hero_at(lobby.global_position + Vector3(9.0, 0, 6.0), "LOBBY")
+	await frames(60)
+	expect(float(mat.get_shader_parameter("fade")) < 0.05, "and comes back when he moves on")

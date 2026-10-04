@@ -40,6 +40,9 @@ func _ready() -> void:
 			it.global_position = D.zone_origin(String(d.zone)) + Data.vec3(d.get("p", [0, 0, 0]))
 		if d.has("npc"):
 			it.set_meta("follow_npc", String(d.npc))
+	# THE VESPER art layer: re-skins visuals and lights only (gameplay geometry untouched)
+	if VesperLook.enabled():
+		VesperLook.apply(self)
 	hero = PlayerController.new()
 	hero.name = "Hero"
 	add_child(hero)
@@ -78,7 +81,19 @@ func _exit_tree() -> void:
 		Services.world = null
 
 
+var _amb_target := Color(0.36, 0.33, 0.36)
+var _amb_energy := 0.55
+var _mood_mult := 1.0
+
+
 func _process(_delta: float) -> void:
+	# wing ambience follows the hero (warm public rooms, cooler guest floors, flat service)
+	if hero and env and VesperLook.enabled():
+		var wa: Array = VesperLook.WING_AMBIENT.get(VesperLook.wing(hero.current_zone), VesperLook.WING_AMBIENT.PUBLIC)
+		var e := env.environment
+		var k := minf(1.0, _delta * 2.0)
+		e.ambient_light_color = e.ambient_light_color.lerp(wa[0], k)
+		e.ambient_light_energy = lerpf(e.ambient_light_energy, float(wa[1]) * _mood_mult, k)
 	# interactables/observables bound to moving NPCs or interactables
 	for it in get_tree().get_nodes_in_group("interactables"):
 		if it.has_meta("follow_npc"):
@@ -175,15 +190,26 @@ func _build_environment() -> void:
 	env = WorldEnvironment.new()
 	var e := Environment.new()
 	e.background_mode = Environment.BG_COLOR
-	e.background_color = Color(0.03, 0.035, 0.05)
+	e.background_color = Color("0e0d0c")      # CIR-25D black floor: never #000
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = Color(0.45, 0.5, 0.62)
-	e.ambient_light_energy = 0.9
+	e.ambient_light_color = Color(0.36, 0.33, 0.36)
+	e.ambient_light_energy = 0.55
 	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	e.glow_enabled = false
+	e.tonemap_exposure = 1.15
+	e.tonemap_white = 1.3
+	# slight halation on practicals only (no bloom wash)
+	e.glow_enabled = true
+	e.glow_intensity = 0.45
+	e.glow_strength = 0.9
+	e.glow_bloom = 0.0
+	e.glow_hdr_threshold = 1.15
+	e.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	e.fog_enabled = true
-	e.fog_light_color = Color(0.06, 0.07, 0.1)
-	e.fog_density = 0.008
+	e.fog_light_color = Color(0.07, 0.075, 0.09)
+	e.fog_density = 0.01
+	e.adjustment_enabled = true
+	e.adjustment_contrast = 1.06
+	e.adjustment_saturation = 0.92
 	env.environment = e
 	add_child(env)
 	sun = DirectionalLight3D.new()
@@ -198,17 +224,18 @@ func set_mood(mood: String) -> void:
 	var e := env.environment
 	match mood:
 		"dawn":
-			e.ambient_light_color = Color(0.62, 0.62, 0.72)
-			e.ambient_light_energy = 0.8
+			_mood_mult = 1.25
 			sun.light_color = Color(0.95, 0.75, 0.6)
 			sun.light_energy = 0.55
 		"blackout":
+			_mood_mult = 0.15
 			e.ambient_light_energy = 0.08
 		_:
-			e.ambient_light_color = Color(0.45, 0.5, 0.62)
-			e.ambient_light_energy = 0.9
+			_mood_mult = 1.0
 			sun.light_color = Color(0.6, 0.68, 0.85)
 			sun.light_energy = 0.25
+	if not VesperLook.enabled():
+		e.ambient_light_energy = 0.9 * _mood_mult
 
 
 func _setup_audio_buses() -> void:
