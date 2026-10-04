@@ -172,3 +172,23 @@ func test_hint_progress_resets_stall_and_conversation_blocks() -> void:
 	check(not said.is_empty(), "the nudge comes once the conversation is over")
 	bus().thought_requested.disconnect(cb)
 	h.free()
+
+
+# ------------------------------------------------------------------ V1.6 proxies
+
+## Every principal has a canon proxy, and they are differentiated (no identical capsules).
+func test_cast_proxies_are_distinct() -> void:
+	var cast := ["hero", "adrian", "mara", "nico", "daniel", "eva", "thomas", "lina", "pavel"]
+	var seen: Dictionary = {}
+	for id in cast:
+		var s: Dictionary = BodyVisual.proxy_spec(id)
+		check(not s.is_empty(), "%s has a proxy" % id)
+		if s.is_empty():
+			continue
+		var sig := "%s|%s|%s|%s|%s" % [s.height, s.build, s.hair.style, s.jacket.style, s.lower.style]
+		check(not seen.has(sig), "%s silhouette differs from %s" % [id, seen.get(sig, "")])
+		seen[sig] = id
+	var el: Dictionary = BodyVisual.proxy_spec("hero")
+	eq(el.hair.style, "curly_volume", "EL: dark wavy hair mass")
+	check(el.acc.has("ring"), "EL: the subtle ring")
+	eq(el.jacket.style, "overshirt", "EL: short dark overshirt, no detective costume")

@@ -67,8 +67,9 @@ func setup(id: String, d: Dictionary) -> void:
 	var gb: Dictionary = d.get("graybox", {})
 	body_vis = BodyVisual.new()
 	body_vis.name = "Body"
+	body_vis.proxy_id = proxy_for(id, d)
 	add_child(body_vis)
-	body_vis.build(Graybox.color(gb.get("color", [0.5, 0.5, 0.5])), float(gb.get("scale", 1.0)), gb)
+	body_vis.build(Graybox.color(gb.get("color", [0.5, 0.5, 0.5])), 1.0 if body_vis.proxy_id == id else float(gb.get("scale", 1.0)), gb)
 	nav = NavigationAgent3D.new()
 	nav.path_desired_distance = 0.4
 	nav.target_desired_distance = ARRIVE
@@ -85,6 +86,17 @@ func setup(id: String, d: Dictionary) -> void:
 	B.bark_requested.connect(_on_bark)
 	B.noise.connect(_on_noise)
 	_despawn()
+
+
+## Which canon proxy (data/ep01/proxies.json) stands in for this character.
+static func proxy_for(id: String, d: Dictionary) -> String:
+	if not BodyVisual.proxy_spec(id).is_empty():
+		return id
+	if id.begins_with("guest"):
+		return "guest"
+	if id.begins_with("staff") or id == "laundry_worker":
+		return "staff"
+	return "guest" if d.get("silhouette", false) else ""
 
 
 func attach_observable(o: Observable, part: String, off: Vector3) -> void:

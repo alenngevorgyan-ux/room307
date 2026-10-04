@@ -54,6 +54,7 @@ func _ready() -> void:
 	add_child(_col)
 	body_vis = BodyVisual.new()
 	body_vis.name = "Body"
+	body_vis.proxy_id = "hero"   # EL (data/ep01/proxies.json; canon sheets 01/02)
 	add_child(body_vis)
 	body_vis.build(Color(0.15, 0.15, 0.17))
 	_carry_mesh = Graybox.box_mesh(Vector3(0.12, 0.02, 0.18), Color(0.95, 0.95, 0.9))

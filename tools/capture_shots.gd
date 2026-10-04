@@ -225,3 +225,49 @@ func s_99_debug_lobby() -> void:
 	print("[dbg] ray hit ", hit.get("collider"), " at ", hit.get("position"))
 	print("[dbg] faded ", Services.world.camera_director._faded)
 	await shot("dbg_lobby")
+
+
+# ------------------------------------------------------------------ cast line-up (V1.6 proxies)
+
+const CAST := ["adrian", "mara", "nico", "daniel", "eva", "thomas", "lina", "pavel", "receptionist", "brody", "sato", "hale"]
+
+
+func _lineup(ids: Array, name: String, closeup: bool) -> void:
+	var lobby: Node3D = Services.world.zone_node("LOBBY")
+	var o := lobby.global_position
+	var x0 := 6.0 - (ids.size() - 1) * 0.55
+	for i in ids.size():
+		var id: String = ids[i]
+		var p := o + Vector3(x0 + i * 1.1, 0, 5.0)
+		if id == "hero":
+			Services.hero.teleport_to(p, "LOBBY")
+			Services.hero.body_vis.rotation.y = PI
+		else:
+			var n: Node = Services.world.npc(id)
+			n.spawn_at(p, "LOBBY", true)
+			n.set_schedule("")
+			n.body_vis.rotation.y = PI
+			n.look_override = null
+			n.face_hero = false
+	await wait(0.4)
+	var cd: Node = Services.world.camera_director
+	cd.set_process(false)
+	var cam: Camera3D = cd.cam
+	var dist := 3.4 if closeup else 6.2
+	cam.global_position = o + Vector3(6.0, 1.55 if closeup else 2.1, 5.0 + dist)
+	cam.look_at(o + Vector3(6.0, 1.15 if closeup else 1.0, 5.0))
+	cam.fov = 40.0
+	await wait(0.3)
+	await shot(name)
+	cd.set_process(true)
+
+
+func s_30_cast() -> void:
+	await jump("S04")
+	await _quiet()
+	for n in get_tree().get_nodes_in_group("npcs"):
+		n._hard_despawn()
+	await _lineup(["hero", "adrian", "mara", "nico", "daniel", "eva", "thomas"], "30_cast_main", false)
+	await _lineup(["lina", "pavel", "receptionist", "brody", "sato", "hale"], "31_cast_support", false)
+	await _lineup(["hero", "adrian", "mara", "nico"], "32_cast_close_a", true)
+	await _lineup(["daniel", "eva", "thomas", "lina"], "33_cast_close_b", true)
