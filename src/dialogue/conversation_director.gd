@@ -21,6 +21,7 @@ var awaiting_reaction: Dictionary = {}   # pending chip after hero line finishes
 var leave_t: float = 0.0
 var waiting_lines := false
 var exchange_t: float = 0.0
+var _left := false   # LEAVE already followed in this exchange (don't re-trigger while its line plays)
 
 # line queues: the exchange channel (blocks conversation flow) and the ambient/world channel
 # (background argument, overhears, barks with subtitles) which exchange lines pre-empt.
@@ -187,6 +188,7 @@ func start(xid: String, force: bool = false) -> bool:
 	active_id = xid
 	active = _data().exchanges[xid]
 	exchange_t = 0.0
+	_left = false
 	leave_t = 0.0
 	_ep().active_exchange_npc = String(active.get("npc", ""))
 	_ep().seen_exchanges[xid] = {"n": int(_ep().seen_exchanges.get(xid, {}).get("n", 0)) + 1,
@@ -275,7 +277,7 @@ func _tick_exchange(delta: float) -> void:
 	# leave check (hero walked away)
 	var npc := String(active.get("npc", ""))
 	var rl := float(active.get("radius_leave", 6.0))
-	if npc != "" and Presence.pos.has("hero") and Presence.pos.has(npc):
+	if npc != "" and not _left and Presence.pos.has("hero") and Presence.pos.has(npc):
 		if Presence.distance("hero", npc) > rl:
 			leave_t += delta
 			if leave_t >= LEAVE_GRACE:
@@ -337,6 +339,7 @@ func _await_ok(a: Variant) -> bool:
 
 
 func _on_leave() -> void:
+	_left = true
 	_bus().player_decision.emit("leave")
 	var target := String(node.get("leave", active.get("leave", "")))
 	_hide_chips()

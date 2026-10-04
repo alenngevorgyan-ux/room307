@@ -1,84 +1,484 @@
 {
-  "nico_bar": {"npc": "nico", "mode": "loop", "points": [
-    {"at": "BAR:nico_taps", "wait": 6, "pose": "polish", "activity": "polish_glass"},
-    {"at": "BAR:nico_till", "wait": 4, "pose": "type"},
-    {"at": "BAR:nico_rack", "wait": 5, "pose": "carry"},
-    {"at": "BAR:nico_taps", "wait": 4, "pose": "polish"},
-    {"at": "BAR:nico_tables", "wait": 4, "pose": "reach", "look": "guest_1"}
-  ]},
-  "nico_smoke": {"npc": "nico", "mode": "once", "points": [
-    {"at": "SCORR:nico_smoke", "wait": 60, "pose": "smoke", "actions": [{"flag": "nico_smoking"}]},
-    {"at": "BAR:nico_taps", "wait": 0.5, "actions": [{"unflag": "nico_smoking"}]}
-  ], "on_done": [{"set_schedule": ["nico", "nico_bar"]}]},
-  "eva_roof": {"npc": "eva", "mode": "loop", "points": [
-    {"at": "ROOF_SMOKING:eva_smoke", "wait": 25, "pose": "smoke"},
-    {"at": "ROOF_SMOKING:eva_smoke", "wait": 10, "pose": "phone"}
-  ]},
-  "eva_descend": {"npc": "eva", "mode": "once", "speed": "fast", "points": [
-    {"at": "SERVICE_STAIR:roof", "wait": 0.3},
-    {"at": "SERVICE_STAIR:l3", "wait": 0.3},
-    {"at": "SERVICE_STAIR:l2", "wait": 0.3},
-    {"at": "SERVICE_STAIR:l1_call", "wait": 13, "speed": "walk", "pose": "ear", "look": "SERVICE_STAIR:g", "actions": [{"beat": "BEAT_EVA_CALL"}, {"flag": "eva_on_call"}]},
-    {"at": "SERVICE_STAIR:g", "wait": 0.3, "actions": [{"unflag": "eva_on_call"}]},
-    {"at": "SCORR:eva_pass", "wait": 1.0},
-    {"at": "LAUNDRY:eva_check", "wait": 4.0, "look": "LAUNDRY:window"},
-    {"at": "LOBBY:eva_lobby", "wait": 3.0},
-    {"at": "ROOF_SMOKING:eva_smoke", "wait": 1.0, "actions": [{"flag": "eva_tail_over"}]}
-  ], "on_done": [{"set_schedule": ["eva", "eva_roof"]}]},
-  "eva_lobby": {"npc": "eva", "mode": "loop", "points": [
-    {"at": "LOBBY:eva_lobby", "wait": 20, "pose": "phone"},
-    {"at": "LOBBY:hero_lobby", "wait": 10, "pose": "rest"}
-  ]},
-  "pavel_loop": {"npc": "pavel", "mode": "loop", "points": [
-    {"at": "SECURITY:pavel_chair", "wait": 55, "pose": "type", "look": "SECURITY:chair", "activity": "monitors"},
-    {"at": "LOBBY:pavel_reception", "wait": 15, "pose": "rest", "look": "receptionist", "activity": "reception"},
-    {"at": "LOBBY:pavel_planter", "wait": 3, "activity": "patrol"},
-    {"at": "LOBBY:pavel_fountain", "wait": 3},
-    {"at": "LOBBY:pavel_elev", "wait": 3},
-    {"at": "LOBBY:pavel_keypad", "wait": 2.6, "pose": "type", "face": "LOBBY:keypad", "activity": "keypad", "actions": [
-      {"tell": ["O_PAVEL_CODE_FULL", 2.6]},
-      {"if": "O_PAVEL_CODE_A", "then": [{"tell": ["O_PAVEL_CODE_B", 2.6]}], "else": [{"tell": ["O_PAVEL_CODE_A", 2.6]}]}]}
-  ]},
-  "pavel_to_f3": {"npc": "pavel", "mode": "once", "speed": "fast", "points": [
-    {"at": "HALL_3F:pavel_fight", "wait": 35, "pose": "radio", "activity": "away"},
-    {"at": "LOBBY:pavel_keypad", "wait": 2.6, "pose": "type", "face": "LOBBY:keypad", "speed": "walk"}
-  ], "on_done": [{"set_schedule": ["pavel", "pavel_loop"]}]},
-  "pavel_follow": {"npc": "pavel", "mode": "once", "points": [
-    {"at": "LOBBY:pavel_fountain", "wait": 20, "pose": "radio", "look": "hero"}
-  ], "on_done": [{"set_schedule": ["pavel", "pavel_loop"]}]},
-  "daniel_hub": {"npc": "daniel", "mode": "loop", "points": [
-    {"at": "LOBBY:daniel_elev", "wait": 10, "pose": "phone", "look": "hero"},
-    {"at": "HALL_3F:daniel_307", "wait": 6, "look": "HALL_3F:door_307", "tell": {"obs": "O_DANIEL_GLANCE_307", "at": 0.5, "dur": 2.0}},
-    {"at": "SERVICE_STAIR:l2", "wait": 2},
-    {"at": "SCORR:mid", "wait": 3},
-    {"at": "SECURITY:daniel_talk", "wait": 15, "look": "pavel", "pose": "behind"},
-    {"at": "LOBBY:daniel_phone", "wait": 20, "pose": "ear"}
-  ]},
-  "adrian_call": {"npc": "adrian", "mode": "once", "points": [
-    {"at": "LOBBY:adrian_armchair", "wait": 125, "pose": "ear", "look": "LOBBY:adrian_elev", "actions": [{"flag": "adrian_on_call"}]},
-    {"at": "LOBBY:adrian_elev", "wait": 1, "actions": [{"unflag": "adrian_on_call"}]}
-  ], "on_done": [{"despawn": "adrian"}, {"flag": "adrian_upstairs"}]},
-  "adrian_report": {"npc": "adrian", "mode": "loop", "points": [
-    {"at": "LOBBY:adrian_report", "wait": 40, "pose": "behind", "look": "hero"}
-  ]},
-  "adrian_argue": {"npc": "adrian", "mode": "once", "points": [
-    {"at": "LOBBY:adrian_elev", "wait": 14, "pose": "gesture", "look": "daniel", "tell": {"obs": "O_ADRIAN_DANIEL_ARGUE", "at": 0.5, "dur": 10}, "bark": "ADR_DAN_ARGUE"}
-  ], "on_done": [{"set_schedule": ["adrian", "adrian_report"]}]},
-  "daniel_argue": {"npc": "daniel", "mode": "once", "points": [
-    {"at": "LOBBY:daniel_elev", "wait": 14, "look": "adrian", "bark": "DAN_ARGUE"}
-  ], "on_done": [{"set_schedule": ["daniel", "daniel_hub"]}]},
-  "lina_linen": {"npc": "lina", "mode": "loop", "points": [
-    {"at": "SCORR:lina_linen", "wait": 25, "pose": "carry"},
-    {"at": "SCORR:mid", "wait": 4, "pose": "carry"}
-  ]},
-  "thomas_canopy": {"npc": "thomas", "mode": "loop", "points": [
-    {"at": "LOADING_DOCK:canopy_smoke", "wait": 30, "pose": "smoke", "look": "LOADING_DOCK:gate_chain"},
-    {"at": "LOADING_DOCK:thomas_start", "wait": 12, "pose": "wheel"}
-  ]},
-  "staff_walk": {"npc": "staff_1", "mode": "loop", "points": [
-    {"at": "SCORR:lina_linen", "wait": 6}, {"at": "SCORR:brody_talk", "wait": 6}
-  ]},
-  "laundry_worker": {"npc": "laundry_worker", "mode": "loop", "points": [
-    {"at": "LAUNDRY:worker", "wait": 15, "pose": "carry"}, {"at": "LAUNDRY:press", "wait": 10, "pose": "reach"}
-  ]}
+ "nico_bar": {
+  "npc": "nico",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "BAR:nico_taps",
+    "wait": 6,
+    "pose": "polish",
+    "activity": "polish_glass"
+   },
+   {
+    "at": "BAR:nico_till",
+    "wait": 4,
+    "pose": "type"
+   },
+   {
+    "at": "BAR:nico_rack",
+    "wait": 5,
+    "pose": "carry"
+   },
+   {
+    "at": "BAR:nico_taps",
+    "wait": 4,
+    "pose": "polish"
+   },
+   {
+    "at": "BAR:nico_tables",
+    "wait": 4,
+    "pose": "reach",
+    "look": "guest_1"
+   }
+  ]
+ },
+ "nico_smoke": {
+  "npc": "nico",
+  "mode": "once",
+  "points": [
+   {
+    "at": "SCORR:nico_smoke",
+    "wait": 60,
+    "pose": "smoke",
+    "actions": [
+     {
+      "flag": "nico_smoking"
+     }
+    ]
+   },
+   {
+    "at": "BAR:nico_taps",
+    "wait": 0.5,
+    "actions": [
+     {
+      "unflag": "nico_smoking"
+     }
+    ]
+   }
+  ],
+  "on_done": [
+   {
+    "set_schedule": [
+     "nico",
+     "nico_bar"
+    ]
+   }
+  ]
+ },
+ "eva_roof": {
+  "npc": "eva",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "ROOF_SMOKING:eva_smoke",
+    "wait": 25,
+    "pose": "smoke"
+   },
+   {
+    "at": "ROOF_SMOKING:eva_smoke",
+    "wait": 10,
+    "pose": "phone"
+   }
+  ]
+ },
+ "eva_descend": {
+  "npc": "eva",
+  "mode": "once",
+  "speed": "walk",
+  "points": [
+   {
+    "at": "SERVICE_STAIR:roof",
+    "wait": 0.3
+   },
+   {
+    "at": "SERVICE_STAIR:l3",
+    "wait": 0.3
+   },
+   {
+    "at": "SERVICE_STAIR:l2",
+    "wait": 0.3
+   },
+   {
+    "at": "SERVICE_STAIR:l1_call",
+    "wait": 13,
+    "speed": "walk",
+    "pose": "ear",
+    "look": "SERVICE_STAIR:g",
+    "actions": [
+     {
+      "beat": "BEAT_EVA_CALL"
+     },
+     {
+      "flag": "eva_on_call"
+     }
+    ]
+   },
+   {
+    "at": "SERVICE_STAIR:g",
+    "wait": 0.3,
+    "actions": [
+     {
+      "unflag": "eva_on_call"
+     }
+    ]
+   },
+   {
+    "at": "SCORR:eva_pass",
+    "wait": 1.0
+   },
+   {
+    "at": "LAUNDRY:eva_check",
+    "wait": 4.0,
+    "look": "LAUNDRY:window"
+   },
+   {
+    "at": "LOBBY:eva_lobby",
+    "wait": 3.0
+   },
+   {
+    "at": "ROOF_SMOKING:eva_smoke",
+    "wait": 1.0,
+    "actions": [
+     {
+      "flag": "eva_tail_over"
+     }
+    ]
+   }
+  ],
+  "on_done": [
+   {
+    "set_schedule": [
+     "eva",
+     "eva_roof"
+    ]
+   }
+  ]
+ },
+ "eva_lobby": {
+  "npc": "eva",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "LOBBY:eva_lobby",
+    "wait": 20,
+    "pose": "phone"
+   },
+   {
+    "at": "LOBBY:hero_lobby",
+    "wait": 10,
+    "pose": "rest"
+   }
+  ]
+ },
+ "pavel_loop": {
+  "npc": "pavel",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "SECURITY:pavel_chair",
+    "wait": 55,
+    "pose": "type",
+    "look": "SECURITY:chair",
+    "activity": "monitors"
+   },
+   {
+    "at": "LOBBY:pavel_reception",
+    "wait": 15,
+    "pose": "rest",
+    "look": "receptionist",
+    "activity": "reception"
+   },
+   {
+    "at": "LOBBY:pavel_planter",
+    "wait": 3,
+    "activity": "patrol"
+   },
+   {
+    "at": "LOBBY:pavel_fountain",
+    "wait": 3
+   },
+   {
+    "at": "LOBBY:pavel_elev",
+    "wait": 3
+   },
+   {
+    "at": "LOBBY:pavel_keypad",
+    "wait": 2.6,
+    "pose": "type",
+    "face": "LOBBY:keypad",
+    "activity": "keypad",
+    "actions": [
+     {
+      "tell": [
+       "O_PAVEL_CODE_FULL",
+       2.6
+      ]
+     },
+     {
+      "if": "O_PAVEL_CODE_A",
+      "then": [
+       {
+        "tell": [
+         "O_PAVEL_CODE_B",
+         2.6
+        ]
+       }
+      ],
+      "else": [
+       {
+        "tell": [
+         "O_PAVEL_CODE_A",
+         2.6
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ "pavel_to_f3": {
+  "npc": "pavel",
+  "mode": "once",
+  "speed": "fast",
+  "points": [
+   {
+    "at": "HALL_3F:pavel_fight",
+    "wait": 35,
+    "pose": "radio",
+    "activity": "away"
+   },
+   {
+    "at": "LOBBY:pavel_keypad",
+    "wait": 2.6,
+    "pose": "type",
+    "face": "LOBBY:keypad",
+    "speed": "walk"
+   }
+  ],
+  "on_done": [
+   {
+    "set_schedule": [
+     "pavel",
+     "pavel_loop"
+    ]
+   }
+  ]
+ },
+ "pavel_follow": {
+  "npc": "pavel",
+  "mode": "once",
+  "points": [
+   {
+    "at": "LOBBY:pavel_fountain",
+    "wait": 20,
+    "pose": "radio",
+    "look": "hero"
+   }
+  ],
+  "on_done": [
+   {
+    "set_schedule": [
+     "pavel",
+     "pavel_loop"
+    ]
+   }
+  ]
+ },
+ "daniel_hub": {
+  "npc": "daniel",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "LOBBY:daniel_elev",
+    "wait": 10,
+    "pose": "phone",
+    "look": "hero"
+   },
+   {
+    "at": "HALL_3F:daniel_307",
+    "wait": 6,
+    "look": "HALL_3F:door_307",
+    "tell": {
+     "obs": "O_DANIEL_GLANCE_307",
+     "at": 0.5,
+     "dur": 2.0
+    }
+   },
+   {
+    "at": "SERVICE_STAIR:l2",
+    "wait": 2
+   },
+   {
+    "at": "SCORR:mid",
+    "wait": 3
+   },
+   {
+    "at": "SECURITY:daniel_talk",
+    "wait": 15,
+    "look": "pavel",
+    "pose": "behind"
+   },
+   {
+    "at": "LOBBY:daniel_phone",
+    "wait": 20,
+    "pose": "ear"
+   }
+  ]
+ },
+ "adrian_call": {
+  "npc": "adrian",
+  "mode": "once",
+  "points": [
+   {
+    "at": "LOBBY:adrian_armchair",
+    "wait": 125,
+    "pose": "ear",
+    "look": "LOBBY:adrian_elev",
+    "actions": [
+     {
+      "flag": "adrian_on_call"
+     }
+    ]
+   },
+   {
+    "at": "LOBBY:adrian_elev",
+    "wait": 1,
+    "actions": [
+     {
+      "unflag": "adrian_on_call"
+     }
+    ]
+   }
+  ],
+  "on_done": [
+   {
+    "despawn": "adrian"
+   },
+   {
+    "flag": "adrian_upstairs"
+   }
+  ]
+ },
+ "adrian_report": {
+  "npc": "adrian",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "LOBBY:adrian_report",
+    "wait": 40,
+    "pose": "behind",
+    "look": "hero"
+   }
+  ]
+ },
+ "adrian_argue": {
+  "npc": "adrian",
+  "mode": "once",
+  "points": [
+   {
+    "at": "LOBBY:adrian_elev",
+    "wait": 14,
+    "pose": "gesture",
+    "look": "daniel",
+    "tell": {
+     "obs": "O_ADRIAN_DANIEL_ARGUE",
+     "at": 0.5,
+     "dur": 10
+    },
+    "bark": "ADR_DAN_ARGUE"
+   }
+  ],
+  "on_done": [
+   {
+    "set_schedule": [
+     "adrian",
+     "adrian_report"
+    ]
+   }
+  ]
+ },
+ "daniel_argue": {
+  "npc": "daniel",
+  "mode": "once",
+  "points": [
+   {
+    "at": "LOBBY:daniel_elev",
+    "wait": 14,
+    "look": "adrian",
+    "bark": "DAN_ARGUE"
+   }
+  ],
+  "on_done": [
+   {
+    "set_schedule": [
+     "daniel",
+     "daniel_hub"
+    ]
+   }
+  ]
+ },
+ "lina_linen": {
+  "npc": "lina",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "SCORR:lina_linen",
+    "wait": 25,
+    "pose": "carry"
+   },
+   {
+    "at": "SCORR:mid",
+    "wait": 4,
+    "pose": "carry"
+   }
+  ]
+ },
+ "thomas_canopy": {
+  "npc": "thomas",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "LOADING_DOCK:canopy_smoke",
+    "wait": 30,
+    "pose": "smoke",
+    "look": "LOADING_DOCK:gate_chain"
+   },
+   {
+    "at": "LOADING_DOCK:thomas_start",
+    "wait": 12,
+    "pose": "wheel"
+   }
+  ]
+ },
+ "staff_walk": {
+  "npc": "staff_1",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "SCORR:lina_linen",
+    "wait": 6
+   },
+   {
+    "at": "SCORR:brody_talk",
+    "wait": 6
+   }
+  ]
+ },
+ "laundry_worker": {
+  "npc": "laundry_worker",
+  "mode": "loop",
+  "points": [
+   {
+    "at": "LAUNDRY:worker",
+    "wait": 15,
+    "pose": "carry"
+   },
+   {
+    "at": "LAUNDRY:press",
+    "wait": 10,
+    "pose": "reach"
+   }
+  ]
+ }
 }

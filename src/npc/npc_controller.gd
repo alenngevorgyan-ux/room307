@@ -164,7 +164,14 @@ func spawn_at(p: Vector3, zone_id: String) -> void:
 		c.zone = zone_id
 
 
+## Public teleport (commands, scene logic): also cancels any walk in progress.
 func teleport(p: Vector3, zone_id: String) -> void:
+	goal = Vector3.INF
+	route = []
+	_place(p, zone_id)
+
+
+func _place(p: Vector3, zone_id: String) -> void:
 	global_position = p
 	current_zone = zone_id
 	velocity = Vector3.ZERO
@@ -243,6 +250,9 @@ func _on_command(id: String, cmd: String, args: Dictionary) -> void:
 
 func set_schedule(id: String) -> void:
 	schedule_id = id
+	if id == "":
+		goal = Vector3.INF
+		route = []
 	sched = _D().schedules.get(id, {}) if id != "" else {}
 	point_i = 0
 	wait_left = 0.0
@@ -314,6 +324,8 @@ func _physics_process(delta: float) -> void:
 				move_dir = _move_dir()
 		else:
 			_tick_schedule(delta)
+	if not spawned:
+		return   # despawned by its own schedule this frame (removed from the physics space)
 	var sp := float(SPEEDS.get(speed_name, 1.45)) * speed_mult
 	if external_control:
 		pass
@@ -350,7 +362,7 @@ func _move_dir() -> Vector3:
 				var tgt := door.target()
 				route.pop_front()
 				if tgt:
-					teleport(tgt.spawn_point(), tgt.zone_id)
+					_place(tgt.spawn_point(), tgt.zone_id)
 					door.traversed.emit(door.door_id, npc_id)
 				_set_nav_target()
 				return Vector3.ZERO
@@ -480,7 +492,9 @@ func _lead_blocked() -> bool:
 	if String(sched.get("mode", "")) != "lead":
 		return false
 	var r := float(sched.get("wait_radius", 6.0))
-	var close := Presence.in_zone("hero") == current_zone and Presence.distance("hero", npc_id) <= r
+	var hz := Presence.in_zone("hero")
+	# close = near him in his zone, or already ahead in the zone he is walking to
+	var close := (hz == current_zone and Presence.distance("hero", npc_id) <= r) or (hz != current_zone and hz == goal_zone)
 	if not close and not _lead_wait:
 		_lead_wait = true
 		if sched.has("impatience_bark"):

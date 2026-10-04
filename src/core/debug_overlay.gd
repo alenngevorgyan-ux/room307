@@ -42,6 +42,8 @@ var _shot_path := ""
 var _quit_at := -1.0
 var _auto_t := 0.0
 var _auto_actions: Array = []   # [{t, actions}]
+var _trace: Array = []
+var _trace_t := 0.0
 
 
 func _parse_automation() -> void:
@@ -55,6 +57,8 @@ func _parse_automation() -> void:
 				_shots.append(float(x))
 		elif a.begins_with("--quit-at="):
 			_quit_at = float(a.substr(10))
+		elif a.begins_with("--trace="):
+			_trace = Array(a.substr(8).split(","))
 		elif a.begins_with("--do="):
 			var j: Variant = JSON.parse_string(a.substr(5))
 			if typeof(j) == TYPE_ARRAY:
@@ -80,6 +84,21 @@ func _tick_automation(delta: float) -> void:
 			var p := _shot_path.replace(".png", "_%05.1f.png" % t) if _shot_path != "" else "user://shot_%05.1f.png" % t
 			img.save_png(p)
 			print("[shot] ", p)
+	if not _trace.is_empty():
+		_trace_t -= delta
+		if _trace_t <= 0.0:
+			_trace_t = 2.0
+			var E := get_node("/root/Episode")
+			var parts: Array = ["t=%.0f %s %s x=%s" % [_auto_t, E.scene_id, E.phase_name(), Services.conversation.active_id if Services.conversation else ""]]
+			for id in _trace:
+				if Presence.pos.has(id):
+					var p: Vector3 = Presence.pos[id]
+					var z: String = Presence.in_zone(id)
+					var lp: Vector3 = p - get_node("/root/Data").zone_origin(z) if z != "" else p
+					parts.append("%s@%s(%.1f,%.1f,%.1f)" % [id, z, lp.x, lp.y, lp.z])
+				else:
+					parts.append(id + "@-")
+			print("[trace] ", " ".join(parts))
 	if _quit_at > 0.0 and _auto_t >= _quit_at:
 		get_tree().quit()
 

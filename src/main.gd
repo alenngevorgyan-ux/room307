@@ -38,9 +38,22 @@ func _ready() -> void:
 	add_child(sm)
 	var start := "S01"
 	var args := OS.get_cmdline_user_args()
+	for a in args:
+		if a.begins_with("--autopilot"):
+			_autopilot.call_deferred(a.substr(12) if a.length() > 12 else "A_MARA")
 	var i := args.find("--scene")
 	if i >= 0 and i + 1 < args.size():
 		start = args[i + 1]
 		sm.debug_jump(start)
 	else:
 		sm.goto_scene(start)
+
+
+func _autopilot(ending: String) -> void:
+	var ap := Autopilot.new()
+	ap.name = "Autopilot"
+	ap.ending = ending
+	add_child(ap)
+	await ap.run()
+	print("[autopilot] RESULT ", "FAIL" if ap.failed or get_node("/root/Episode").phase_name() != "DONE" else "PASS")
+	get_tree().quit(1 if ap.failed or get_node("/root/Episode").phase_name() != "DONE" else 0)

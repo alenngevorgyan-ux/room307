@@ -51,6 +51,13 @@ jobs:
       - name: Tests (AUTO + SIM)
         run: GODOT=~/godot/godot ./run_tests.sh
 
+      - name: In-engine autopilot (all four endings)
+        run: |
+          for e in A_MARA B_THOMAS C_DESTROY D_ADRIAN; do
+            ~/godot/godot --headless --path . --fixed-fps 60 -- --autopilot=$e 2>&1 | tee /tmp/ap.log | grep -E "autopilot"
+            grep -q "RESULT PASS" /tmp/ap.log
+          done
+
       - name: Export builds
         run: |
           set -e

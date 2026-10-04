@@ -25,6 +25,7 @@ physically what happens to the recording. All in-game text is Russian.
 
 ## Develop
 
+- In-engine autopilot (real 3D world, physics, NPC navigation, chase): `godot --headless --path . --fixed-fps 60 -- --autopilot=A_MARA` (or B_THOMAS / C_DESTROY / D_ADRIAN)
 - Tests (data validator + unit + SIM, incl. a full bar→ending playthrough for all 4 endings): `./run_tests.sh`
 - Content lives in `data/ep01/` (JSON: lines, exchanges, traps, facts, level blocks …). Code in `src/`.
 - Design docs: `docs/EP01_*.md`. Status: `docs/PROGRESS.md`. Manual checks: `docs/PLAYTEST_LOG.md`.
