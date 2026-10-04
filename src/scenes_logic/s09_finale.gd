@@ -27,6 +27,7 @@ var _ending_t := -1.0
 var _tells_opened := false
 var _thugs_t := -1.0
 var _labels: Dictionary = {}    # stage point -> Label3D (place cards, recorder, card)
+var _flight_t := 0.0
 
 
 func enter() -> void:
@@ -496,15 +497,20 @@ func _start_flight() -> void:
 	if E.holder_of("ITEM_SD_CARD") == "world:table":
 		E.give_item("ITEM_SD_CARD", "daniel")
 		E.set_flag("daniel_took_card")
+	_flight_t = 0.0
 	run([{"line": "DAN_FLEE"}, {"npc": ["daniel", "walk_to", {"marker": _exit_marker(exit_choice), "speed": "fast"}]}])
 	bus().player_decision.emit("daniel_flees")
 
 
-func _tick_flight(_delta: float) -> void:
+func _tick_flight(delta: float) -> void:
 	var E := ep()
 	if not Presence.pos.has("daniel"):
 		_escaped()
 		return
+	_flight_t += delta
+	# headless sims have no bodies; in game this is a failsafe if he snags on furniture
+	if _flight_t >= (3.0 if Services.world == null else 9.0):
+		Presence.place("daniel", "RESTAURANT", data().marker(_exit_marker(exit_choice)))
 	var dp: Vector3 = Presence.pos.daniel
 	# the hero reaching him (vaulting the table, cutting him off) stops him
 	if Presence.distance("hero", "daniel") <= 1.0:
