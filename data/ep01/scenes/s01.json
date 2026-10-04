@@ -12,10 +12,10 @@
     },
     "enter": [
       {"camera_hint": {"rig": "BAR:start", "dur": 600}},
-      {"delay": 0.6, "do": [{"line": "HALE_01"}]},
-      {"delay": 5.5, "do": [{"line": "KAI_01"}]},
-      {"delay": 9.0, "do": [{"line": "SELIN_01"}]},
-      {"delay": 12.5, "do": [{"line": "JULES_01"}]}
+      {"delay": 0.6, "do": [{"ambient": "HALE_01"}]},
+      {"delay": 5.5, "do": [{"ambient": "KAI_01"}]},
+      {"delay": 9.0, "do": [{"ambient": "SELIN_01"}]},
+      {"delay": 12.5, "do": [{"ambient": "JULES_01"}]}
     ],
     "rules": [
       {"id": "restroom_1", "after": 70, "when": {"cmp": ["s1_resolution", "==", ""]}, "do": [{"set_schedule": ["hale", "hale_restroom"]}]},

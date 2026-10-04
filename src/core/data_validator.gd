@@ -251,7 +251,7 @@ func _check_action(site: String, verb: String, v: Variant, errs: Array) -> void:
 		return
 	var first: String = str(v[0]) if typeof(v) == TYPE_ARRAY and v.size() > 0 else str(v)
 	match verb:
-		"line", "lines":
+		"line", "lines", "ambient":
 			for k in (v if typeof(v) == TYPE_ARRAY else [v]):
 				if not D.lines_ru.has(String(k)):
 					errs.append("%s: unknown line %s" % [site, k])
@@ -276,7 +276,7 @@ func _check_action(site: String, verb: String, v: Variant, errs: Array) -> void:
 		"set_schedule":
 			if not D.characters.has(first):
 				errs.append("%s: unknown npc %s" % [site, first])
-			if not D.schedules.has(String(v[1])):
+			if String(v[1]) != "" and not D.schedules.has(String(v[1])):
 				errs.append("%s: unknown schedule %s" % [site, v[1]])
 		"trust", "respect", "suspicion", "stress", "warmth", "fear_hit", "set_disposition", "set_var", "believes", "knows", "remember":
 			if not D.characters.has(first):

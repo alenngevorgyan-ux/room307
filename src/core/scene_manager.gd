@@ -139,6 +139,13 @@ func debug_jump(id: String) -> void:
 			break
 		ActionRunner.run(D.scenes[sid].get("seed", []), {"source": "debug_seed"})
 	goto_scene(id)
+	var s: Dictionary = D.scenes.get(id, {})
+	if s.has("debug_hero"):
+		var m := String(s.debug_hero)
+		if Services.world:
+			Services.world.place_hero(m, false)
+		Presence.place("hero", D.marker_zone(m), D.marker(m))
+		_ep().hero_zone = D.marker_zone(m)
 
 
 func respawn_current() -> void:

@@ -1,0 +1,13 @@
+{
+  "I_RECEPTION_KEY": {"zone": "LOBBY", "p": [21.0, 1.15, 2.9], "verb": "Спросить", "prompt": "Ключ от 307", "no_mesh": true, "once": true,
+    "visible_if": {"all": ["flag:keycard_at_reception", "!ITEM_KEYCARD_307"]},
+    "actions": [{"line": "RECEPT_KEY"}, {"give_item": ["ITEM_KEYCARD_307", "hero"]}, {"sfx": "accept"}]},
+  "I_ELEV_PANEL": {"zone": "ELEV_A", "p": [2.3, 1.2, 0.35], "mesh": {"s": [0.15, 0.3, 0.08], "c": [0.9, 0.8, 0.5], "emit": 0.4},
+    "visible_if": {"none": ["phase:S01_WATCH", "phase:S02_CLIENT", "flag:elev_moving"]},
+    "variants": [
+      {"if": {"cmp": ["flag.elev_floor", "==", "3"]}, "verb": "Нажать", "prompt": "Лобби", "actions": [
+        {"flag": "elev_moving"}, {"sfx": "click"}, {"delay": 3.0, "do": [{"flag": ["elev_floor", "G"]}, {"unflag": "elev_moving"}, {"sfx": "ding"}]}]},
+      {"if": true, "verb": "Нажать", "prompt": "3 этаж", "actions": [
+        {"flag": "elev_moving"}, {"sfx": "click"}, {"delay": 3.0, "do": [{"flag": ["elev_floor", "3"]}, {"unflag": "elev_moving"}, {"sfx": "ding"}]}]}
+    ]}
+}

@@ -1,0 +1,11 @@
+{
+  "TR_LINA_KEYCARD": {
+    "target": "lina",
+    "bait": {"event": "show_item", "item": "ITEM_KEYCARD_307", "to": "lina"},
+    "object": "ITEM_KEYCARD_307",
+    "outcomes": [{"else": true, "do": [
+      {"line": "LINA_GUEST"}, {"line": "LINA_LEFT"}, {"give_fact": ["F_MARA_LEFT_ALIVE", "TR_LINA_KEYCARD"]},
+      {"line": "LINA_SEC"}, {"give_fact": ["F_SECURITY_IN_307", "TR_LINA_KEYCARD"]}, {"trust": ["lina", 1]}, {"flag": "lina_calmed"}
+    ]}]
+  }
+}

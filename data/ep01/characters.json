@@ -104,7 +104,7 @@
     "idle_barks": ["Это не твоё дело.", "Где мои часы?!"]
   },
   "selin": {
-    "display": "Селин", "savvy": 1, "hearing": 6,
+    "display": "Селин", "savvy": 1, "hearing": 4.5,
     "fears": {"EMBARRASSED": 1},
     "feared_audience": [],
     "knows": [],

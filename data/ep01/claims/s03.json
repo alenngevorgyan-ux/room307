@@ -1,0 +1,6 @@
+{
+  "C_HOTEL_SECURITY": {"text": "Я из охраны отеля.", "line": "H_SECURITY", "verb": "BLUFF", "about": "F_HERO_NOT_STAFF", "is_true": false, "contradicted_by": ["F_HERO_NOT_STAFF"]},
+  "C_NOT_POLICE": {"text": "Я не из полиции. Ищу девушку.", "line": "H_NOT_POLICE", "verb": "CALM", "about": "F_HERO_WORKS_FOR_ADRIAN", "is_true": true},
+  "C_ZIP": {"text": "Ваши люди плохо застёгивают сумки.", "line": "H_ZIP", "verb": "PROVOKE", "about": "F_SECURITY_IN_307", "is_true": true, "fears": {"daniel": "ADRIAN_LEARNS_TRUTH"},
+    "overrides": {"daniel": [{"if": true, "reaction": "TELL"}]}}
+}

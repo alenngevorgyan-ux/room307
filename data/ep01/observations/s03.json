@@ -1,0 +1,259 @@
+{
+ "O_307_GLASS_ONE_USED": {
+  "caption": "пил один — второй сухой",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    1.0,
+    0.9,
+    2.1
+   ]
+  },
+  "dist": 3.0,
+  "requires": "!flag:glasses_taken"
+ },
+ "O_307_BOTTLE_THIRD": {
+  "caption": "выпита треть",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    0.9,
+    0.95,
+    2.6
+   ]
+  },
+  "dist": 3.0
+ },
+ "O_307_FLOOR_WET": {
+  "caption": "пол душевой мокрый",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    8.6,
+    0.1,
+    1.0
+   ]
+  },
+  "dist": 3.5
+ },
+ "O_307_TOWELS_DRY": {
+  "caption": "полотенца сухие, сложены",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    9.1,
+    0.95,
+    4.4
+   ]
+  },
+  "dist": 3.0,
+  "requires": "!flag:towels_swapped"
+ },
+ "O_307_MSG_CONDENSATION": {
+  "caption": "написано пальцем по конденсату",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    9.38,
+    1.25,
+    3.4
+   ]
+  },
+  "dist": 3.5,
+  "focus": 0.45
+ },
+ "O_307_MSG_HEIGHT": {
+  "caption": "на уровне её глаз",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    9.38,
+    1.45,
+    3.4
+   ]
+  },
+  "dist": 3.5,
+  "requires": "flag:mirror_steamed"
+ },
+ "O_307_CHARGER_PULLED": {
+  "caption": "зарядка выдернута",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    0.7,
+    0.35,
+    1.2
+   ]
+  },
+  "dist": 3.0
+ },
+ "O_307_ONE_WET_SHOE": {
+  "caption": "одна туфля мокрая",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    2.4,
+    0.1,
+    3.7
+   ]
+  },
+  "dist": 2.5
+ },
+ "O_307_SHOE_CLEAN": {
+  "caption": "вода чистая — ни песка, ни грязи",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    2.4,
+    0.12,
+    3.7
+   ]
+  },
+  "dist": 2.0,
+  "requires": "O_307_ONE_WET_SHOE"
+ },
+ "O_307_SILL_DRY": {
+  "caption": "подоконник почти сухой",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    5.6,
+    0.95,
+    0.2
+   ]
+  },
+  "dist": 3.0
+ },
+ "O_307_NO_ESCAPE": {
+  "caption": "третий этаж, ни пожарной лестницы",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    5.6,
+    1.4,
+    -0.4
+   ]
+  },
+  "dist": 2.5,
+  "requires": "flag:leaned_out"
+ },
+ "O_307_PILL_MISSING": {
+  "caption": "одной не хватает",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    4.8,
+    0.62,
+    1.0
+   ]
+  },
+  "dist": 2.5
+ },
+ "O_307_MATTRESS_SHIFTED": {
+  "caption": "матрас сдвинут на пару сантиметров",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    2.6,
+    0.55,
+    2.3
+   ]
+  },
+  "dist": 2.5,
+  "requires": "flag:mattress_lifted"
+ },
+ "O_307_ZIP_WRONG": {
+  "caption": "бегунок молнии не с той стороны",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    0.7,
+    0.5,
+    4.6
+   ]
+  },
+  "dist": 2.5,
+  "requires": "flag:bag_opened"
+ },
+ "O_307_VENT_SCRATCH": {
+  "caption": "свежие царапины на винтах",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    6.3,
+    2.3,
+    0.15
+   ]
+  },
+  "dist": 3.5,
+  "requires": "flag:curtain_moved"
+ },
+ "O_307_SLIP": {
+  "caption": "два бокала, 23:10",
+  "anchor": {
+   "zone": "ROOM_307",
+   "p": [
+    1.2,
+    0.82,
+    1.6
+   ]
+  },
+  "dist": 2.5
+ },
+ "O_308_SAME_LIGHTER": {
+  "caption": "зажигалка с логотипом бара на крыше",
+  "anchor": {
+   "zone": "ROOM_308",
+   "p": [
+    5.7,
+    0.85,
+    1.4
+   ]
+  },
+  "dist": 2.5
+ },
+ "O_308_TWO_COFFEE": {
+  "caption": "два стакана кофе",
+  "anchor": {
+   "zone": "ROOM_308",
+   "p": [
+    5.7,
+    0.85,
+    2.0
+   ]
+  },
+  "dist": 2.5
+ },
+ "O_DANIEL_GLANCE_307": {
+  "caption": "смотрит на дверь 307",
+  "mode": "TELL",
+  "anchor": {
+   "npc": "daniel",
+   "part": "face"
+  },
+  "dist": 8.0,
+  "scene": "S03"
+ },
+ "O_DANIEL_SCREWDRIVER": {
+  "caption": "отвёртка в нагрудном кармане",
+  "anchor": {
+   "npc": "daniel",
+   "part": "pocket",
+   "off": [
+    -0.24,
+    0.04,
+    0.0
+   ]
+  },
+  "dist": 3.5
+ },
+ "O_DANIEL_PHONE_DOWN": {
+  "caption": "кладёт телефон экраном вниз",
+  "mode": "TELL",
+  "anchor": {
+   "npc": "daniel",
+   "part": "right_hand"
+  },
+  "dist": 5.0
+ }
+}

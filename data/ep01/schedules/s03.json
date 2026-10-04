@@ -1,0 +1,29 @@
+{
+  "lina_307": {"npc": "lina", "mode": "once", "points": [
+    {"at": "ROOM_307:lina_door", "wait": 1.5, "pose": "carry"},
+    {"at": "ROOM_307:lina_desk", "wait": 5.0, "pose": "carry", "look": "ROOM_307:desk", "actions": [{"if": "!flag:lina_stopped", "then": [{"flag": "glasses_taken"}, {"sfx": "glass"}]}]},
+    {"at": "ROOM_307:lina_bin", "wait": 3.0, "pose": "reach"},
+    {"at": "ROOM_307:lina_bath", "wait": 5.0, "pose": "carry", "actions": [{"flag": "towels_swapped"}]},
+    {"at": "ROOM_307:lina_bed", "wait": 4.0, "pose": "reach"},
+    {"at": "HALL_3F:lina_cart", "wait": 1.0, "pose": "rest"}
+  ], "on_done": [{"set_schedule": ["lina", "lina_hall"]}]},
+  "lina_307_skip": {"npc": "lina", "mode": "once", "points": [
+    {"at": "ROOM_307:lina_bath", "wait": 5.0, "pose": "carry", "actions": [{"flag": "towels_swapped"}]},
+    {"at": "ROOM_307:lina_bed", "wait": 3.0, "pose": "reach"},
+    {"at": "HALL_3F:lina_cart", "wait": 1.0, "pose": "rest"}
+  ], "on_done": [{"set_schedule": ["lina", "lina_hall"]}]},
+  "lina_flee": {"npc": "lina", "mode": "once", "speed": "fast", "points": [
+    {"at": "HALL_3F:lina_alcove", "wait": 0.2, "pose": "carry"}
+  ], "on_done": [{"despawn": "lina"}]},
+  "lina_hall": {"npc": "lina", "mode": "loop", "points": [
+    {"at": "HALL_3F:lina_310", "wait": 8.0, "pose": "reach"},
+    {"at": "HALL_3F:lina_316", "wait": 8.0, "pose": "reach"},
+    {"at": "HALL_3F:lina_alcove", "wait": 5.0, "pose": "carry"}
+  ]},
+  "daniel_hall_s3": {"npc": "daniel", "mode": "once", "points": [
+    {"at": "HALL_3F:daniel_start", "wait": 0.3, "pose": "rest"},
+    {"at": "HALL_3F:daniel_307", "wait": 2.5, "look": "HALL_3F:door_307", "tell": {"obs": "O_DANIEL_GLANCE_307", "at": 0.3, "dur": 2.2}},
+    {"at": "HALL_3F:daniel_mid", "wait": 0.5, "look": "hero"},
+    {"at": "HALL_3F:daniel_elev", "wait": 60.0, "look": "hero"}
+  ]}
+}

@@ -1,0 +1,8 @@
+{
+  "O_S2_FLAT_ON_DANGER": {"caption": "вопрос об опасности — без реакции", "mode": "TELL", "anchor": {"npc": "adrian", "part": "face"}, "scene": "S02"},
+  "O_S2_POCKET_TOUCH": {"caption": "рука к внутреннему карману", "mode": "TELL", "anchor": {"npc": "adrian", "part": "pocket"}, "scene": ["S02", "S04"]},
+  "O_S2_NAME_PAUSE": {"caption": "пауза перед именем", "mode": "TELL", "anchor": {"npc": "adrian", "part": "face"}, "scene": "S02"},
+  "O_S2_DANIEL_WATCHES": {"caption": "тот человек смотрит на тебя, не на него", "mode": "TELL", "anchor": {"npc": "daniel", "part": "face"}, "dist": 14.0, "focus": 0.5, "scene": "S02"},
+  "O_S2_RING": {"caption": "перстень на правой руке", "anchor": {"npc": "adrian", "part": "ring"}, "dist": 4.0},
+  "O_S2_GRAB": {"caption": "хватает за руку", "mode": "TELL", "anchor": {"npc": "adrian", "part": "right_hand"}, "scene": "S02"}
+}

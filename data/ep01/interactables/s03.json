@@ -1,0 +1,745 @@
+{
+ "I_307_GLASSES": {
+  "zone": "ROOM_307",
+  "p": [
+   1.0,
+   0.78,
+   2.0
+  ],
+  "verb": "Осмотреть",
+  "prompt": "Два бокала",
+  "once": true,
+  "visible_if": "!flag:glasses_taken",
+  "mesh": {
+   "s": [
+    0.16,
+    0.2,
+    0.3
+   ],
+   "c": [
+    0.8,
+    0.85,
+    0.9,
+    0.6
+   ],
+   "emit": 0.2
+  },
+  "actions": [
+   {
+    "notice": "O_307_GLASS_ONE_USED"
+   },
+   {
+    "flag": "glasses_seen"
+   },
+   {
+    "sfx": "glass"
+   }
+  ]
+ },
+ "I_307_BOTTLE": {
+  "zone": "ROOM_307",
+  "p": [
+   0.9,
+   0.78,
+   2.6
+  ],
+  "verb": "Осмотреть",
+  "prompt": "Бутылка вина",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.09,
+    0.32,
+    0.09
+   ],
+   "c": [
+    0.25,
+    0.08,
+    0.1
+   ],
+   "emit": 0.15
+  },
+  "actions": [
+   {
+    "notice": "O_307_BOTTLE_THIRD"
+   }
+  ]
+ },
+ "I_307_SLIP": {
+  "zone": "ROOM_307",
+  "p": [
+   1.2,
+   0.78,
+   1.6
+  ],
+  "verb": "Прочитать",
+  "prompt": "Чек обслуживания",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.15,
+    0.01,
+    0.2
+   ],
+   "c": [
+    0.9,
+    0.9,
+    0.85
+   ]
+  },
+  "actions": [
+   {
+    "notice": "O_307_SLIP"
+   },
+   {
+    "hint": [
+     "«Два бокала. 23:10»",
+     2.5
+    ]
+   },
+   {
+    "sfx": "paper"
+   }
+  ]
+ },
+ "I_307_SHOWER": {
+  "zone": "ROOM_307",
+  "p": [
+   7.6,
+   1.2,
+   0.35
+  ],
+  "mesh": {
+   "s": [
+    0.12,
+    0.12,
+    0.08
+   ],
+   "c": [
+    0.8,
+    0.8,
+    0.85
+   ],
+   "emit": 0.4
+  },
+  "variants": [
+   {
+    "if": "!flag:shower_on",
+    "verb": "Открыть",
+    "prompt": "Горячая вода",
+    "actions": [
+     {
+      "flag": "shower_on"
+     },
+     {
+      "sfx": "water_on"
+     }
+    ]
+   },
+   {
+    "if": true,
+    "verb": "Закрыть",
+    "prompt": "Вода",
+    "actions": [
+     {
+      "unflag": "shower_on"
+     },
+     {
+      "sfx": "click"
+     }
+    ]
+   }
+  ]
+ },
+ "I_307_TOWELS": {
+  "zone": "ROOM_307",
+  "p": [
+   9.1,
+   0.85,
+   4.4
+  ],
+  "verb": "Взять",
+  "prompt": "Полотенца",
+  "once": true,
+  "visible_if": "!flag:towels_swapped",
+  "mesh": {
+   "s": [
+    0.4,
+    0.15,
+    0.3
+   ],
+   "c": [
+    0.95,
+    0.95,
+    0.95
+   ]
+  },
+  "actions": [
+   {
+    "notice": "O_307_TOWELS_DRY"
+   }
+  ]
+ },
+ "I_307_CHARGER": {
+  "zone": "ROOM_307",
+  "p": [
+   0.6,
+   0.3,
+   1.2
+  ],
+  "mesh": {
+   "s": [
+    0.08,
+    0.08,
+    0.04
+   ],
+   "c": [
+    0.1,
+    0.1,
+    0.1
+   ],
+   "emit": 0.1
+  },
+  "variants": [
+   {
+    "id": "plug",
+    "if": "ITEM_MARA_PHONE",
+    "verb": "Поставить на зарядку",
+    "prompt": "Телефон Мары",
+    "actions": [
+     {
+      "give_item": [
+       "ITEM_MARA_PHONE",
+       "world:307_charger"
+      ]
+     },
+     {
+      "flag": "phone_307_charged"
+     },
+     {
+      "notice": "O_307_CHARGER_PULLED"
+     },
+     {
+      "hint": [
+       "Экран загорелся. Батарея 1%.",
+       2.5
+      ]
+     },
+     {
+      "sfx": "click"
+     }
+    ]
+   },
+   {
+    "id": "take",
+    "if": "item_at:ITEM_MARA_PHONE:world:307_charger",
+    "verb": "Взять",
+    "prompt": "Телефон Мары",
+    "actions": [
+     {
+      "give_item": [
+       "ITEM_MARA_PHONE",
+       "hero"
+      ]
+     },
+     {
+      "if": "flag:phone307_has_text",
+      "then": [
+       {
+        "give_fact": [
+         "F_THOMAS_LOCATION",
+         "phone_307_text"
+        ]
+       },
+       {
+        "give_fact": [
+         "F_THOMAS_NAME",
+         "phone_307_text"
+        ]
+       },
+       {
+        "give_fact": [
+         "F_EVA_PROTECTING_MARA",
+         "phone_307_text"
+        ]
+       },
+       {
+        "hint": [
+         "«Т. у прачечной. Уходи через кухню, если что.»",
+         5.0
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "look",
+    "if": "!O_307_CHARGER_PULLED",
+    "verb": "Осмотреть",
+    "prompt": "Зарядка",
+    "actions": [
+     {
+      "notice": "O_307_CHARGER_PULLED"
+     }
+    ]
+   }
+  ]
+ },
+ "I_307_PHONE_BED": {
+  "zone": "ROOM_307",
+  "p": [
+   3.2,
+   0.02,
+   2.55
+  ],
+  "verb": "Поднять",
+  "prompt": "Телефон под кроватью",
+  "once": true,
+  "visible_if": "item_at:ITEM_MARA_PHONE:world:307_bed",
+  "mesh": {
+   "s": [
+    0.08,
+    0.02,
+    0.15
+   ],
+   "c": [
+    0.15,
+    0.15,
+    0.2
+   ],
+   "emit": 0.2
+  },
+  "actions": [
+   {
+    "give_item": [
+     "ITEM_MARA_PHONE",
+     "hero"
+    ]
+   },
+   {
+    "hint": [
+     "Старый телефон. Разряжен.",
+     2.5
+    ]
+   }
+  ]
+ },
+ "I_307_SHOE_A": {
+  "zone": "ROOM_307",
+  "p": [
+   2.4,
+   0.0,
+   3.7
+  ],
+  "verb": "Поднять",
+  "prompt": "Туфля",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.1,
+    0.08,
+    0.25
+   ],
+   "c": [
+    0.15,
+    0.05,
+    0.08
+   ]
+  },
+  "actions": [
+   {
+    "notice": "O_307_ONE_WET_SHOE"
+   },
+   {
+    "hint": [
+     "Мокрая.",
+     1.5
+    ]
+   }
+  ]
+ },
+ "I_307_SHOE_B": {
+  "zone": "ROOM_307",
+  "p": [
+   2.8,
+   0.0,
+   3.85
+  ],
+  "verb": "Поднять",
+  "prompt": "Вторая туфля",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.1,
+    0.08,
+    0.25
+   ],
+   "c": [
+    0.15,
+    0.05,
+    0.08
+   ]
+  },
+  "actions": [
+   {
+    "hint": [
+     "Сухая.",
+     1.5
+    ]
+   },
+   {
+    "flag": "shoe_b_dry"
+   }
+  ]
+ },
+ "I_307_WINDOW": {
+  "zone": "ROOM_307",
+  "p": [
+   5.2,
+   0.95,
+   0.35
+  ],
+  "mesh": {
+   "s": [
+    0.1,
+    0.1,
+    0.05
+   ],
+   "c": "interact"
+  },
+  "variants": [
+   {
+    "if": "!flag:window_closed",
+    "verb": "Закрыть",
+    "prompt": "Окно",
+    "actions": [
+     {
+      "flag": "window_closed"
+     },
+     {
+      "sfx": "window"
+     }
+    ]
+   },
+   {
+    "if": true,
+    "verb": "Открыть",
+    "prompt": "Окно",
+    "actions": [
+     {
+      "unflag": "window_closed"
+     },
+     {
+      "sfx": "window"
+     }
+    ]
+   }
+  ]
+ },
+ "I_307_LEAN": {
+  "zone": "ROOM_307",
+  "p": [
+   6.0,
+   0.95,
+   0.35
+  ],
+  "verb": "Выглянуть",
+  "prompt": "В окно",
+  "once": true,
+  "visible_if": "!flag:window_closed",
+  "no_mesh": true,
+  "actions": [
+   {
+    "flag": "leaned_out"
+   },
+   {
+    "notice": "O_307_NO_ESCAPE"
+   },
+   {
+    "camera_hint": {
+     "shake": 0.2
+    }
+   }
+  ]
+ },
+ "I_307_PILLS": {
+  "zone": "ROOM_307",
+  "p": [
+   4.9,
+   0.55,
+   0.9
+  ],
+  "verb": "Осмотреть",
+  "prompt": "Таблетки",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.1,
+    0.02,
+    0.06
+   ],
+   "c": [
+    0.9,
+    0.9,
+    0.95
+   ],
+   "emit": 0.2
+  },
+  "actions": [
+   {
+    "notice": "O_307_PILL_MISSING"
+   },
+   {
+    "hint": [
+     "«Vale, M.»",
+     2.0
+    ]
+   }
+  ]
+ },
+ "I_307_MATTRESS": {
+  "zone": "ROOM_307",
+  "p": [
+   2.6,
+   0.55,
+   2.4
+  ],
+  "verb": "Приподнять",
+  "prompt": "Матрас",
+  "once": true,
+  "no_mesh": true,
+  "actions": [
+   {
+    "flag": "mattress_lifted"
+   },
+   {
+    "notice": "O_307_MATTRESS_SHIFTED"
+   }
+  ]
+ },
+ "I_307_BAG": {
+  "zone": "ROOM_307",
+  "p": [
+   0.75,
+   0.4,
+   4.6
+  ],
+  "verb": "Открыть",
+  "prompt": "Дорожная сумка",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.3,
+    0.3,
+    0.5
+   ],
+   "c": [
+    0.4,
+    0.3,
+    0.2
+   ]
+  },
+  "actions": [
+   {
+    "flag": "bag_opened"
+   },
+   {
+    "notice": "O_307_ZIP_WRONG"
+   }
+  ]
+ },
+ "I_307_CURTAIN": {
+  "zone": "ROOM_307",
+  "p": [
+   6.5,
+   1.2,
+   0.4
+  ],
+  "verb": "Отодвинуть",
+  "prompt": "Штора",
+  "once": true,
+  "no_mesh": true,
+  "actions": [
+   {
+    "flag": "curtain_moved"
+   },
+   {
+    "hint": [
+     "За шторой — решётка вентиляции.",
+     2.5
+    ]
+   }
+  ]
+ },
+ "I_307_TV": {
+  "zone": "ROOM_307",
+  "p": [
+   6.4,
+   0.7,
+   2.6
+  ],
+  "mesh": {
+   "s": [
+    0.12,
+    0.06,
+    0.06
+   ],
+   "c": [
+    0.9,
+    0.2,
+    0.2
+   ],
+   "emit": 0.5
+  },
+  "variants": [
+   {
+    "if": "!flag:tv_on",
+    "verb": "Включить",
+    "prompt": "Телевизор",
+    "actions": [
+     {
+      "flag": "tv_on"
+     },
+     {
+      "ambient": "TV_ON"
+     },
+     {
+      "give_fact": [
+       "F_SERVICE_STAIR",
+       "I_307_TV"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "photo",
+    "if": "!flag:map_photo",
+    "once": true,
+    "verb": "Сфотографировать",
+    "prompt": "Карту отеля",
+    "actions": [
+     {
+      "flag": "map_photo"
+     },
+     {
+      "sfx": "click"
+     },
+     {
+      "hint": [
+       "Карта в телефоне [Tab]",
+       2.5
+      ]
+     }
+    ]
+   },
+   {
+    "if": true,
+    "verb": "Выключить",
+    "prompt": "Телевизор",
+    "actions": [
+     {
+      "unflag": "tv_on"
+     }
+    ]
+   }
+  ]
+ },
+ "I_308_TAG": {
+  "zone": "ROOM_308",
+  "p": [
+   5.4,
+   0.55,
+   3.6
+  ],
+  "verb": "Прочитать",
+  "prompt": "Бирка на чемодане",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.08,
+    0.1,
+    0.02
+   ],
+   "c": [
+    0.9,
+    0.85,
+    0.6
+   ]
+  },
+  "actions": [
+   {
+    "give_fact": [
+     "F_EVA_ROOM_308",
+     "I_308_TAG"
+    ]
+   },
+   {
+    "hint": [
+     "«E. Marsh»",
+     2.5
+    ]
+   }
+  ]
+ },
+ "I_308_LIGHTER": {
+  "zone": "ROOM_308",
+  "p": [
+   5.7,
+   0.78,
+   1.4
+  ],
+  "verb": "Осмотреть",
+  "prompt": "Зажигалка",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.04,
+    0.07,
+    0.02
+   ],
+   "c": [
+    0.9,
+    0.6,
+    0.1
+   ],
+   "emit": 0.3
+  },
+  "actions": [
+   {
+    "notice": "O_308_SAME_LIGHTER"
+   },
+   {
+    "sfx": "lighter"
+   }
+  ]
+ },
+ "I_308_COFFEE": {
+  "zone": "ROOM_308",
+  "p": [
+   5.7,
+   0.78,
+   2.0
+  ],
+  "verb": "Осмотреть",
+  "prompt": "Кофе",
+  "once": true,
+  "mesh": {
+   "s": [
+    0.18,
+    0.12,
+    0.08
+   ],
+   "c": [
+    0.9,
+    0.9,
+    0.9
+   ]
+  },
+  "actions": [
+   {
+    "notice": "O_308_TWO_COFFEE"
+   }
+  ]
+ }
+}

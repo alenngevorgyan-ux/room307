@@ -1,0 +1,13 @@
+{
+  "TR_S2_MARA_CALLED": {
+    "target": "adrian",
+    "bait": {"event": "claim_spoken", "claim": "C_MARA_CALLED_ME", "addressee": "adrian"},
+    "environment": {"zones": ["ELEV_A", "LOBBY", "BAR"]},
+    "timing": {"scene": "S02"},
+    "outcomes": [{"else": true, "do": [
+      {"npc": ["adrian", "pose", {"pose": "grab"}]}, {"tell": ["O_S2_GRAB", 2.2]}, {"tell": ["O_S2_POCKET_TOUCH", 1.6]},
+      {"line": "ADR_GRAB"}, {"notice": "O_S2_GRAB"}, {"give_fact": ["F_ADRIAN_EXPECTS_CONTACT", "TR_S2_MARA_CALLED"]},
+      {"suspicion": ["adrian", 1]}, {"believes": ["adrian", "F_MARA_CONTACT"]}, {"flag": "s2_grabbed"}
+    ]}]
+  }
+}

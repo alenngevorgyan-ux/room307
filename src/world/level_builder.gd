@@ -175,7 +175,17 @@ static func _door(z: Zone, dd: Dictionary, h: float) -> void:
 	var dw := float(dd.get("w", 1.2))
 	var dh := minf(2.3, h - 0.1)
 	var along := Vector3(1, 0, 0) if side in ["N", "S", "F"] else Vector3(0, 0, 1)
-	if kind != "hidden":
+	if kind != "hidden" and side == "S":
+		# camera-side doors: an orange threshold strip + label instead of a panel blocking the view
+		var strip := Graybox.box_mesh(Vector3(dw, 0.03, 0.25), Graybox.color("trim"), 0.4)
+		strip.position = Vector3(0, 0.02, -0.15)
+		vis.add_child(strip)
+		if dd.has("label"):
+			var lab := Graybox.label3d("↓ " + String(dd.label), 30, Color(1, 0.85, 0.6))
+			lab.position = Vector3(0, 0.35, -0.3)
+			lab.no_depth_test = false
+			vis.add_child(lab)
+	elif kind != "hidden":
 		var panel_c := Graybox.color("dark") if kind in ["arch"] else Graybox.color(dd.get("c", "door"))
 		var panel := Graybox.box_mesh(Vector3(dw, dh, 0.08) if along.x > 0 else Vector3(0.08, dh, dw), panel_c)
 		panel.position = Vector3(0, dh / 2, 0) - n * 0.12

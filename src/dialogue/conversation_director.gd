@@ -22,9 +22,13 @@ var leave_t: float = 0.0
 var waiting_lines := false
 var exchange_t: float = 0.0
 
-# line queue
-var line_queue: Array = []         # [{key, ctx}]
+# line queues: the exchange channel (blocks conversation flow) and the ambient/world channel
+# (background argument, overhears, barks with subtitles) which exchange lines pre-empt.
+const AMBIENT_TTL := 6.0
+var line_queue: Array = []         # exchange channel [{key, ctx}]
+var world_queue: Array = []        # ambient channel [{key, ctx, ttl}]
 var current_line: Dictionary = {}
+var current_world := false
 var line_t: float = 0.0
 
 var _poll_t: float = 0.0
@@ -74,8 +78,9 @@ func is_active() -> bool:
 	return active_id != ""
 
 
+## True while exchange-channel lines are queued or playing (ambient lines never block an exchange).
 func busy() -> bool:
-	return not current_line.is_empty() or not line_queue.is_empty()
+	return (not current_line.is_empty() and not current_world) or not line_queue.is_empty()
 
 
 # ================================================================== tick
@@ -86,6 +91,10 @@ func tick(delta: float) -> void:
 	if active_id != "":
 		exchange_t += delta
 		_tick_exchange(delta)
+	elif not _pending_beat.is_empty():
+		var xid: String = _pending_beat.pop_front()
+		if can_start(xid):
+			start(xid)
 	elif auto_triggers:
 		_poll_t -= delta
 		if _poll_t <= 0.0:
@@ -94,14 +103,25 @@ func tick(delta: float) -> void:
 
 
 func _tick_lines(delta: float) -> void:
+	for w in world_queue:
+		w.ttl -= delta
+	world_queue = world_queue.filter(func(w): return w.ttl > 0.0)
 	if not current_line.is_empty():
 		line_t -= delta
+		if current_world and not line_queue.is_empty():
+			line_t = 0.0   # exchange line pre-empts ambient chatter
 		if line_t > 0.0:
 			return
 		current_line = {}
-	if line_queue.is_empty():
+	var q: Dictionary
+	if not line_queue.is_empty():
+		q = line_queue.pop_front()
+		current_world = false
+	elif not world_queue.is_empty():
+		q = world_queue.pop_front()
+		current_world = true
+	else:
 		return
-	var q: Dictionary = line_queue.pop_front()
 	var l: Dictionary = _data().line(q.key)
 	current_line = l
 	current_line["key"] = q.key
@@ -115,14 +135,20 @@ func _tick_lines(delta: float) -> void:
 		ActionRunner.run(l.actions, {"npc": speaker, "source": q.key})
 
 
+## Lines queued while an exchange is active join the exchange channel (trap outcomes during a
+## conversation read as part of it); otherwise, or with ctx.world, they go to the ambient channel.
 func queue_line(key: String, ctx: Dictionary = {}) -> void:
-	line_queue.append({"key": key, "ctx": ctx})
+	if ctx.get("world", false) or active_id == "":
+		world_queue.append({"key": key, "ctx": ctx, "ttl": float(ctx.get("ttl", AMBIENT_TTL))})
+	else:
+		line_queue.append({"key": key, "ctx": ctx})
 
 
 func clear_lines() -> void:
 	line_queue.clear()
-	current_line = {}
-	line_t = 0.0
+	if not current_world:
+		current_line = {}
+		line_t = 0.0
 
 
 ## Skip the currently playing line (debug / sims).
@@ -420,14 +446,20 @@ func _resolve_chip(chip: Dictionary) -> void:
 
 # ================================================================== triggers
 
+var _pending_beat: Array = []   # beat-triggered exchanges waiting for the active one to end
+
+
 func _on_beat(b: String) -> void:
-	if active_id != "":
-		return
 	for xid in _data().exchanges:
 		var x: Dictionary = _data().exchanges[xid]
 		var trg: Dictionary = x.get("trigger", {})
 		if trg.get("type", "") == "beat" and String(trg.get("beat", "")) == b and can_start(xid):
-			start(xid)
+			if active_id == "":
+				start(xid)
+			elif int(x.get("priority", 0)) > int(active.get("priority", 0)):
+				start(xid, true)
+			elif not _pending_beat.has(xid):
+				_pending_beat.append(xid)
 			return
 
 
@@ -450,6 +482,11 @@ func _poll_triggers() -> void:
 					ok = Presence.distance("hero", npc) <= float(trg.get("radius", 3.0))
 			"zone":
 				ok = Presence.in_zone("hero") == String(trg.get("zone", ""))
+			"hero_near":
+				var m := String(trg.get("marker", ""))
+				if Presence.pos.has("hero") and _data().has_marker(m):
+					ok = Presence.in_zone("hero") == _data().marker_zone(m) \
+						and (Presence.pos.hero as Vector3).distance_to(_data().marker(m)) <= float(trg.get("radius", 3.0))
 			"cond":
 				ok = true
 		if ok and Conditions.check(trg.get("cond"), _ep()) and can_start(xid):

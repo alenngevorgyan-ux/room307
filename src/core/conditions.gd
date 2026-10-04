@@ -126,7 +126,21 @@ static func _npc(cs: CharacterState, q: Dictionary) -> bool:
 	return true
 
 
+static func truthy(v: Variant) -> bool:
+	match typeof(v):
+		TYPE_NIL: return false
+		TYPE_BOOL: return v
+		TYPE_INT, TYPE_FLOAT: return v != 0
+		TYPE_STRING, TYPE_STRING_NAME: return String(v) != ""
+	return true
+
+
 static func compare(a: Variant, op: String, b: Variant) -> bool:
+	if typeof(a) != typeof(b) and not (typeof(a) in [TYPE_INT, TYPE_FLOAT] and typeof(b) in [TYPE_INT, TYPE_FLOAT]):
+		if op == "==": return false
+		if op == "!=": return true
+		if a == null: a = 0
+		if b == null: b = 0
 	if typeof(a) in [TYPE_INT, TYPE_FLOAT] and typeof(b) in [TYPE_INT, TYPE_FLOAT]:
 		a = float(a)
 		b = float(b)
@@ -162,8 +176,7 @@ static func token(t: String, ep: Node) -> bool:
 	var arg := t.substr(c + 1)
 	match kind:
 		"flag":
-			var v: Variant = ep.flag(arg)
-			return v != null and v != false and v != 0 and v != ""
+			return truthy(ep.flag(arg))
 		"offered":
 			return ep.threads_available.has(arg) or ep.threads_pinned.has(arg)
 		"struck":

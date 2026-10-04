@@ -1,0 +1,283 @@
+{
+ "S02": {
+  "phase": "S02_CLIENT",
+  "music": "CLIENT_THEME_SPARSE",
+  "keep_npcs": [
+   "pavel"
+  ],
+  "npcs": {
+   "adrian": {
+    "at": "BAR:adrian_by_hero",
+    "if": "!flag:s1_left_early"
+   },
+   "daniel": {
+    "at": "LOBBY:daniel_far",
+    "schedule": "daniel_phone_s2",
+    "pose": "ear"
+   },
+   "receptionist": {
+    "at": "LOBBY:receptionist",
+    "schedule": "receptionist_desk"
+   },
+   "jules": {
+    "at": "BAR:jules_a",
+    "schedule": "jules_polish"
+   },
+   "hale": {
+    "at": "BAR:hale_b",
+    "if": "s1:PRIVATE_DEAL"
+   },
+   "guest_1": {
+    "at": "BAR:silh_1"
+   }
+  },
+  "enter": [
+   {
+    "flag": [
+     "elev_floor",
+     "G"
+    ]
+   },
+   {
+    "if": "flag:s1_left_early",
+    "then": [
+     {
+      "spawn": [
+       "adrian",
+       "LOBBY:arrive_bar"
+      ]
+     },
+     {
+      "npc": [
+       "adrian",
+       "look",
+       {
+        "target": "hero"
+       }
+      ]
+     },
+     {
+      "line": "ADR_LEFT_EARLY"
+     },
+     {
+      "line": "ADR_01"
+     },
+     {
+      "line": "H_01"
+     },
+     {
+      "line": "H_01B"
+     },
+     {
+      "delay": 7.5,
+      "do": [
+       {
+        "set_schedule": [
+         "adrian",
+         "adrian_lead_s2"
+        ]
+       },
+       {
+        "beat": "BEAT_S2_WALK"
+       }
+      ]
+     }
+    ],
+    "else": [
+     {
+      "play_cine": "C_S2_OPEN"
+     }
+    ]
+   },
+   {
+    "if": "s1:WRONG_ACCUSE",
+    "then": [
+     {
+      "spawn": [
+       "pavel",
+       "LOBBY:pavel_reception"
+      ]
+     },
+     {
+      "npc": [
+       "pavel",
+       "look",
+       {
+        "target": "hero"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "rules": [
+   {
+    "id": "daniel_watch",
+    "when": "zone:LOBBY",
+    "do": [
+     {
+      "tell": [
+       "O_S2_DANIEL_WATCHES",
+       3.0
+      ]
+     },
+     {
+      "npc": [
+       "daniel",
+       "look",
+       {
+        "target": "hero"
+       }
+      ]
+     },
+     {
+      "delay": 3.2,
+      "do": [
+       {
+        "npc": [
+         "daniel",
+         "look",
+         {
+          "target": null
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "id": "ride",
+    "when": {
+     "all": [
+      "zone:ELEV_A",
+      "!flag:s2_ride_done"
+     ]
+    },
+    "do": [
+     {
+      "teleport_npc": [
+       "adrian",
+       "ELEV_A:adrian"
+      ]
+     },
+     {
+      "set_schedule": [
+       "adrian",
+       ""
+      ]
+     },
+     {
+      "npc": [
+       "adrian",
+       "look",
+       {
+        "target": "hero"
+       }
+      ]
+     },
+     {
+      "flag": "elev_moving"
+     },
+     {
+      "flag": "s2_riding"
+     },
+     {
+      "sfx": "click"
+     },
+     {
+      "beat": "BEAT_S2_RIDE"
+     }
+    ]
+   },
+   {
+    "id": "arrive_3",
+    "after": 0,
+    "when": {
+     "all": [
+      "flag:s2_riding",
+      "BEAT_S2_RIDE_DONE"
+     ]
+    },
+    "do": [
+     {
+      "flag": [
+       "elev_floor",
+       "3"
+      ]
+     },
+     {
+      "unflag": "elev_moving"
+     },
+     {
+      "unflag": "s2_riding"
+     },
+     {
+      "flag": "s2_ride_done"
+     },
+     {
+      "sfx": "ding"
+     },
+     {
+      "line": "ADR_KEY"
+     },
+     {
+      "give_item": [
+       "ITEM_KEYCARD_307",
+       "hero"
+      ]
+     },
+     {
+      "sfx": "accept"
+     }
+    ]
+   },
+   {
+    "id": "walked_off",
+    "when": {
+     "all": [
+      "flag:s2_called_back",
+      "!zone:LOBBY",
+      "!zone:BAR",
+      "!zone:ELEV_A",
+      "!flag:s2_riding"
+     ]
+    },
+    "hold": 25.0,
+    "do": [
+     {
+      "flag": "keycard_at_reception"
+     },
+     {
+      "despawn": "adrian"
+     },
+     {
+      "flag": "s2_adrian_left"
+     }
+    ]
+   },
+   {
+    "id": "to_s03",
+    "when": "zone:HALL_3F",
+    "do": [
+     {
+      "goto_scene": "S03"
+     }
+    ]
+   }
+  ],
+  "logic": "res://src/scenes_logic/s02_client.gd",
+  "seed": [
+   {
+    "give_item": [
+     "ITEM_KEYCARD_307",
+     "hero"
+    ]
+   },
+   {
+    "offer_thread": "T_EX_BOYFRIEND"
+   }
+  ],
+  "debug_hero": "BAR:hero_stand"
+ }
+}

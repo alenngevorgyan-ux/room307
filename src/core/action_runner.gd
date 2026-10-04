@@ -5,7 +5,7 @@ extends RefCounted
 ## {"if": cond, "then": [...], "else": [...]} branches; {"delay": 2.0, "do": [...]} defers
 ## (deferred actions advance via ActionRunner.tick(), called by the ConversationDirector or sims).
 
-const VERBS := ["line", "lines", "bark", "give_fact", "notice", "offer_thread", "pin_thread", "strike_thread",
+const VERBS := ["line", "lines", "ambient", "bark", "give_fact", "notice", "offer_thread", "pin_thread", "strike_thread",
 	"flag", "unflag", "trust", "respect", "suspicion", "stress", "warmth", "fear_hit", "set_disposition",
 	"set_var", "believes", "knows", "remember", "caught_lying", "set_schedule", "give_item", "take_item",
 	"lead", "beat", "start_exchange", "end_exchange", "play_cine", "camera_hint", "music", "sfx",
@@ -88,13 +88,16 @@ static func _exec(verb: String, v: Variant, ctx: Dictionary) -> void:
 	if log_enabled:
 		print("  [action] ", verb, " ", v)
 	match verb:
-		"line", "lines":
+		"line", "lines", "ambient":
 			var keys: Array = v if typeof(v) == TYPE_ARRAY else [v]
+			var c2 := ctx.duplicate()
+			if verb == "ambient":
+				c2["world"] = true
 			for k in keys:
 				if Services.conversation:
-					Services.conversation.queue_line(String(k), ctx)
+					Services.conversation.queue_line(String(k), c2)
 				else:
-					B.line_requested.emit(String(k), ctx)
+					B.line_requested.emit(String(k), c2)
 		"bark":
 			if typeof(v) == TYPE_ARRAY:
 				B.bark_requested.emit(String(v[0]), String(v[1]))
@@ -190,6 +193,8 @@ static func _exec(verb: String, v: Variant, ctx: Dictionary) -> void:
 		"sfx":
 			B.sfx_requested.emit(String(v), ctx.get("pos"))
 		"teleport_npc":
+			if data().has_marker(String(v[1])):
+				Presence.place(String(v[0]), data().marker_zone(String(v[1])), data().marker(String(v[1])))
 			B.npc_command.emit(String(v[0]), "teleport", {"marker": String(v[1])})
 		"spawn":
 			Presence.present[String(v[0])] = true

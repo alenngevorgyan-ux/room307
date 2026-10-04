@@ -1,0 +1,48 @@
+{
+  "X_S03_LINA": {
+    "npc": "lina", "scene": "S03", "trigger": {"type": "npc_enters_radius", "radius": 4.5, "cond": "flag:lina_in_room"}, "radius_leave": 7.0, "priority": 2,
+    "nodes": {
+      "start": {"line": "LINA_01", "next": "c1"},
+      "c1": {"timeout": 7.0, "chips": [
+        {"id": "CH_LINA_STOP", "verb": "CALM", "label": "Оставь", "requires": {"none": ["flag:lina_stopped", "flag:glasses_taken", "flag:glasses_seen"]}, "line": "H_LEAVE_IT", "next": "stop"},
+        {"id": "CH_LINA_CALM", "verb": "CALM", "label": "Я не из полиции", "claim": "C_NOT_POLICE", "next_by_reaction": {"*": "calm"}},
+        {"id": "CH_LINA_KEY", "verb": "BLUFF", "label": "Показать ключ", "requires": "ITEM_KEYCARD_307", "line": "H_SHOW_KEY", "actions": [{"trap_bait": ["show_item", {"item": "ITEM_KEYCARD_307", "to": "lina"}]}], "next": "c2"},
+        {"id": "CH_LINA_SEC", "verb": "BLUFF", "label": "Я из охраны", "claim": "C_HOTEL_SECURITY", "next_by_reaction": {"CALLED": "called", "*": "c2"}},
+        {"id": "CH_LINA_WHO", "verb": "PRESS", "label": "Кто ещё заходил?", "line": "H_WHO_ELSE", "next": "who"}
+      ], "silence": "sil", "leave": "end"},
+      "stop": {"line": "LINA_LEAVES_IT", "actions": [{"flag": "lina_stopped"}, {"set_schedule": ["lina", "lina_307_skip"]}], "next": "c2"},
+      "calm": {"line": "LINA_LEFT", "actions": [{"give_fact": ["F_MARA_LEFT_ALIVE", "X_S03_LINA"]}, {"flag": "lina_calmed"}, {"trust": ["lina", 1]}], "next": "c2"},
+      "who": {"line": "LINA_SEC", "actions": [{"give_fact": ["F_SECURITY_IN_307", "X_S03_LINA"]}, {"stress": ["lina", 1]}, {"flag": "lina_pressed"}], "next": "c2"},
+      "c2": {"timeout": 7.0, "chips": [
+        {"id": "CH_LINA_WHERE", "verb": "PRESS", "label": "Куда она пошла?", "requires": "!F_SERVICE_STAIR", "line": "H_WHERE_WENT", "next": "stair"},
+        {"id": "CH_LINA_WHO2", "verb": "PRESS", "label": "Кто ещё?", "line": "H_WHO_ELSE", "next_if": [{"if": "flag:lina_pressed", "next": "scared"}, {"else": true, "next": "who2"}]},
+        {"id": "CH_LINA_GO", "verb": "RELEASE", "label": "Иди", "line": "H_RELEASE", "next_if": [{"if": "flag:lina_calmed", "next": "ally"}, {"else": true, "next": "neutral"}]}
+      ], "silence": "sil2", "leave": "end"},
+      "stair": {"line": "LINA_STAIR", "actions": [{"give_fact": ["F_SERVICE_STAIR", "X_S03_LINA"]}], "next": "end"},
+      "who2": {"line": "LINA_SEC", "actions": [{"give_fact": ["F_SECURITY_IN_307", "X_S03_LINA"]}, {"stress": ["lina", 1]}, {"flag": "lina_pressed"}], "next": "end"},
+      "scared": {"line": "LINA_SCARED", "actions": [{"set_var": ["lina", "state", "SCARED"]}, {"flag": "cart_in_hall"}, {"set_schedule": ["lina", "lina_flee"]}, {"set_disposition": ["lina", "PRESSURED"]}], "next": "end"},
+      "called": {"line": "LINA_CALLED", "actions": [{"set_var": ["lina", "state", "SCARED"]}, {"flag": "cart_in_hall"}, {"set_schedule": ["lina", "lina_flee"]}], "next": "end"},
+      "ally": {"line": ["LINA_THANKS", "LINA_STAIR", "LINA_ALLY"], "actions": [{"set_var": ["lina", "state", "ALLY"]}, {"give_fact": ["F_SERVICE_STAIR", "X_S03_LINA"]}, {"trust": ["lina", 1]}, {"flag": "cart_in_hall"}], "next": "end"},
+      "neutral": {"line": "LINA_THANKS", "next": "end"},
+      "sil": {"line": "LINA_WORKS_SILENT", "next": "c2"},
+      "sil2": {"line": "LINA_WORK", "next": "end"}
+    }
+  },
+  "X_S03_DANIEL": {
+    "npc": "daniel", "scene": "S03", "trigger": {"type": "npc_enters_radius", "radius": 6.0, "cond": "flag:daniel_s3_walking"}, "radius_leave": 10.0, "priority": 3,
+    "on_end": [{"beat": "BEAT_S3_DANIEL_DONE"}],
+    "nodes": {
+      "start": {"line": "DAN_01", "actions": [{"if": "T_SOMEONE_SEARCHED_307", "then": [{"npc": ["daniel", "look", {"target": "hero"}]}, {"tell": ["O_DANIEL_PHONE_DOWN", 1.6]}]}], "next": "d1"},
+      "d1": {"timeout": 7.0, "chips": [
+        {"id": "CH_DAN_ZIP", "verb": "PROVOKE", "label": "Сумки", "requires": "O_307_ZIP_WRONG", "claim": "C_ZIP", "next_by_reaction": {"*": "zip"}},
+        {"id": "CH_DAN_EMPTY", "verb": "DEFLECT", "label": "Пусто", "line": "H_EMPTY", "next": "empty"},
+        {"id": "CH_DAN_SELF", "verb": "PRESS", "label": "Она ушла сама", "line": "H_LEFT_SELF", "next": "self"}
+      ], "silence": "sil", "leave": "past"},
+      "zip": {"line": "DAN_ZIP", "actions": [{"suspicion": ["daniel", 2]}, {"believes": ["daniel", "F_SECURITY_IN_307"]}, {"flag": "daniel_shadow"}, {"stress": ["daniel", 1]}], "next": "past"},
+      "empty": {"line": "DAN_EMPTY", "next": "past"},
+      "self": {"line": ["DAN_LEFT_SELF", "DAN_RADIO"], "actions": [{"suspicion": ["daniel", 1]}, {"flag": "daniel_knows_inside"}, {"npc": ["daniel", "pose", {"pose": "radio"}]}], "next": "past"},
+      "sil": {"line": "DAN_SILENCE", "next": "past"},
+      "past": {"line": ["DAN_PAST", "H_REMEMBER"], "next": "end"}
+    }
+  }
+}

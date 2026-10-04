@@ -1,0 +1,5 @@
+{
+  "C_MARA_CALLED_ME": {"text": "Она звонила мне час назад.", "line": "H_CALLED", "verb": "BLUFF", "about": "F_MARA_CONTACT", "is_true": false, "contradicted_by": [], "fears": {"adrian": "LOSE_MARA"}},
+  "C_NOT_FROM_EX": {"text": "Если она прячется — то не от бывшего.", "line": "H_NOT_FROM_EX", "verb": "PROVOKE", "about": "F_OLD_ACCIDENT", "is_true": true, "fears": {"adrian": "LOSE_MARA"}},
+  "C_YOU_LIE": {"text": "Вы мне врёте.", "line": "H_CALL_LIE", "verb": "PROVOKE", "about": "F_HERO_READS_PEOPLE", "is_true": true, "fears": {"adrian": "LOSES_NAME"}}
+}

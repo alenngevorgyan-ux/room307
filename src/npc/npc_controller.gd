@@ -302,7 +302,10 @@ func _physics_process(delta: float) -> void:
 		if not _follow.is_empty():
 			move_dir = _follow_dir()
 		elif goal != Vector3.INF:
-			move_dir = _move_dir()
+			if _lead_blocked():
+				look_override = "hero"
+			else:
+				move_dir = _move_dir()
 		else:
 			_tick_schedule(delta)
 	var sp := float(SPEEDS.get(speed_name, 1.45)) * speed_mult
@@ -464,6 +467,22 @@ func _tick_schedule(delta: float) -> void:
 	else:
 		point_i += 1
 	_goto_point()
+
+
+## FOLLOW_LEAD: a lead NPC only walks while the hero is within wait_radius.
+func _lead_blocked() -> bool:
+	if String(sched.get("mode", "")) != "lead":
+		return false
+	var r := float(sched.get("wait_radius", 6.0))
+	var close := Presence.in_zone("hero") == current_zone and Presence.distance("hero", npc_id) <= r
+	if not close and not _lead_wait:
+		_lead_wait = true
+		if sched.has("impatience_bark"):
+			get_node("/root/Bus").bark_requested.emit(npc_id, String(_D().line(String(sched.impatience_bark)).text))
+	elif close and _lead_wait:
+		_lead_wait = false
+		look_override = null
+	return not close
 
 
 func arrived_done() -> bool:

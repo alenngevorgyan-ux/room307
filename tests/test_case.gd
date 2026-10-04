@@ -39,6 +39,7 @@ func eq(a: Variant, b: Variant, msg: String = "") -> void:
 
 ## Fresh logic world: Episode reset, Presence cleared, directors created as needed.
 func fresh() -> void:
+	_cine = null
 	ActionRunner.reset()
 	Presence.clear()
 	ep().reset()
@@ -58,7 +59,49 @@ func make_directors() -> Dictionary:
 	var traps := TrapDirector.new()
 	traps.set_meta("sim_node", true)
 	tree.root.add_child(traps)
-	return {"conv": conv, "traps": traps}
+	var cine := CinePlayer.new()
+	cine.set_meta("sim_node", true)
+	cine.set_process(false)
+	tree.root.add_child(cine)
+	_cine = cine
+	return {"conv": conv, "traps": traps, "cine": cine}
+
+
+var _cine: Node = null
+
+
+## Logic-only scene run: directors + SceneManager (no 3D world). Returns {conv, traps, sm}.
+func start_scene(id: String) -> Dictionary:
+	var d := make_directors()
+	var sm := SceneManager.new()
+	sm.set_meta("sim_node", true)
+	sm.autosave = false
+	sm.set_process(false)
+	tree.root.add_child(sm)
+	d["sm"] = sm
+	sm.goto_scene(id)
+	return d
+
+
+func place(id: String, marker: String) -> void:
+	Presence.place(id, data().marker_zone(marker), data().marker(marker))
+	if id == "hero":
+		ep().hero_zone = data().marker_zone(marker)
+
+
+func place_at(id: String, zone: String, p: Vector3) -> void:
+	Presence.place(id, zone, data().zone_origin(zone) + p)
+
+
+## Let lines drain and chips appear.
+func settle(conv: Node, max_sec: float = 30.0) -> void:
+	var t := 0.0
+	while t < max_sec:
+		advance(conv, 0.1)
+		t += 0.1
+		if conv.active_id == "" or not conv.chips_visible.is_empty():
+			if not conv.busy():
+				return
 
 
 ## Advance logic time (conversation + episode) in small steps.
@@ -73,4 +116,6 @@ func advance(conv: Node, sec: float, step: float = 0.1) -> void:
 		var sm: Node = Services.scenes
 		if sm and sm.has_method("tick"):
 			sm.tick(step)
+		if is_instance_valid(_cine):
+			_cine._process(step)
 		t += step

@@ -1,0 +1,140 @@
+{
+ "S03": {
+  "phase": "S03_ROOM",
+  "music": "INVESTIGATE_MINIMAL",
+  "npcs": {},
+  "enter": [
+   {
+    "despawn": "adrian"
+   },
+   {
+    "flag": [
+     "elev_floor",
+     "3"
+    ]
+   }
+  ],
+  "rules": [
+   {
+    "id": "entered_307",
+    "when": "zone:ROOM_307",
+    "do": [
+     {
+      "flag": "entered_room"
+     },
+     {
+      "flag": "window_seen_open"
+     }
+    ]
+   },
+   {
+    "id": "entered_308",
+    "when": "zone:ROOM_308",
+    "do": [
+     {
+      "flag": "entered_room"
+     },
+     {
+      "flag": "door_308_open"
+     }
+    ]
+   },
+   {
+    "id": "daniel_on_exit",
+    "when": {
+     "all": [
+      "flag:entered_room",
+      "zone:HALL_3F",
+      "!flag:daniel_s3_walking"
+     ]
+    },
+    "do": [
+     {
+      "spawn": [
+       "daniel",
+       "HALL_3F:daniel_start"
+      ]
+     },
+     {
+      "set_schedule": [
+       "daniel",
+       "daniel_hall_s3"
+      ]
+     },
+     {
+      "flag": "daniel_s3_walking"
+     }
+    ]
+   },
+   {
+    "id": "daniel_skip_room",
+    "after": 45,
+    "when": {
+     "all": [
+      "!flag:entered_room",
+      "zone:HALL_3F",
+      "!flag:daniel_s3_walking"
+     ]
+    },
+    "do": [
+     {
+      "spawn": [
+       "daniel",
+       "HALL_3F:daniel_start"
+      ]
+     },
+     {
+      "set_schedule": [
+       "daniel",
+       "daniel_hall_s3"
+      ]
+     },
+     {
+      "flag": "daniel_s3_walking"
+     }
+    ]
+   },
+   {
+    "id": "lina_timer",
+    "after": 150,
+    "when": {
+     "all": [
+      "zone:ROOM_307",
+      "!flag:lina_called_in"
+     ]
+    },
+    "do": [
+     {
+      "flag": "lina_due"
+     }
+    ]
+   },
+   {
+    "id": "hub_open",
+    "when": "BEAT_S3_DANIEL_DONE",
+    "hold": 1.0,
+    "do": [
+     {
+      "despawn": "daniel"
+     },
+     {
+      "beat": "BEAT_HUB_OPEN"
+     },
+     {
+      "goto_scene": "S04"
+     }
+    ]
+   }
+  ],
+  "logic": "res://src/scenes_logic/s03_room.gd",
+  "seed": [
+   {
+    "give_item": [
+     "ITEM_KEYCARD_307",
+     "hero"
+    ]
+   }
+  ],
+  "debug_hero": "HALL_3F:arrive_elev"
+ }
+}

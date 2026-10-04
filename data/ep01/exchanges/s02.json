@@ -1,0 +1,69 @@
+{
+  "X_S02_A": {
+    "npc": "adrian", "scene": "S02", "trigger": {"type": "beat", "beat": "BEAT_S2_WALK"}, "radius_leave": 10.0, "priority": 1,
+    "leave": "callback",
+    "nodes": {
+      "start": {"line": ["ADR_BRIEF_1", "ADR_BRIEF_2"], "actions": [{"offer_thread": "T_EX_BOYFRIEND"}], "next": "w1"},
+      "w1": {"timeout": 8.0, "chips": [
+        {"id": "CH_S2_DANGER", "verb": "PRESS", "label": "Она в опасности?", "line": "H_DANGER", "next": "danger"},
+        {"id": "CH_S2_POLICE", "verb": "PRESS", "label": "Почему без полиции?", "line": "H_NOPOLICE", "next": "police"},
+        {"id": "CH_S2_EXNAME", "verb": "PRESS", "label": "Имя бывшего?", "line": "H_EXNAME", "next": "exname"},
+        {"id": "CH_S2_LEVERAGE", "verb": "PRESS", "label": "Чем шантажирует?", "line": "H_LEVERAGE", "next": "leverage"}
+      ], "silence": "end", "leave": "callback"},
+      "danger": {"line": "ADR_FLAT", "next": "end"},
+      "police": {"line": "ADR_NOPOLICE", "next": "end"},
+      "exname": {"line": "ADR_EXNAME", "next": "end"},
+      "leverage": {"line": "ADR_LEVERAGE", "actions": [{"flag": "s2_leverage_n"}], "next": "end"},
+      "callback": {"line": "ADR_CALLBACK", "actions": [{"flag": "s2_called_back"}], "next": "end"}
+    }
+  },
+  "X_S02_B": {
+    "npc": "adrian", "scene": "S02", "trigger": {"type": "hero_near", "marker": "LOBBY:adrian_mid", "radius": 4.5, "cond": "seen:X_S02_A"}, "radius_leave": 10.0, "priority": 1,
+    "leave": "callback",
+    "nodes": {
+      "start": {"timeout": 8.0, "chips": [
+        {"id": "CH_S2_NOT_EX", "verb": "PROVOKE", "label": "Не от бывшего", "requires": "O_S2_FLAT_ON_DANGER", "claim": "C_NOT_FROM_EX", "next_by_reaction": {"*": "not_ex"}},
+        {"id": "CH_S2_TOOK", "verb": "PRESS", "label": "Что она взяла?", "line": "H_TOOK", "next": "took"},
+        {"id": "CH_S2_WHO", "verb": "PRESS", "label": "Кто это?", "line": "H_WHO", "next": "who"},
+        {"id": "CH_S2_LEVERAGE2", "verb": "PRESS", "label": "Чем шантажирует?", "requires": "flag:s2_leverage_n", "line": "H_LEVERAGE", "next": "deep"},
+        {"id": "CH_S2_HOWMUCH", "verb": "BLUFF", "label": "Сколько?", "line": "H_HOWMUCH", "next": "howmuch"}
+      ], "silence": "end", "leave": "callback"},
+      "not_ex": {"line": "ADR_NOT_FROM_EX", "actions": [{"tell": ["O_S2_POCKET_TOUCH", 1.4]}], "next": "end"},
+      "took": {"line": "ADR_TOOK", "next": "end"},
+      "who": {"line": "ADR_WHO", "actions": [{"npc": ["daniel", "look", {"target": "adrian"}]}], "next": "end"},
+      "howmuch": {"line": "ADR_HOWMUCH", "next": "end"},
+      "deep": {"line": "ADR_DEEP", "actions": [{"give_fact": ["F_OLD_ACCIDENT", "X_S02_B"]}, {"give_fact": ["F_ADRIAN_THINKS_MARA_FORGOT", "X_S02_B"]}, {"flag": "s2_deep"}], "next": "end"},
+      "callback": {"line": "ADR_CALLBACK", "actions": [{"flag": "s2_called_back"}], "next": "end"}
+    }
+  },
+  "X_S02_C": {
+    "npc": "adrian", "scene": "S02", "trigger": {"type": "beat", "beat": "BEAT_S2_RIDE"}, "radius_leave": 20.0, "priority": 3,
+    "nodes": {
+      "start": {"wait": 3.0, "next": "w3", "movement": true},
+      "w3": {"timeout": 9.0, "chips": [
+        {"id": "CH_S2_CALL_LIE", "verb": "PROVOKE", "label": "Вы мне врёте", "claim": "C_YOU_LIE", "next_by_reaction": {"*": "call_lie"}},
+        {"id": "CH_S2_PRICE", "verb": "BLUFF", "label": "Вдвое больше", "line": "H_PRICE", "next": "price"},
+        {"id": "CH_S2_CALLED", "verb": "BLUFF", "label": "Она звонила мне", "claim": "C_MARA_CALLED_ME", "next_by_reaction": {"*": "grab"}}
+      ], "silence": "silence", "leave": "end"},
+      "call_lie": {"line": "ADR_CALL_LIE", "actions": [{"trust": ["adrian", -1]}, {"respect": ["adrian", 1]}, {"suspicion": ["adrian", 1]}, {"flag": "s2_call_lie"}], "next": "lost"},
+      "lost": {"timeout": 6.0, "chips": [
+        {"id": "CH_S2_LOST_HER", "verb": "PROVOKE", "label": "Вы её потеряли", "line": "H_LOST_HER", "next": "lost_her"}
+      ], "silence": "end", "leave": "end"},
+      "lost_her": {"line": "ADR_LOST_HER", "actions": [{"fear_hit": ["adrian", "LOSE_MARA"]}], "next": "end"},
+      "price": {"line": "ADR_PRICE", "actions": [{"respect": ["adrian", 1]}, {"suspicion": ["adrian", -1]}, {"flag": "s2_raise_price"}], "next": "end"},
+      "grab": {"timeout": 7.0, "chips": [
+        {"id": "CH_S2_DEFLECT", "verb": "DEFLECT", "label": "Что ищет вас", "line": "H_DEFLECT_GRAB", "next": "deflected"},
+        {"id": "CH_S2_ADMIT", "verb": "CALM", "label": "Ничего", "line": "H_ADMIT", "next": "admitted"}
+      ], "silence": "deflected_sil", "leave": "end"},
+      "deflected": {"line": "ADR_AFTER_DEFLECT", "actions": [{"npc": ["adrian", "pose", {"pose": "rest"}]}], "next": "end"},
+      "deflected_sil": {"line": "ADR_AFTER_DEFLECT", "actions": [{"npc": ["adrian", "pose", {"pose": "rest"}]}], "next": "end"},
+      "admitted": {"line": "ADR_AFTER_ADMIT", "actions": [{"trust": ["adrian", -1]}, {"respect": ["adrian", 1]}, {"npc": ["adrian", "pose", {"pose": "rest"}]}], "next": "end"},
+      "silence": {"line": "ADR_SILENT", "actions": [{"trust": ["adrian", 1]}, {"flag": "s2_silence"}], "next": "deep_check"},
+      "deep_check": {"branch": [
+        {"if": {"all": [{"npc_state": {"adrian": {"trust_gte": 1}}}, "!flag:s2_deep"]}, "next": "deep"},
+        {"else": true, "next": "end"}
+      ]},
+      "deep": {"line": "ADR_DEEP", "actions": [{"give_fact": ["F_OLD_ACCIDENT", "X_S02_C"]}, {"give_fact": ["F_ADRIAN_THINKS_MARA_FORGOT", "X_S02_C"]}, {"flag": "s2_deep"}], "next": "end"}
+    }
+  }
+}

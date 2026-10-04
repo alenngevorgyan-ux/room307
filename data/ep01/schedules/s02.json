@@ -1,0 +1,15 @@
+{
+  "adrian_lead_s2": {"npc": "adrian", "mode": "lead", "wait_radius": 6.5, "impatience_bark": "ADR_IMPATIENT", "points": [
+    {"at": "BAR:adrian_stand", "wait": 0.5, "pose": "behind"},
+    {"at": "LOBBY:arrive_bar", "wait": 0.5, "pose": "behind"},
+    {"at": "LOBBY:adrian_mid", "wait": 6.0, "pose": "behind", "look": "hero"},
+    {"at": "LOBBY:adrian_elev", "wait": 1.0, "pose": "behind", "look": "hero", "beat": "BEAT_S2_AT_ELEVATOR"}
+  ]},
+  "daniel_phone_s2": {"npc": "daniel", "mode": "loop", "points": [
+    {"at": "LOBBY:daniel_far", "wait": 8.0, "pose": "ear", "look": "hero"},
+    {"at": "LOBBY:daniel_phone", "wait": 8.0, "pose": "ear"}
+  ]},
+  "receptionist_desk": {"npc": "receptionist", "mode": "loop", "points": [
+    {"at": "LOBBY:receptionist", "wait": 30.0, "pose": "type", "face": "LOBBY:hero_lobby"}
+  ]}
+}
