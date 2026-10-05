@@ -271,3 +271,28 @@ func s_30_cast() -> void:
 	await _lineup(["lina", "pavel", "receptionist", "brody", "sato", "hale"], "31_cast_support", false)
 	await _lineup(["hero", "adrian", "mara", "nico"], "32_cast_close_a", true)
 	await _lineup(["daniel", "eva", "thomas", "lina"], "33_cast_close_b", true)
+
+
+# ------------------------------------------------------------------ finale + epilogue (V1.8)
+
+func s_40_finale_live() -> void:
+	await jump("S09")
+	var B := root_bus()
+	for s in ["S1", "S2", "S3", "S4"]:
+		B.trap_bait.emit("stage", {"cmd": "take_card"})
+		B.trap_bait.emit("stage", {"cmd": "seat", "arg": s})
+	for inv in [["adrian", "alone"], ["mara", "time"], ["daniel", "vale_wants"], ["thomas", "time"]]:
+		B.trap_bait.emit("stage", {"cmd": "invite", "to": inv[0], "template": inv[1]})
+	B.trap_bait.emit("stage", {"cmd": "start"})
+	hero_at("RESTAURANT:S4")
+	await wait(24.0)
+	await shot("40_finale_live")
+	await wait(9.0)
+	await shot("41_finale_life_beat")
+
+
+func s_42_epilogue() -> void:
+	await jump("EPI")
+	hero_at("STREET:enter")
+	await wait(2.0)
+	await shot("42_epilogue_dawn")

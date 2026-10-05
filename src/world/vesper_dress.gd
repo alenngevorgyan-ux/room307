@@ -251,7 +251,7 @@ static func _decorate(z: Zone, n: Node3D, w: String) -> void:
 		return
 	var top := Vector3(0, s.y / 2.0, 0)
 	var zid := z.zone_id
-	if k == "glass" and not def.get("nocol", false) and s.y > 0.5:
+	if k == "glass" and not id.contains("jet") and s.y > 0.5:
 		_window(z, n, s, w)
 		return
 	match id:
@@ -393,9 +393,14 @@ static func _bottle_rows(vis: Node3D, s: Vector3, rows: int) -> void:
 ## Windows: mullions, a cool night glow and cool exterior spill into the room.
 static func _window(z: Zone, n: Node3D, s: Vector3, w: String) -> void:
 	var vis: Node3D = n.get_node("Visual")
-	var glass := VesperLook.emissive(Color(0.16, 0.24, 0.33), 0.55)
-	(vis.get_child(0) as MeshInstance3D).material_override = glass
-	VesperTime.window_glass = glass   # the night outside changes through this one material
+	var p := n.position
+	var on_wall := p.z < 0.6 or p.x < 0.6 or p.x > z.size.x - 0.6 or p.z > z.size.y - 0.6
+	if on_wall:
+		n.remove_meta("occluder")   # a window in a wall never stands between camera and hero
+	if on_wall:   # free-standing tall glass (the revolving door) keeps its fadeable material
+		var glass := VesperLook.emissive(Color(0.16, 0.24, 0.33), 1.3)
+		(vis.get_child(0) as MeshInstance3D).material_override = glass
+		VesperTime.window_glass = glass   # the night outside changes through this one material
 	var horiz := s.x >= s.z
 	var len := s.x if horiz else s.z
 	var frame := mat("walnut") if w == "PUBLIC" else mat("guest_dado") if w == "GUEST" else mat("steel")

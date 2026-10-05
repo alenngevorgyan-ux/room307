@@ -108,6 +108,10 @@ static func enabled() -> bool:
 	return not (OS.is_debug_build() and FileAccess.file_exists("/tmp/room307_graybox"))
 
 
+static func reset_cache() -> void:
+	_cache.clear()
+
+
 static func wing(zone_id: String) -> String:
 	return String(ZONES.get(zone_id, {}).get("wing", "PUBLIC"))
 

@@ -71,7 +71,8 @@ func _teardown() -> void:
 	ActionRunner.reset()
 	root.get_node("Episode").reset()
 	root.get_node("Data").reload()
-	VesperLook._cache.clear()
+	# (resolved at run time: this script compiles before the autoloads exist)
+	load("res://src/world/vesper_look.gd").call("reset_cache")
 
 
 ## Refresh every changed script / shader from disk (no instances exist at this point).

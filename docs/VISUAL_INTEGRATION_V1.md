@@ -164,3 +164,14 @@ EL keeps free movement throughout.
 - Autopilot A/B/C/D in the real world; fails on any NPC pop.
 - `tools/cap.sh` + `tools/capture_server.gd` — screenshots through one tiny, silent, unfocusable window;
   `tools/contact_sheet.gd` builds review sheets headless.
+
+## Current screenshots
+`docs/visual_integration_v1/` — opening card, stranger subtitle + prompt, the hire and objective, an EL
+thought, Room 307, social camera, READ grade, chase framing, the cast line-ups (proxies), the finale live,
+the dawn epilogue, and a tour of the main zones. Captured in-engine with `tools/cap.sh`.
+
+## Builds
+Local exports with the official 4.7.2 templates: **Web** (`index.html` + wasm + pck) and **macOS**
+(`Room307.zip`, smoke-tested headless: boots and runs with no script errors). CI (`.github/workflows/build.yml`)
+builds Web/Windows/Linux/macOS on `main` and tags; it was not triggered from this branch, because a manual
+run on a branch republishes the public rolling `playtest` release.

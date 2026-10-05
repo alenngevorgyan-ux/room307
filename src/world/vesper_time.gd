@@ -12,7 +12,7 @@ const STAGES := {
 	"deep_night": [Color(0.11, 0.17, 0.26), Color(0.48, 0.6, 0.88), Color(0.92, 0.94, 1.02), Color(0.05, 0.06, 0.08), Color(0.5, 0.58, 0.8), 0.16, true, 0.9],
 	"late_night": [Color(0.12, 0.16, 0.24), Color(0.5, 0.58, 0.82), Color(0.9, 0.93, 1.03), Color(0.05, 0.055, 0.075), Color(0.5, 0.56, 0.78), 0.16, true, 0.9],
 	"predawn": [Color(0.24, 0.24, 0.36), Color(0.6, 0.62, 0.88), Color(0.95, 0.95, 1.05), Color(0.1, 0.1, 0.14), Color(0.62, 0.62, 0.86), 0.3, true, 1.1],
-	"dawn": [Color(0.55, 0.5, 0.58), Color(0.9, 0.78, 0.74), Color(1.05, 1.0, 1.0), Color(0.2, 0.19, 0.22), Color(0.98, 0.8, 0.68), 0.6, false, 1.35],
+	"dawn": [Color(0.62, 0.56, 0.62), Color(0.95, 0.8, 0.74), Color(1.14, 1.04, 1.0), Color(0.3, 0.27, 0.3), Color(1.0, 0.82, 0.68), 1.0, false, 1.9],
 }
 ## Which part of the night each scene sits in.
 const SCENE_STAGE := {"S01": "night", "S02": "night", "S03": "night", "S04": "deep_night", "S05": "deep_night",
