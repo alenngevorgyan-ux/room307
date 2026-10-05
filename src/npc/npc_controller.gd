@@ -55,6 +55,7 @@ func setup(id: String, d: Dictionary) -> void:
 	def = d
 	name = "NPC_" + id
 	add_to_group("npcs")
+	_stance_side = -1.0 if hash(id) % 2 == 0 else 1.0
 	collision_layer = Graybox.LAYER_NPC
 	collision_mask = Graybox.LAYER_WORLD
 	var cs := CollisionShape3D.new()
@@ -533,6 +534,10 @@ func _physics_process(delta: float) -> void:
 		return
 	if not spawned:
 		return
+	_ctx_t -= delta
+	if _ctx_t <= 0.0:
+		_ctx_t = 0.4
+		_refresh_context()
 	Presence.place(npc_id, current_zone, global_position)
 	if perception:
 		perception.update(delta)
@@ -553,6 +558,14 @@ func _physics_process(delta: float) -> void:
 			_tick_schedule(delta)
 	if not spawned:
 		return   # despawned by its own schedule this frame (removed from the physics space)
+	# turn the body before the first step when the way out is behind (people do not slide backwards)
+	if move_dir.length() > 0.1 and not external_control and speed_name in ["walk", "slow", "fast"]:
+		if _turn_hold <= 0.0 and Vector2(velocity.x, velocity.z).length() < 0.15 and facing_dir().angle_to(move_dir) > 1.3:
+			_turn_hold = 0.3
+		if _turn_hold > 0.0:
+			_turn_hold -= delta
+			_face_dir(move_dir, delta * 1.6)
+			move_dir *= 0.12
 	var sp := float(SPEEDS.get(speed_name, 1.45)) * speed_mult
 	if external_control:
 		pass
@@ -739,6 +752,7 @@ func _lead_blocked() -> bool:
 	var close := (hz == current_zone and Presence.distance("hero", npc_id) <= r) or (hz != current_zone and hz == goal_zone)
 	if not close and not _lead_wait:
 		_lead_wait = true
+		body_vis.fidget("beckon")   # expects EL to follow
 		if sched.has("impatience_bark"):
 			get_node("/root/Bus").bark_requested.emit(npc_id, String(_D().line(String(sched.impatience_bark)).text))
 	elif close and _lead_wait:
@@ -762,10 +776,14 @@ func _update_facing(delta: float) -> void:
 	if hv.length() > 0.2:
 		_face_dir(hv.normalized(), delta)
 	elif face_hero and look_pt != null:
+		# stand a little off-square to the person (never a face-to-face stand-off); the head still
+		# looks straight at them. Workers keep their body on their task.
 		var to: Vector3 = (look_pt as Vector3) - global_position
 		to.y = 0
-		if to.length() > 0.1:
-			_face_dir(to.normalized(), delta * 0.6)
+		var M: Dictionary = body_vis.spec.get("motion", {})
+		if to.length() > 0.1 and String(M.get("work", "")) == "":
+			var off := deg_to_rad(float(M.get("stance", 25.0))) * _stance_side
+			_face_dir(to.normalized().rotated(Vector3.UP, off), delta * 0.5)
 
 
 func _resolve_look(t: Variant) -> Variant:
@@ -795,6 +813,26 @@ func _face_point(p: Vector3, instant: bool) -> void:
 		_face_dir(to.normalized(), 0.1)
 
 
+var _ctx_t := 0.0
+var _turn_hold := 0.0
+var _stance_side := 1.0
+
+
+## What this body can glance at: people nearby in the zone, and EL (for a brief reaction).
+func _refresh_context() -> void:
+	var people: Array = []
+	for id in Presence.pos:
+		if id == npc_id or Presence.zone.get(id, "") != current_zone:
+			continue
+		var p: Vector3 = Presence.pos[id]
+		if p.distance_to(global_position) < 7.0:
+			people.append(p + Vector3(0, 1.55, 0))
+	var hp: Variant = null
+	if Services.hero and Services.hero.current_zone == current_zone:
+		hp = Services.hero.global_position
+	body_vis.context = {"zone": current_zone, "people": people, "hero": hp}
+
+
 func facing_dir() -> Vector3:
 	var yaw := body_vis.rotation.y
 	return Vector3(-sin(yaw), 0, -cos(yaw))
@@ -804,9 +842,9 @@ func facing_dir() -> Vector3:
 
 ## Dialogue lines are subtitled by the HUD (bottom of the screen, never above heads); the body
 ## only reacts. Barks (idle chatter, «Позвольте.») become subtitles when the hero is close by.
-func _on_line(speaker: String, _text: String, _dur: float) -> void:
+func _on_line(speaker: String, _text: String, dur: float) -> void:
 	if speaker == npc_id and spawned:
-		body_vis.set_pose(body_vis.pose)
+		body_vis.speak(dur)
 
 
 func _on_bark(id: String, text: String) -> void:
@@ -820,7 +858,7 @@ const BARK_HEAR := 9.0
 func say(text: String, dur: float) -> void:
 	if not spawned:
 		return
-	body_vis.set_pose(body_vis.pose)
+	body_vis.speak(dur)
 	if Services.hud and Presence.in_zone("hero") == current_zone and Presence.distance("hero", npc_id) <= BARK_HEAR:
 		Services.hud.show_bark(npc_id, text, dur)
 

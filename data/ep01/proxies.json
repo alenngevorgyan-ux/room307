@@ -1,5 +1,5 @@
 {
-  "_doc": "Temporary character proxies (Visual Integration V1.6) built from VESPER_EP01_CHARACTER_CANON_v1: height, build, silhouette, wardrobe colours, hair mass and identity cues. NOT final characters — each id is replaced by a production rig later (see docs/VISUAL_INTEGRATION_V1.md). Colours are the canon sheets' values, kept inside the CIR-25D value range. Collision and gameplay never depend on these numbers.",
+  "_doc": "Temporary character proxies (Visual Integration V1.6) built from VESPER_EP01_CHARACTER_CANON_v1: height, build, silhouette, wardrobe colours, hair mass and identity cues. NOT final characters — each id is replaced by a production rig later (see docs/VISUAL_INTEGRATION_V1.md). Colours are the canon sheets' values, kept inside the CIR-25D value range. Collision and gameplay never depend on these numbers. `motion` (Design + Motion Polish V1): weight-shift / glance intervals (s), where idle eyes go (people, exits, windows, down), fidgets and how often, gesture size while speaking, how far off-square they stand in conversation (stance°), how they react when EL comes close, and work routines.",
   "hero": {
     "name": "EL (ЭЛ)",
     "canon": "01/02 EL",
@@ -34,6 +34,23 @@
     "moods": {
       "default": "",
       "rules": []
+    },
+    "motion": {
+      "weight": 6,
+      "glance": 4.5,
+      "glance_dur": 1.4,
+      "people": 0.55,
+      "exits": 0.1,
+      "windows": 0.15,
+      "down": 0.2,
+      "fidgets": [
+        "face",
+        "hair"
+      ],
+      "fidget_every": 16,
+      "talk": 0.45,
+      "stance": 28,
+      "react": "none"
     }
   },
   "adrian": {
@@ -92,6 +109,24 @@
           "mood": "control_breaking"
         }
       ]
+    },
+    "motion": {
+      "weight": 10,
+      "glance": 6,
+      "glance_dur": 1.4,
+      "people": 0.75,
+      "exits": 0.1,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "lapel",
+        "cuff"
+      ],
+      "fidget_every": 18,
+      "talk": 0.35,
+      "stance": 12,
+      "react": "look",
+      "fidget_every_stressed": 6
     }
   },
   "mara": {
@@ -147,6 +182,25 @@
           "mood": "defiant"
         }
       ]
+    },
+    "motion": {
+      "weight": 5,
+      "glance": 4,
+      "glance_dur": 1.4,
+      "people": 0.3,
+      "exits": 0.15,
+      "windows": 0.45,
+      "down": 0.2,
+      "fidgets": [
+        "cross_toggle",
+        "hair",
+        "face"
+      ],
+      "fidget_every": 8,
+      "talk": 0.7,
+      "stance": 42,
+      "react": "look",
+      "turn_away": 0.45
     }
   },
   "nico": {
@@ -186,6 +240,21 @@
       "default": "",
       "rules": [],
       "work_while_talking": true
+    },
+    "motion": {
+      "weight": 7,
+      "glance": 5,
+      "glance_dur": 1.4,
+      "people": 0.7,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.8,
+      "stance": 30,
+      "react": "look",
+      "work": "bar"
     }
   },
   "daniel": {
@@ -245,6 +314,23 @@
           "mood": "stress"
         }
       ]
+    },
+    "motion": {
+      "weight": 15,
+      "glance": 7,
+      "glance_dur": 1.4,
+      "people": 0.45,
+      "exits": 0.45,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "cuff"
+      ],
+      "fidget_every": 24,
+      "talk": 0.2,
+      "stance": 8,
+      "react": "look",
+      "fidget_every_stressed": 6
     }
   },
   "eva": {
@@ -280,6 +366,24 @@
     "moods": {
       "default": "restless",
       "rules": []
+    },
+    "motion": {
+      "weight": 2.6,
+      "glance": 2.2,
+      "glance_dur": 0.8,
+      "people": 0.35,
+      "exits": 0.4,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "pocket_check",
+        "hair"
+      ],
+      "fidget_every": 5,
+      "talk": 1.0,
+      "stance": 48,
+      "react": "look",
+      "turn_away": 0.35
     }
   },
   "thomas": {
@@ -326,6 +430,20 @@
           "mood": "cornered"
         }
       ]
+    },
+    "motion": {
+      "weight": 13,
+      "glance": 8,
+      "glance_dur": 1.4,
+      "people": 0.15,
+      "exits": 0.25,
+      "windows": 0.1,
+      "down": 0.55,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.25,
+      "stance": 32,
+      "react": "away"
     }
   },
   "lina": {
@@ -358,6 +476,22 @@
       "lean": 0.05,
       "chin": 0.0,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 6,
+      "glance": 5,
+      "glance_dur": 1.4,
+      "people": 0.5,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "apron"
+      ],
+      "fidget_every": 10,
+      "talk": 0.6,
+      "stance": 25,
+      "react": "look"
     }
   },
   "pavel": {
@@ -392,6 +526,22 @@
       "lean": 0.0,
       "chin": 0.03,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 10,
+      "glance": 4,
+      "glance_dur": 1.4,
+      "people": 0.6,
+      "exits": 0.3,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "radio"
+      ],
+      "fidget_every": 15,
+      "talk": 0.4,
+      "stance": 15,
+      "react": "look"
     }
   },
   "receptionist": {
@@ -423,6 +573,22 @@
       "lean": 0.0,
       "chin": 0.0,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 10,
+      "glance": 6,
+      "glance_dur": 1.4,
+      "people": 0.8,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "face"
+      ],
+      "fidget_every": 20,
+      "talk": 0.4,
+      "stance": 15,
+      "react": "look"
     }
   },
   "brody": {
@@ -454,6 +620,20 @@
       "lean": 0.08,
       "chin": -0.05,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 8,
+      "glance": 3,
+      "glance_dur": 1.4,
+      "people": 0.8,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.6,
+      "stance": 10,
+      "react": "look"
     }
   },
   "sato": {
@@ -484,6 +664,20 @@
       "lean": 0.05,
       "chin": 0.0,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 8,
+      "glance": 3,
+      "glance_dur": 1.4,
+      "people": 0.8,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.6,
+      "stance": 10,
+      "react": "look"
     }
   },
   "hale": {
@@ -518,6 +712,23 @@
     "moods": {
       "default": "control_breaking",
       "rules": []
+    },
+    "motion": {
+      "weight": 3.5,
+      "glance": 3,
+      "glance_dur": 1.4,
+      "people": 0.85,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "wrist",
+        "lapel"
+      ],
+      "fidget_every": 6,
+      "talk": 1.4,
+      "stance": 15,
+      "react": "look"
     }
   },
   "selin": {
@@ -549,6 +760,22 @@
       "lean": -0.03,
       "chin": 0.05,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 5,
+      "glance": 3.5,
+      "glance_dur": 1.4,
+      "people": 0.7,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [
+        "hair"
+      ],
+      "fidget_every": 9,
+      "talk": 0.8,
+      "stance": 35,
+      "react": "look"
     }
   },
   "kai": {
@@ -577,6 +804,20 @@
       "lean": 0.0,
       "chin": 0.1,
       "hands": "open"
+    },
+    "motion": {
+      "weight": 4,
+      "glance": 3,
+      "glance_dur": 1.4,
+      "people": 0.6,
+      "exits": 0.3,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.9,
+      "stance": 20,
+      "react": "look"
     }
   },
   "jules": {
@@ -613,6 +854,21 @@
       "default": "",
       "rules": [],
       "work_while_talking": true
+    },
+    "motion": {
+      "weight": 6,
+      "glance": 4,
+      "glance_dur": 1.4,
+      "people": 0.7,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.9,
+      "stance": 30,
+      "react": "look",
+      "work": "bar"
     }
   },
   "guest": {
@@ -641,6 +897,20 @@
       "lean": 0.0,
       "chin": 0.0,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 9,
+      "glance": 6,
+      "glance_dur": 1.4,
+      "people": 0.6,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.15,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.5,
+      "stance": 25,
+      "react": "look"
     }
   },
   "staff": {
@@ -671,6 +941,20 @@
       "lean": 0.05,
       "chin": 0.0,
       "hands": "front"
+    },
+    "motion": {
+      "weight": 8,
+      "glance": 6,
+      "glance_dur": 1.4,
+      "people": 0.4,
+      "exits": 0.15,
+      "windows": 0.1,
+      "down": 0.3,
+      "fidgets": [],
+      "fidget_every": 14,
+      "talk": 0.5,
+      "stance": 25,
+      "react": "look"
     }
   }
 }

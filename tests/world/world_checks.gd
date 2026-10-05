@@ -448,3 +448,59 @@ func check_scene_change_hides_reposition() -> void:
 	Services.scenes.goto_scene("S04")
 	expect(hero().global_position.distance_to(near) < 0.01, "EL already near his mark stays where he is")
 	expect(Services.hud.fade_rect.color.a < 0.5, "and no cut is needed")
+
+
+## Pass C: people are not game pieces — Nico keeps working while he talks, idle eyes move.
+func check_characters_feel_alive() -> void:
+	root.get_node("Episode").reset()
+	Services.scenes.debug_jump("S04")
+	await frames(10)
+	await _settle_hero_at(get_root_data().marker("BAR:nico_tables"), "BAR")
+	await frames(30)
+	var nico: Node = Services.world.npc("nico")
+	expect(nico.spawned, "setup: Nico is at the bar")
+	Services.conversation.talk_to("nico")
+	var hands: Array = []
+	var twists: Array = []
+	for i in 16:
+		await frames(30)
+		hands.append(nico.body_vis.hand_r.position)
+		twists.append(nico.body_vis.upper.rotation.y)
+	var hand_span := 0.0
+	for h in hands:
+		hand_span = maxf(hand_span, (h as Vector3).distance_to(hands[0]))
+	var tw_span: float = twists.max() - twists.min()
+	expect(hand_span > 0.12, "Nico's hands work while he talks (span %.2f m)" % hand_span)
+	expect(tw_span > 0.3, "he turns to the bottles and back (twist span %.2f rad)" % tw_span)
+	Services.conversation.end_active("TEST")
+	# an idle guest's eyes do not stay frozen
+	var g: Node = Services.world.npc("guest_2")   # (guest_1 is authored to watch Nico)
+	var yaws: Array = []
+	for i in 48:   # ~24 s: background guests glance every ~6 s
+		await frames(30)
+		yaws.append(g.body_vis.head.global_rotation.y)
+	expect(yaws.max() - yaws.min() > 0.2, "idle eyes move (span %.2f rad)" % (yaws.max() - yaws.min()))
+
+
+## Pass D: conversations are staged, not a face-to-face stand-off at identical angles.
+func check_conversation_staging() -> void:
+	root.get_node("Episode").reset()
+	Services.scenes.debug_jump("S04")
+	await frames(10)
+	var a: Node = Services.world.npc("adrian")
+	a.spawn_at(get_root_data().marker("LOBBY:adrian_mid"), "LOBBY", true)
+	a.set_schedule("")
+	await _settle_hero_at(get_root_data().marker("LOBBY:adrian_mid") + Vector3(1.6, 0, 0.6), "LOBBY")
+	await frames(20)
+	Services.conversation.auto_triggers = false
+	Services.conversation.start("X_S04_ADRIAN_REPORT" if get_root_data().exchanges.has("X_S04_ADRIAN_REPORT") else String(get_root_data().exchanges.keys().filter(func(k): return String(get_root_data().exchanges[k].get("npc", "")) == "adrian")[0]), true)
+	await frames(150)
+	var to_hero: Vector3 = hero().global_position - a.global_position
+	var yaw_straight := atan2(-to_hero.x, -to_hero.z)
+	var npc_off := absf(angle_difference(a.body_vis.rotation.y, yaw_straight))
+	expect(npc_off > deg_to_rad(6) and npc_off < deg_to_rad(60), "Adrian stands off-square (%.0f°)" % rad_to_deg(npc_off))
+	var to_npc: Vector3 = a.global_position - hero().global_position
+	var hero_off := absf(angle_difference(hero().body_vis.rotation.y, atan2(-to_npc.x, -to_npc.z)))
+	expect(hero_off > deg_to_rad(12) and hero_off < deg_to_rad(60), "EL angles his body too (%.0f°)" % rad_to_deg(hero_off))
+	Services.conversation.end_active("TEST")
+	Services.conversation.auto_triggers = true

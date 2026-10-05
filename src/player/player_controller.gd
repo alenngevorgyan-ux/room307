@@ -68,6 +68,9 @@ func _ready() -> void:
 	body_vis.add_child(_carry_mesh)
 	get_node("/root/Bus").npc_command.connect(_on_command)
 	get_node("/root/Bus").control_lock.connect(func(r: String, l: bool): set_lock(r, l))
+	# Design + Motion Polish V1: EL's body follows what he says and does
+	get_node("/root/Bus").line_started.connect(func(sp: String, _t: String, d: float): if sp == "hero": body_vis.speak(d))
+	get_node("/root/Bus").chips_shown.connect(func(_x: String, _c: Array, _to: float): _hesitate())
 
 
 func _exit_tree() -> void:
@@ -173,6 +176,58 @@ func _physics_process(delta: float) -> void:
 	_check_auto_doors(hv)
 	_update_target()
 	_handle_actions(delta)
+	_motion(delta, hv)
+
+
+# ================================================================== motion (presentation only)
+
+var _mo_t := 0.0
+var _was_chasing := false
+var _hands_glance := 0.0
+
+
+## EL is relaxed and observant: in conversation he stands a little off-square and looks at the
+## person (now and then at their hands, or away); in READ his hand goes to his chin and his eyes
+## to what he studies; after the chase he is winded. Never theatrical.
+func _motion(delta: float, hv: Vector3) -> void:
+	_mo_t -= delta
+	if _mo_t <= 0.0:
+		_mo_t = 0.4
+		var people: Array = []
+		for n in get_tree().get_nodes_in_group("npcs"):
+			if n.spawned and n.current_zone == current_zone and n.global_position.distance_to(global_position) < 6.0:
+				people.append(n.global_position + Vector3(0, 1.55, 0))
+		body_vis.context = {"zone": current_zone, "people": people, "hero": null}
+	var chasing: bool = Services.chase != null and Services.chase.get("active") == true
+	if _was_chasing and not chasing:
+		body_vis.exert(5.0)
+	_was_chasing = chasing
+	var look: Variant = null
+	if reading() and Services.read.focus and is_instance_valid(Services.read.focus):
+		look = Services.read.focus.global_position
+		if body_vis._fidget_t <= 0.2:
+			body_vis.fidget("face")
+	elif Services.conversation and Services.conversation.is_active() and hv.length() < 0.2:
+		var npc: Node3D = Services.world.npc(String(Services.conversation.active.get("npc", ""))) if Services.world else null
+		if npc and npc.spawned and npc.current_zone == current_zone and npc.global_position.distance_to(global_position) < 4.5:
+			var head: Vector3 = npc.global_position + Vector3(0, 1.55, 0)
+			_hands_glance -= delta
+			if _hands_glance < -6.0:
+				_hands_glance = 1.1
+			look = npc.global_position + Vector3(0, 1.0, 0) if _hands_glance > 0.0 else head
+			var to := npc.global_position - global_position
+			to.y = 0
+			if to.length() > 0.2 and not seated:
+				var M: Dictionary = body_vis.spec.get("motion", {})
+				var yaw := atan2(-to.x, -to.z) + deg_to_rad(float(M.get("stance", 28.0)))
+				body_vis.rotation.y = lerp_angle(body_vis.rotation.y, yaw, minf(1.0, delta * 2.0))
+	body_vis.look_target = look
+
+
+## A beat before answering: the eyes leave the other person for a moment.
+func _hesitate() -> void:
+	var side := Vector3(-sin(body_vis.rotation.y + 1.0), 0, -cos(body_vis.rotation.y + 1.0))
+	body_vis.gaze_override(global_position + side * 2.0 + Vector3(0, 1.1, 0), 0.7)
 
 
 func _footsteps(delta: float, v: float) -> void:

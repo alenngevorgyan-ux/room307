@@ -299,6 +299,7 @@ func build(c: Color, scale_f: float = 1.0, extra: Dictionary = {}) -> void:
 	_chin_base = float(post.get("chin", 0.0))
 	_shoulder_l.z += 0.03 * slump
 	_shoulder_r.z += 0.03 * slump
+	_rng.seed = hash(proxy_id) ^ get_instance_id()
 	set_pose("rest", true)
 
 
@@ -457,6 +458,7 @@ func set_pose(p: String, instant: bool = false) -> void:
 ## V1.7 body language: authored states shift posture, head and motion amplitude.
 func set_mood(m: String) -> void:
 	mood = m
+	_stance_wide = m == "cornered"   # Thomas holds his ground
 	_mood_lean = 0.0
 	_mood_chin = 0.0
 	_mood_amp = 1.0
@@ -489,42 +491,290 @@ func _process(delta: float) -> void:
 	if head == null:
 		return
 	_t += delta
-	# the speed of the body we belong to (hero or NPC) drives the walk cycle
+	var M := _motion()
+	# the speed of the body we belong to (hero or NPC) drives the gait
 	var v := Vector3.ZERO
 	var par := get_parent()
 	if par is CharacterBody3D:
 		v = (par as CharacterBody3D).velocity
 	var speed := Vector2(v.x, v.z).length()
 	var walking := speed > 0.25 and _crouch < 0.5
+	var running := speed > 3.8 and _crouch < 0.5
 	if walking:
 		_phase += delta * (4.2 + speed * 1.6)
+		_idle_t = 0.0
+	else:
+		_idle_t += delta
 	var amp := clampf(speed / 3.0, 0.0, 1.0)
-	var swing := sin(_phase) * lerpf(0.25, 0.65, amp) if walking else 0.0
+	var swing := sin(_phase) * lerpf(0.25, 0.7 if running else 0.6, amp) if walking else 0.0
+	# ---- weight: idle bodies shift their weight now and then (stillness is a choice: some rarely do)
+	var w_every := float(M.get("weight", 8.0)) / maxf(0.3, _mood_amp)
+	_weight_t -= delta
+	if _weight_t <= 0.0 and not walking:
+		_weight_t = w_every * _rng.randf_range(0.7, 1.4)
+		_weight_goal = _rng.randf_range(-1.0, 1.0) * (0.35 if _stance_wide else 1.0)
+	if walking:
+		_weight_goal = 0.0
+	_weight = lerpf(_weight, _weight_goal, minf(1.0, delta * 1.6))
+	var spread := 0.07 if _stance_wide else 0.0
 	leg_l.rotation.x = lerp_angle(leg_l.rotation.x, swing, minf(1.0, delta * 14.0))
 	leg_r.rotation.x = lerp_angle(leg_r.rotation.x, -swing, minf(1.0, delta * 14.0))
-	# breathing / idle sway, scaled by the body-language state
-	var breath := sin(_t * 1.7) * 0.012 * _mood_amp
+	leg_l.rotation.z = lerp_angle(leg_l.rotation.z, -spread + (0.05 * maxf(0.0, _weight)), minf(1.0, delta * 4.0))
+	leg_r.rotation.z = lerp_angle(leg_r.rotation.z, spread - (0.05 * maxf(0.0, -_weight)), minf(1.0, delta * 4.0))
+	# ---- breathing / sway (exertion after the chase makes it heavy)
+	if _exert > 0.0:
+		_exert -= delta
+	var ex := clampf(_exert / 3.0, 0.0, 1.0)
+	var breath := sin(_t * lerpf(1.7, 4.2, ex)) * lerpf(0.012, 0.05, ex) * _mood_amp
 	var sway := sin(_t * 0.7 + float(get_instance_id() % 7)) * 0.012 * _mood_amp
-	rig.position.y = absf(sin(_phase)) * 0.035 * amp if walking else 0.0
-	upper.rotation.x = lerp_angle(upper.rotation.x, -(_lean_base + _mood_lean) - (0.08 * amp if walking else 0.0) + breath, minf(1.0, delta * 5.0))
-	upper.rotation.z = sway
-	# hands: authored targets, plus an arm counter-swing while walking with free hands
-	var free := pose == "rest" and _rest_key() in ["rest", "front", "gesture"]
-	if free and (_hand_tween == null or not _hand_tween.is_running()):
-		var sw := Vector3(0, 0, swing * 0.22)
-		hand_l.position = hand_l.position.lerp((_hand_targets[0] as Vector3) - sw, minf(1.0, delta * 10.0))
-		hand_r.position = hand_r.position.lerp((_hand_targets[1] as Vector3) + sw, minf(1.0, delta * 10.0))
-	_reach(_arm_l, _shoulder_l, hand_l.position)
-	_reach(_arm_r, _shoulder_r, hand_r.position)
-	# head: look target, plus the posture's chin
+	rig.position.y = absf(sin(_phase)) * (0.05 if running else 0.035) * amp if walking else 0.0
+	rig.position.x = lerpf(rig.position.x, _weight * 0.03, minf(1.0, delta * 3.0))
+	var gait_lean := (0.15 if running else 0.08) * amp if walking else 0.0
+	var lean := _lean_base + _mood_lean + gait_lean + 0.28 * ex + _extra_lean
+	upper.rotation.x = lerp_angle(upper.rotation.x, -lean + breath, minf(1.0, delta * 5.0))
+	upper.rotation.z = sway - _weight * 0.03
+	# ---- head: an explicit look target from the owner, else the idle gaze
+	var gaze: Variant = look_target
+	if _gaze_override_t > 0.0:
+		_gaze_override_t -= delta
+		gaze = _gaze_override
+	elif gaze == null:
+		gaze = _idle_gaze(delta, M)
 	var target_yaw := 0.0
 	var target_pitch := _chin_base + _mood_chin
-	if look_target != null:
-		var local := to_local(look_target as Vector3) - (upper.position + head.position)
-		target_yaw = clampf(atan2(-local.x, -local.z), -1.2, 1.2)
+	if gaze != null:
+		var local := to_local(gaze as Vector3) - (upper.position + head.position)
+		target_yaw = clampf(atan2(-local.x, -local.z), -1.3, 1.3)
 		target_pitch += clampf(atan2(local.y, Vector2(local.x, local.z).length()), -0.6, 0.6)
-	head.rotation.y = lerp_angle(head.rotation.y, target_yaw, minf(1.0, delta * 6.0))
-	head.rotation.x = lerp_angle(head.rotation.x, target_pitch, minf(1.0, delta * 6.0))
+	# the torso follows the eyes a little (turn the body before the feet), plus authored twists
+	var twist := clampf(target_yaw * 0.35, -0.45, 0.45) + _twist_extra
+	# restless listeners half-turn to leave while someone is still talking to them (Eva)
+	if look_target != null and _speak_t <= 0.0 and _away_t <= 0.0 and float(M.get("turn_away", 0.0)) >= 0.3 \
+			and mood in ["restless", "stress"] and _rng.randf() < delta * 0.12:
+		_away_t = 1.3
+		_away_sign = -1.0 if _rng.randf() < 0.5 else 1.0
+	if _away_t > 0.0:
+		_away_t -= delta
+		twist += 0.75 * _away_sign
+		target_yaw += 0.9 * _away_sign
+	upper.rotation.y = lerp_angle(upper.rotation.y, twist, minf(1.0, delta * 3.5))
+	head.rotation.y = lerp_angle(head.rotation.y, target_yaw - upper.rotation.y, minf(1.0, delta * 6.0))
+	head.rotation.x = lerp_angle(head.rotation.x, target_pitch + _nod(delta), minf(1.0, delta * 6.0))
+	# ---- hands: pose target + work routine / fidget / speaking overlays + gait swing
+	_tick_work(delta, walking)
+	var tl: Vector3 = _hand_targets[0]
+	var tr: Vector3 = _hand_targets[1]
+	var k := H / 1.75
+	if running:
+		var pump := sin(_phase) * 0.2
+		tl = Vector3(-0.22, 1.05 * k, -0.12 - pump)
+		tr = Vector3(0.22, 1.05 * k, -0.12 + pump)
+	elif _fidget_t > 0.0:
+		_fidget_t -= delta
+		if _fidget_l != Vector3.INF:
+			tl = _fidget_l * Vector3(1, k, 1)
+		if _fidget_r != Vector3.INF:
+			tr = _fidget_r * Vector3(1, k, 1)
+	elif _speak_t > 0.0 and not walking and pose in ["rest", "polish", "work"]:
+		var g := float(M.get("talk", 0.6))
+		var beat := absf(sin(_t * 3.3)) * g
+		tr = Vector3(0.24, 1.02 * k, -0.24) + Vector3(0.05, 0.12, -0.08) * beat
+		if g > 1.0:
+			tl = Vector3(-0.24, 1.0 * k, -0.22) + Vector3(-0.04, 0.1, -0.06) * absf(sin(_t * 2.7 + 1.0)) * (g - 0.8)
+	elif not walking and _idle_t > 1.5 and _fidget_cooldown <= 0.0 and pose == "rest":
+		_maybe_fidget(M)
+	_fidget_cooldown -= delta
+	_speak_t = maxf(0.0, _speak_t - delta)
+	var free := pose == "rest" and _rest_key() in ["rest", "front", "gesture"]
+	if walking and free and not running and _fidget_t <= 0.0:
+		var sw := Vector3(0, 0, swing * 0.22)
+		tl -= sw
+		tr += sw
+	if _hand_tween == null or not _hand_tween.is_running():
+		hand_l.position = hand_l.position.lerp(tl, minf(1.0, delta * 8.0))
+		hand_r.position = hand_r.position.lerp(tr, minf(1.0, delta * 8.0))
+	_reach(_arm_l, _shoulder_l, hand_l.position)
+	_reach(_arm_r, _shoulder_r, hand_r.position)
+
+
+# ================================================================== motion layer (Design + Motion Polish V1)
+
+var _rng := RandomNumberGenerator.new()
+var _idle_t := 0.0
+var _weight := 0.0
+var _weight_goal := 0.0
+var _weight_t := 2.0
+var _stance_wide := false
+var _exert := 0.0
+var _extra_lean := 0.0
+var _twist_extra := 0.0
+var _gaze_t := 1.0
+var _gaze_hold := 0.0
+var _gaze_pt: Variant = null
+var _gaze_override: Variant = null
+var _gaze_override_t := 0.0
+var _fidget_t := 0.0
+var _fidget_l := Vector3.INF
+var _fidget_r := Vector3.INF
+var _fidget_cooldown := 4.0
+var _speak_t := 0.0
+var _nod_t := 0.0
+var _work_t := 0.0
+var _work_step := 0
+var _cross_flip := false
+var _working := false
+var _away_t := 0.0
+var _away_sign := 1.0
+## Context the owner refreshes a few times a second: {"zone", "people": [heads], "hero": Vector3|null}
+var context: Dictionary = {}
+var _hero_was_near := false
+
+
+func _motion() -> Dictionary:
+	return spec.get("motion", {})
+
+
+## The owner says a line: gesture while speaking, a small nod on the beats.
+func speak(dur: float) -> void:
+	_speak_t = dur
+	_nod_t = dur
+	# some people turn away before a difficult answer (guarded / restless characters)
+	var p := float(_motion().get("turn_away", 0.0))
+	if p > 0.0 and (mood in ["guarded", "defiant", "restless", "stress"]) and _rng.randf() < p:
+		_away_t = minf(dur, 1.6)
+		_away_sign = -1.0 if _rng.randf() < 0.5 else 1.0
+
+
+## Look somewhere for a moment regardless of the owner's target (hesitation, a reaction).
+func gaze_override(point: Vector3, dur: float) -> void:
+	_gaze_override = point
+	_gaze_override_t = dur
+
+
+## Winded after running: heavy breathing, a lean, hands to the knees at first.
+func exert(dur: float) -> void:
+	_exert = dur
+	fidget("knees")
+
+
+## Holding ground (Thomas when cornered): a wider, planted stance.
+func set_stance_wide(on: bool) -> void:
+	_stance_wide = on
+
+
+func _nod(delta: float) -> float:
+	if _nod_t <= 0.0:
+		return 0.0
+	_nod_t -= delta
+	return sin(_t * 5.5) * 0.04 * float(_motion().get("talk", 0.6))
+
+
+func _idle_gaze(delta: float, M: Dictionary) -> Variant:
+	var par := get_parent() as Node3D
+	if par == null:
+		return null
+	var origin := par.global_position
+	var facing := Vector3(-sin(rotation.y), 0, -cos(rotation.y))
+	# a brief reaction when EL comes close (hero has none: he is the one approaching)
+	var hero_pos: Variant = context.get("hero")
+	var near: bool = hero_pos != null and (hero_pos as Vector3).distance_to(origin) < 3.2
+	if near and not _hero_was_near:
+		match String(M.get("react", "none")):
+			"look":
+				_gaze_pt = (hero_pos as Vector3) + Vector3(0, 1.55, 0)
+				_gaze_hold = _rng.randf_range(1.2, 2.0)
+				_gaze_t = _gaze_hold + _rng.randf_range(1.0, 2.5)
+			"away":
+				_gaze_pt = origin + facing.rotated(Vector3.UP, 1.2) * 2.0 + Vector3(0, 0.6, 0)
+				_gaze_hold = 1.8
+				_gaze_t = 3.0
+	_hero_was_near = near
+	_gaze_t -= delta
+	_gaze_hold -= delta
+	if _gaze_t <= 0.0:
+		var every := float(M.get("glance", 5.0))
+		if mood == "stress" or mood == "restless":
+			every *= 0.6
+		_gaze_t = every * _rng.randf_range(0.7, 1.4)
+		_gaze_hold = float(M.get("glance_dur", 1.4)) * _rng.randf_range(0.8, 1.3)
+		var prof := M
+		if mood == "stress":
+			prof = M.duplicate()
+			prof["exits"] = minf(0.85, float(M.get("exits", 0.0)) + 0.35)   # checks the exit
+		_gaze_pt = BodyMotion.pick_glance(prof, origin, facing, String(context.get("zone", "")), context.get("people", []), _rng)
+	if _gaze_hold > 0.0:
+		return _gaze_pt
+	return null
+
+
+func _maybe_fidget(M: Dictionary) -> void:
+	var list: Array = M.get("fidgets", [])
+	if list.is_empty():
+		_fidget_cooldown = 6.0
+		return
+	var every := float(M.get("fidget_every", 14.0))
+	if mood in ["stress", "control_breaking"] and M.has("fidget_every_stressed"):
+		every = float(M.fidget_every_stressed)
+	_fidget_cooldown = every * _rng.randf_range(0.7, 1.4)
+	fidget(String(list[_rng.randi() % list.size()]))
+
+
+func fidget(name: String) -> void:
+	if name == "cross_toggle":
+		# Mara: arms crossed, then a moment open, then crossed again
+		_cross_flip = not _cross_flip
+		var posture: Dictionary = spec.get("posture", {})
+		posture["hands"] = "front" if _cross_flip else "crossed"
+		set_pose(pose)
+		return
+	var f: Array = BodyMotion.FIDGETS.get(name, [])
+	if f.is_empty():
+		return
+	var pts: Array = f[1]
+	_fidget_l = Vector3.INF
+	_fidget_r = Vector3.INF
+	match String(f[0]):
+		"l": _fidget_l = pts[0]
+		"r": _fidget_r = pts[0]
+		"both":
+			_fidget_l = pts[0]
+			_fidget_r = pts[1]
+	_fidget_t = float(f[2])
+
+
+## Work routines that carry on through conversations (Nico / Jules behind the bar): polish a
+## glass, set it down, turn to the bottles, lean on the counter — then polish again.
+func _tick_work(delta: float, walking: bool) -> void:
+	if String(_motion().get("work", "")) != "bar" or walking or not (pose in ["rest", "polish"]):
+		_twist_extra = lerpf(_twist_extra, 0.0, minf(1.0, delta * 3.0))
+		_extra_lean = lerpf(_extra_lean, 0.0, minf(1.0, delta * 3.0))
+		if _working:
+			_working = false
+			set_pose(pose)   # hands back to the authored pose
+		return
+	_working = true
+	_work_t -= delta
+	if _work_t <= 0.0:
+		_work_step = (_work_step + 1) % 4
+		_work_t = [5.0, 1.6, 2.4, 3.0][_work_step] * _rng.randf_range(0.8, 1.25)
+	var k := H / 1.75
+	var tw := 0.0
+	var ln := 0.0
+	match _work_step:
+		0:   # polishing a glass
+			var c := Vector3(0, 1.08 * k, -0.33)
+			_hand_targets = [c + Vector3(-0.08, sin(_t * 6.0) * 0.03, 0), c + Vector3(0.08 + cos(_t * 6.0) * 0.05, 0.02, sin(_t * 6.0) * 0.03)]
+		1:   # sets it down
+			_hand_targets = [Vector3(-0.2, 0.9 * k, -0.1), Vector3(0.14, 0.98 * k, -0.48)]
+			ln = 0.08
+		2:   # turns to the bottles
+			_hand_targets = [Vector3(-0.22, 0.9 * k, 0.0), Vector3(0.1, 1.25 * k, -0.4)]
+			tw = 1.1
+		3:   # leans on the counter
+			_hand_targets = [Vector3(-0.24, 0.98 * k, -0.42), Vector3(0.24, 0.98 * k, -0.42)]
+			ln = 0.14
+	_twist_extra = lerpf(_twist_extra, tw, minf(1.0, delta * 2.5))
+	_extra_lean = lerpf(_extra_lean, ln, minf(1.0, delta * 2.5))
 
 
 ## Two-segment arm from the shoulder (upper-body space) to a hand target (rig space).
