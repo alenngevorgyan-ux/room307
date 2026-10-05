@@ -55,6 +55,12 @@ var _chips_total := 1.0
 var _chips_on := false
 var _title_t := 0.0
 var _toast_t := 0.0
+# Motion Polish Pass F: nothing pops — every element eases in and out
+var _sub_age := 0.0
+var _sub_closing := false
+var _hint_age := 0.0
+var _toast_age := 0.0
+var _title_age := 0.0
 var _threads_expanded := false
 var _threads_show := 0.0
 var _threads_sig := ""
@@ -309,8 +315,8 @@ void fragment() {
 	opening.anchor_top = 1.0
 	opening.anchor_bottom = 1.0
 	opening.offset_left = 64
-	opening.offset_top = -250
-	opening.offset_bottom = -150
+	opening.offset_top = -350   # above the subtitle band (never under a line of dialogue)
+	opening.offset_bottom = -242
 	opening.add_theme_constant_override("separation", 2)
 	opening.modulate.a = 0.0
 	root.add_child(opening)
@@ -371,7 +377,12 @@ void fragment() {
 	toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(toast)
 	# title
-	title_label = _label(54, Color(0.95, 0.92, 0.85))
+	title_label = _label(42, Color(0.95, 0.92, 0.85))
+	var tf := FontVariation.new()
+	tf.base_font = ThemeDB.fallback_font
+	tf.spacing_glyph = 8
+	title_label.add_theme_font_override("font", tf)
+	title_label.add_theme_constant_override("outline_size", 0)
 	title_label.set_anchors_preset(Control.PRESET_CENTER)
 	title_label.offset_left = -500
 	title_label.offset_right = 500
@@ -380,7 +391,7 @@ void fragment() {
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_label.modulate.a = 0.0
 	root.add_child(title_label)
-	sub_title_label = _label(22, Color(0.8, 0.8, 0.8))
+	sub_title_label = _label(19, Color(0.72, 0.72, 0.74))
 	sub_title_label.set_anchors_preset(Control.PRESET_CENTER)
 	sub_title_label.offset_left = -500
 	sub_title_label.offset_right = 500
@@ -409,20 +420,39 @@ func _process(delta: float) -> void:
 		_sub_t -= rd
 		if _sub_t <= 0.0:
 			_next_page()
-	_band_a = move_toward(_band_a, 1.0 if sub_box.visible else 0.0, rd * 6.0)
+	if sub_box.visible:
+		if _sub_closing:
+			sub_box.modulate.a = move_toward(sub_box.modulate.a, 0.0, rd * 5.0)
+			if sub_box.modulate.a <= 0.0:
+				sub_box.visible = false
+				subtitle.text = ""
+				_sub_closing = false
+		else:
+			_sub_age += rd
+			sub_box.modulate.a = move_toward(sub_box.modulate.a, 1.0, rd * 7.0)
+		var rise := 6.0 * (1.0 - smoothstep(0.0, 0.22, _sub_age))
+		sub_box.offset_top = -200.0 + rise
+		sub_box.offset_bottom = -100.0 + rise
+	_band_a = move_toward(_band_a, 1.0 if sub_box.visible and not _sub_closing else 0.0, rd * 5.0)
 	(sub_band.material as ShaderMaterial).set_shader_parameter("amount", _band_a)
 	_update_objective(rd)
 	if _hint_t > 0.0:
 		_hint_t -= rd
-		hint_label.modulate.a = clampf(_hint_t / 0.5, 0, 1)
+		_hint_age += rd
+		hint_label.modulate.a = minf(clampf(_hint_t / 0.5, 0, 1), smoothstep(0.0, 0.35, _hint_age))
 	if _toast_t > 0.0:
 		_toast_t -= rd
-		toast.modulate.a = clampf(_toast_t / 0.6, 0, 1)
+		_toast_age += rd
+		var tk := smoothstep(0.0, 0.3, _toast_age)
+		toast.modulate.a = minf(clampf(_toast_t / 0.6, 0, 1), tk)
+		toast.offset_left = -420.0 + 18.0 * (1.0 - tk)
+		toast.offset_right = -18.0 + 18.0 * (1.0 - tk)
 	if _title_t > 0.0:
 		_title_t -= rd
-		var a := clampf(_title_t / 0.8, 0, 1)
-		title_label.modulate.a = a
-		sub_title_label.modulate.a = a
+		_title_age += rd
+		var out := clampf(_title_t / 0.8, 0, 1)
+		title_label.modulate.a = minf(out, smoothstep(0.4, 2.0, _title_age))
+		sub_title_label.modulate.a = minf(out, smoothstep(1.6, 3.0, _title_age))
 	if _chips_on and _chips_total > 0.0:
 		_chips_t -= delta   # game time (READ slows the timeout too)
 		chip_bar.value = clampf(_chips_t / _chips_total, 0, 1)
@@ -594,9 +624,8 @@ func _show_sub(who: String, col: Color, text: String, dur: float, thought: bool)
 
 func _next_page() -> void:
 	if _sub_queue.is_empty():
-		sub_box.visible = false
-		subtitle.text = ""
 		_sub_cur = {}
+		_sub_closing = sub_box.visible   # fades out in _process, then hides
 		return
 	_sub_cur = _sub_queue.pop_front()
 	var size := int(SUB_SIZE * Settings.subtitle_scale)
@@ -611,6 +640,13 @@ func _next_page() -> void:
 		subtitle.add_theme_font_override("font", _italic_font())
 	else:
 		subtitle.remove_theme_font_override("font")
+	if not sub_box.visible or _sub_closing and sub_box.modulate.a < 0.5:
+		sub_box.modulate.a = 0.0   # a fresh line eases in
+		_sub_age = 0.0
+	else:
+		sub_box.modulate.a = minf(sub_box.modulate.a, 0.45)   # next page: a soft dip, no blink
+		_sub_age = 0.12
+	_sub_closing = false
 	sub_box.visible = true
 	_sub_t = float(_sub_cur.dur) + (0.15 if _sub_queue.is_empty() else 0.0)
 
@@ -761,23 +797,23 @@ func _on_chips_cleared() -> void:
 # ================================================================== misc
 
 func show_hint(text: String, dur: float = 3.0) -> void:
+	if text != hint_label.text or _hint_t <= 0.0:
+		_hint_age = 0.0
 	hint_label.text = text
 	_hint_t = dur
-	hint_label.modulate.a = 1.0
 
 
 func show_toast(text: String, dur: float = 4.0) -> void:
 	toast.text = text
 	_toast_t = dur
-	toast.modulate.a = 1.0
+	_toast_age = 0.0
 
 
 func show_title(t: String, sub: String = "", dur: float = 4.0) -> void:
 	title_label.text = t
 	sub_title_label.text = sub
 	_title_t = dur
-	title_label.modulate.a = 1.0
-	sub_title_label.modulate.a = 1.0
+	_title_age = 0.0
 
 
 func fade(dur: float, to_black: bool) -> void:
@@ -835,13 +871,13 @@ func set_read_focus(pos: Vector2, progress: float) -> void:
 
 
 func _draw_reticle() -> void:
-	if not read_on:
+	if _vig <= 0.01:
 		return
-	var r := 18.0
-	reticle.draw_arc(reticle_pos, r, 0, TAU, 40, Color(0.95, 0.92, 0.8, 0.75), 1.5, true)
-	if read_focus > 0.0:
-		reticle.draw_arc(reticle_pos, r + 5, -PI / 2, -PI / 2 + TAU * clampf(read_focus, 0, 1), 40, Color(1, 0.85, 0.5, 0.95), 2.5, true)
-	if Settings.read_assist and Services.read:
+	var r := 18.0 + 6.0 * (1.0 - _vig)   # the reticle closes in as READ ramps up
+	reticle.draw_arc(reticle_pos, r, 0, TAU, 40, Color(0.95, 0.92, 0.8, 0.75 * _vig), 1.5, true)
+	if read_on and read_focus > 0.0:
+		reticle.draw_arc(reticle_pos, r + 5, -PI / 2, -PI / 2 + TAU * clampf(read_focus, 0, 1), 40, Color(1, 0.85, 0.5, 0.95 * _vig), 2.5, true)
+	if read_on and Settings.read_assist and Services.read:
 		var cam := get_viewport().get_camera_3d()
 		if cam and Services.hero:
 			for n in get_tree().get_nodes_in_group("observables"):

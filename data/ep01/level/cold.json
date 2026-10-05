@@ -15,7 +15,7 @@
       {"id": "COLD_STAFF", "p": [11.0, 4.6], "side": "E", "to": "STAFF_COLD", "label": "Служебный коридор", "kind": "door"}
     ],
     "markers": {"enter": [1.0, 3.0], "freezer_in": [9.3, 1.5], "freezer_door": [8.5, 3.7], "interrog_hero": [4.8, 3.1], "interrog_brody": [5.6, 3.6], "interrog_sato": [6.8, 2.8], "crates": [5.2, 4.8], "mid": [5.5, 3.1]},
-    "rigs": {"main": {"type": "follow", "offset": [0, 7.0, 5.5], "look": [0, 0.6, -1.0], "fov": 55, "clamp_x": [4.5, 6.5], "clamp_z": [8.0, 11.0]}},
+    "rigs": {"main": {"type": "follow", "offset": [0, 5.4, 7.0], "look": [0, 0.7, -1.0], "fov": 55, "clamp_x": [4.5, 6.5], "clamp_z": [9.5, 12.5]}},
     "lights": [{"p": [3.0, 2.7, 3.0], "c": [0.75, 0.88, 1.0], "e": 1.1, "r": 7}, {"p": [9.2, 2.6, 1.5], "c": [0.6, 0.8, 1.0], "e": 0.8, "r": 4}]
   }
 }

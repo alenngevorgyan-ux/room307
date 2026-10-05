@@ -213,8 +213,9 @@ static func _rain(z: Zone, h: float) -> void:
 	p.lifetime = 0.9
 	p.preprocess = 1.0
 	p.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
-	p.emission_box_extents = Vector3(z.size.x / 2, 0.2, z.size.y / 2)
-	p.position = Vector3(z.size.x / 2, h + 3.0, z.size.y / 2)
+	# the camera-side strip stays clear: rain right in front of the lens reads as scratches
+	p.emission_box_extents = Vector3(z.size.x / 2, 0.2, z.size.y * 0.42)
+	p.position = Vector3(z.size.x / 2, h + 3.0, z.size.y * 0.42)
 	p.direction = Vector3(0.08, -1, 0)
 	p.spread = 3.0
 	p.gravity = Vector3(0, -9.8, 0)
@@ -223,6 +224,6 @@ static func _rain(z: Zone, h: float) -> void:
 	var m := BoxMesh.new()
 	m.size = Vector3(0.012, 0.35, 0.012)
 	p.mesh = m
-	p.material_override = Graybox.mat(Color(0.7, 0.8, 0.95, 0.35), 0.4, true)
+	p.material_override = Graybox.mat(Color(0.7, 0.8, 0.95, 0.2), 0.3, true)
 	p.local_coords = true
 	z.add_child(p)

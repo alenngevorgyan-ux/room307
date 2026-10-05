@@ -14,6 +14,7 @@ uniform float rough = 0.8;
 uniform float metal = 0.0;
 uniform float variation = 0.10;   // painterly large-scale value variation
 uniform float wet = 0.0;          // 0..1 puddle patches (exterior, after rain)
+uniform float ripple = 0.0;       // 0..1 raindrop rings in the puddles (follows the rain)
 uniform float emission_energy = 0.0;
 uniform float fade = 0.0;         // camera occlusion: ordered-dither cut-out (keeps a faint silhouette)
 uniform vec3 emission_color : source_color = vec3(1.0, 0.8, 0.55);
@@ -51,6 +52,17 @@ vec2 plane_uv(out int axis) {
 	if (n.x >= n.z) { axis = 0; return vec2(wpos.z, wpos.y); }
 	axis = 2;
 	return vec2(wpos.x, wpos.y);
+}
+
+// raindrop rings in puddles: one drop per 0.6 m cell at a time, widening and fading
+float drop_rings(vec2 wxz, float tm) {
+	vec2 rg = wxz / 0.6;
+	vec2 rc = floor(rg);
+	float rh = hash(rc);
+	float rt = fract(tm * (0.7 + rh * 0.6) + rh * 9.0);
+	vec2 rctr = rc + vec2(0.25) + vec2(0.5 * rh, 0.5 * hash(rc + vec2(7.3, 1.1)));
+	float rd = length(rg - rctr);
+	return smoothstep(0.06, 0.0, abs(rd - rt * 0.45)) * (1.0 - rt);
 }
 
 const float BAYER[16] = float[](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
@@ -120,6 +132,7 @@ void fragment() {
 		float puddle = smoothstep(0.55, 0.7, fbm(wpos.xz * 0.35));
 		r = mix(r, 0.08, puddle * wet);
 		col = mix(col, col * 0.55, puddle * wet);
+		col += drop_rings(wpos.xz, TIME) * puddle * wet * ripple * vec3(0.16, 0.17, 0.19);
 	}
 	ALBEDO = col;
 	ROUGHNESS = r;

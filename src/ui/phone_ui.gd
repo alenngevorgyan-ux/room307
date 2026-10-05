@@ -56,6 +56,15 @@ func toggle() -> void:
 
 func open() -> void:
 	visible = true
+	# rises a little and fades in (Motion Polish Pass F)
+	modulate.a = 0.0
+	offset_top = -226
+	offset_bottom = 274
+	var tw := create_tween().set_parallel(true)
+	tw.set_ignore_time_scale(true)
+	tw.tween_property(self, "modulate:a", 1.0, 0.2)
+	tw.tween_property(self, "offset_top", -250.0, 0.24).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "offset_bottom", 250.0, 0.24).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if Services.hero:
 		Services.hero.set_lock("phone", true)
 	_cursor = 0

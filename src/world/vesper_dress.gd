@@ -68,8 +68,10 @@ static func sphere(parent: Node3D, r: float, h: float, pos: Vector3, mat: Materi
 	return mi
 
 
-static func lamp_light(parent: Node3D, pos: Vector3, c: Color, energy: float, rng: float) -> void:
+static func lamp_light(parent: Node3D, pos: Vector3, c: Color, energy: float, rng: float, group := "vesper_practical") -> void:
 	var l := OmniLight3D.new()
+	l.set_meta("base_energy", energy)
+	l.add_to_group(group)
 	l.position = pos
 	l.light_color = c
 	l.light_energy = energy
@@ -374,7 +376,9 @@ static func _decorate(z: Zone, n: Node3D, w: String) -> void:
 static func _bottle_wall(z: Zone, n: Node3D, vis: Node3D, s: Vector3) -> void:
 	vis.get_child(0).visible = false
 	_bottle_rows(vis, Vector3(s.x, 1.6, s.z), 3)
-	box(vis, Vector3(s.x, 1.5, 0.02), Vector3(0, 0.75, -s.z / 2.0 - 0.02), VesperLook.emissive(Color(0.85, 0.5, 0.22), 0.55))
+	# backlit shelf: warm and bright at the counter, falling off toward the ceiling (no flat slab)
+	for b in 3:
+		box(vis, Vector3(s.x, 0.5, 0.02), Vector3(0, 0.25 + b * 0.5, -s.z / 2.0 - 0.02), VesperLook.emissive(Color(0.82, 0.55, 0.32), [0.42, 0.22, 0.09][b]))
 	lamp_light(vis, Vector3(0, 0.9, 0.4), Color(1.0, 0.62, 0.3), 1.0, 4.0)
 
 
@@ -398,9 +402,8 @@ static func _window(z: Zone, n: Node3D, s: Vector3, w: String) -> void:
 	if on_wall:
 		n.remove_meta("occluder")   # a window in a wall never stands between camera and hero
 	if on_wall:   # free-standing tall glass (the revolving door) keeps its fadeable material
-		var glass := VesperLook.emissive(Color(0.16, 0.24, 0.33), 1.3)
-		(vis.get_child(0) as MeshInstance3D).material_override = glass
-		VesperTime.window_glass = glass   # the night outside changes through this one material
+		# rain on the glass, passing headlights, the sky moving toward morning (VesperTime)
+		(vis.get_child(0) as MeshInstance3D).material_override = VesperTime.window_material()
 	var horiz := s.x >= s.z
 	var len := s.x if horiz else s.z
 	var frame := mat("walnut") if w == "PUBLIC" else mat("guest_dado") if w == "GUEST" else mat("steel")
@@ -414,8 +417,7 @@ static func _window(z: Zone, n: Node3D, s: Vector3, w: String) -> void:
 	var into := Vector3(0, 0, 0.9) if horiz else (Vector3(0.9, 0, 0) if n.position.x < z.size.x / 2.0 else Vector3(-0.9, 0, 0))
 	if horiz and n.position.z > z.size.y / 2.0:
 		into = Vector3(0, 0, -0.9)
-	lamp_light(vis, into, Color(0.55, 0.68, 0.9), 0.6 + 0.12 * len, maxf(3.0, len * 0.9))
-	VesperTime.window_lights.append(vis.get_child(vis.get_child_count() - 1))
+	lamp_light(vis, into, Color(0.55, 0.68, 0.9), 0.6 + 0.12 * len, maxf(3.0, len * 0.9), "vesper_window_light")
 
 
 # ================================================================== foreground layer

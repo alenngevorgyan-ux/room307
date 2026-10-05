@@ -26,7 +26,7 @@ func _ready() -> void:
 	amb_player_b = _player("Ambience")
 	music_player = _player("Music")
 	music_player_b = _player("Music")
-	for i in 10:
+	for i in 16:
 		var p := AudioStreamPlayer3D.new()
 		p.bus = "SFX"
 		p.unit_size = 6.0
@@ -34,6 +34,7 @@ func _ready() -> void:
 		add_child(p)
 		_pool.append(p)
 	_build_sfx()
+	Services.audio = self
 	var B := get_node("/root/Bus")
 	B.sfx_requested.connect(play_sfx)
 	B.music_requested.connect(set_music)
@@ -139,6 +140,39 @@ func _build_sfx() -> void:
 	sfx["struggle"] = _wav(_noise(0.3, 500, 0.7, 0.01, 0.1))
 	sfx["pour"] = _wav(_noise(0.9, 2500, 0.25, 0.1, 0.6))
 	sfx["chain"] = _wav(_mix(_tone(1800, 0.3, 0.1, 0.08, 0.0), _noise(0.3, 4000, 0.3, 0.005, 0.1)))
+	# Motion Polish Pass H: what the feet land on, the world's small moving things
+	for surf in STEP_SURFACES:
+		var d: Array = STEP_SURFACES[surf]
+		for gait in ["walk", "run"]:
+			var a := float(d[1]) * (1.35 if gait == "run" else 1.0)
+			var s := _noise(0.11, float(d[0]) * (1.3 if gait == "run" else 1.0), a, 0.002, 0.03)
+			if float(d[2]) > 0.0:
+				s = _mix(s, _tone(float(d[2]), 0.09, a * 0.35, 0.025, 0.2))
+			if surf == "wet":
+				s = _mix(s, _noise(0.16, 3800, a * 0.5, 0.01, 0.05), 400)
+			sfx["step_%s_%s" % [surf, gait]] = _wav(s)
+	sfx["steam"] = _wav(_noise(1.1, 5200, 0.22, 0.12, 0.45))
+	sfx["glass_set"] = _wav(_mix(_tone(1975, 0.25, 0.1, 0.06, 0.0), _noise(0.06, 900, 0.3, 0.002, 0.015)))
+	sfx["door_shut"] = _wav(_mix(_noise(0.2, 300, 0.45, 0.002, 0.05), _tone(85, 0.2, 0.25, 0.06)))
+	sfx["elev_slide"] = _wav(_mix(_noise(0.9, 350, 0.2, 0.2, 0.5), _tone(120, 0.9, 0.05, 0.6, 0.0)))
+	sfx["pan"] = _wav(_mix(_tone(620, 0.5, 0.1, 0.18, 0.6), _tone(931, 0.5, 0.06, 0.12, 0.0)))
+
+
+## surface: [noise low-pass, amplitude, body tone Hz (0 = none)]
+const STEP_SURFACES := {
+	"carpet": [260.0, 0.32, 0.0],
+	"wood": [700.0, 0.5, 150.0],
+	"stone": [2200.0, 0.42, 0.0],
+	"tile": [3000.0, 0.4, 0.0],
+	"concrete": [1100.0, 0.5, 0.0],
+	"wet": [1400.0, 0.45, 0.0],
+	"metal": [1600.0, 0.4, 420.0],
+}
+
+
+## Footfall on the floor of a zone (hero and nearby NPCs, in time with the walk cycle).
+func step(pos: Vector3, zone_id: String, running: bool) -> void:
+	play_sfx("step_%s_%s" % [VesperLook.surface(zone_id), "run" if running else "walk"], pos)
 
 
 func _alarm(dur: float) -> PackedFloat32Array:
@@ -224,6 +258,11 @@ func _crossfade(old: AudioStreamPlayer, new: AudioStreamPlayer, stream: AudioStr
 	tw.chain().tween_callback(old.stop)
 
 
+## A loop for a positional source (VesperMotion: rain at the glass, the bar's murmur …).
+func loop(id: String) -> AudioStream:
+	return _ambience(id)
+
+
 func _ambience(id: String) -> AudioStream:
 	if amb_cache.has(id):
 		return amb_cache[id]
@@ -239,6 +278,14 @@ func _ambience(id: String) -> AudioStream:
 			s = _mix(_tone(60, 4.0, 0.06, 1000.0, 0.5), _noise(4.0, 200, 0.06))
 		"machines":
 			s = _mix(_tone(90, 4.0, 0.07, 1000.0, 0.7), _noise(4.0, 900, 0.1))
+		"rain_glass":   # rain on the pane, close: bright patter over a soft wash
+			s = _mix(_noise(4.0, 6000, 0.1), _noise(4.0, 700, 0.08))
+			for k in 90:
+				s = _mix(s, _noise(0.02, 5000, 0.18, 0.001, 0.006), rng.randi_range(0, int(3.9 * RATE)))
+		"murmur":       # a room of low voices: band-limited noise with syllable rhythm
+			s = _murmur(4.0)
+		"extractor":
+			s = _mix(_tone(110, 4.0, 0.05, 1000.0, 0.8), _noise(4.0, 1200, 0.14))
 		"dawn":
 			s = _noise(4.0, 900, 0.04)
 			for k in 6:
@@ -256,6 +303,27 @@ func _ambience(id: String) -> AudioStream:
 	var w := _wav(s, true)
 	amb_cache[id] = w
 	return w
+
+
+func _murmur(dur: float) -> PackedFloat32Array:
+	var n := int(dur * RATE)
+	var out := PackedFloat32Array()
+	out.resize(n)
+	var lo := 0.0
+	var hi := 0.0
+	var voices := []
+	for v in 4:
+		voices.append([rng.randf_range(2.5, 5.0), rng.randf_range(0.0, TAU), rng.randf_range(0.15, 0.45)])
+	for i in n:
+		var t := float(i) / RATE
+		var x := rng.randf_range(-1, 1)
+		lo += (x - lo) * 0.18          # ~700 Hz low-pass
+		hi += (lo - hi) * 0.03         # ~100 Hz: subtract → band 100–700 Hz (voice body)
+		var env := 0.0
+		for v in voices:
+			env += maxf(0.0, sin(TAU * float(v[0]) * t + float(v[1]))) * (0.5 + 0.5 * sin(TAU * float(v[2]) * t))
+		out[i] = (lo - hi) * env * 0.22
+	return out
 
 
 # ------------------------------------------------------------------ music

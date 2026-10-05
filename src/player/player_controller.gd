@@ -61,6 +61,17 @@ func _ready() -> void:
 	body_vis.name = "Body"
 	body_vis.proxy_id = "hero"   # EL (data/ep01/proxies.json; canon sheets 01/02)
 	add_child(body_vis)
+	# a soft cool rim from behind and above: EL separates from the dark set he walks through
+	var rim := OmniLight3D.new()
+	rim.name = "Rim"
+	rim.position = Vector3(0.3, 2.4, -1.1)
+	rim.light_color = Color(0.62, 0.72, 0.95)
+	rim.light_energy = 0.6
+	rim.omni_range = 2.4
+	rim.omni_attenuation = 1.4
+	rim.light_specular = 0.8
+	rim.shadow_enabled = false
+	add_child(rim)
 	body_vis.build(Color(0.15, 0.15, 0.17))
 	_carry_mesh = Graybox.box_mesh(Vector3(0.12, 0.02, 0.18), Color(0.95, 0.95, 0.9))
 	_carry_mesh.position = Vector3(0.18, 1.02, -0.38)
@@ -69,6 +80,9 @@ func _ready() -> void:
 	get_node("/root/Bus").npc_command.connect(_on_command)
 	get_node("/root/Bus").control_lock.connect(func(r: String, l: bool): set_lock(r, l))
 	# Design + Motion Polish V1: EL's body follows what he says and does
+	body_vis.footfall.connect(func(running: bool):
+		if is_instance_valid(Services.audio):
+			Services.audio.step(global_position, current_zone, running))
 	get_node("/root/Bus").line_started.connect(func(sp: String, _t: String, d: float): if sp == "hero": body_vis.speak(d))
 	get_node("/root/Bus").chips_shown.connect(func(_x: String, _c: Array, _to: float): _hesitate())
 
@@ -237,7 +251,6 @@ func _footsteps(delta: float, v: float) -> void:
 	_step_t = clampf(1.6 / maxf(v, 0.5), 0.25, 0.7)
 	var r := noise_radius()
 	get_node("/root/Bus").noise.emit(global_position, r, "hero_" + speed_state)
-	get_node("/root/Bus").sfx_requested.emit("step_" + ("run" if speed_state in ["run", "slide"] else "walk"), global_position)
 
 
 func _set_crouch(on: bool) -> void:

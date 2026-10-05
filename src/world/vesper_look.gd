@@ -155,14 +155,32 @@ static func emissive(c: Color, energy: float) -> StandardMaterial3D:
 	return m
 
 
+## What the feet land on in a zone (footstep sound, Motion Polish Pass H).
+static func surface(zone_id: String) -> String:
+	var f := String(ZONES.get(zone_id, {}).get("floor", ""))
+	if "carpet" in f:
+		return "carpet"
+	if f == "timber_floor":
+		return "wood"
+	if f == "stone_floor":
+		return "stone"
+	if f == "tile_floor":
+		return "tile"
+	if f == "concrete_wet":
+		return "wet" if not Engine.get_main_loop().root.get_node("/root/Episode").flags.get("rain_stopped", false) else "concrete"
+	if f == "steel_floor":
+		return "metal"
+	return "concrete"
+
+
 # ================================================================== apply
 
 const DRESS := preload("res://src/world/vesper_dress.gd")
 
 
 static func apply(world: Node) -> void:
-	VesperTime.stage = ""          # re-applied on the first frame of this world
-	VesperTime.window_lights.clear()
+	VesperTime.reset()             # re-applied on the first frame of this world
+	VesperTime.wet_floor = material("concrete_wet")
 	for zid in world.zones:
 		skin_zone(world.zones[zid])
 	for it in world.get_tree().get_nodes_in_group("interactables"):
@@ -331,6 +349,9 @@ static func _relight(z: Zone, w: String) -> void:
 		o.omni_range *= 1.15
 		o.omni_attenuation = 1.3
 		o.light_specular = 0.6
+		if not cool:   # warm practicals lose dominance to the morning (VesperTime)
+			o.set_meta("base_energy", o.light_energy)
+			o.add_to_group("vesper_practical")
 		_fixture(z, o, w)
 	if w in ["PUBLIC", "GUEST"]:
 		_sconces(z, w)
@@ -441,4 +462,6 @@ static func _sconces(z: Zone, w: String) -> void:
 		l.omni_range = 3.2
 		l.omni_attenuation = 1.6
 		l.shadow_enabled = false
+		l.set_meta("base_energy", l.light_energy)
+		l.add_to_group("vesper_practical")
 		root.add_child(l)

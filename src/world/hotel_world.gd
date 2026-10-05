@@ -68,6 +68,11 @@ func _ready() -> void:
 		else:
 			add_child(o)
 			o.visible = false
+	# the world keeps moving at the edge of attention (Motion Polish Pass E/H; visual + audio only)
+	if VesperLook.enabled():
+		var vm := VesperMotion.new()
+		add_child(vm)
+		vm.setup(self)
 	camera_director = CameraDirector.new()
 	camera_director.name = "CameraDirector"
 	add_child(camera_director)
@@ -84,7 +89,6 @@ func _exit_tree() -> void:
 var _amb_target := Color(0.36, 0.33, 0.36)
 var _amb_energy := 0.55
 var _mood_mult := 1.0
-var _rain_off := false
 
 
 func _process(_delta: float) -> void:
@@ -101,12 +105,8 @@ func _process(_delta: float) -> void:
 		var reading: bool = Services.read != null and Services.read.active
 		e.adjustment_saturation = lerpf(e.adjustment_saturation, 0.58 if reading else 0.92, minf(1.0, _delta * 5.0))
 		e.adjustment_brightness = lerpf(e.adjustment_brightness, 0.94 if reading else 1.0, minf(1.0, _delta * 5.0))
-		# the night moves on with the story (Pass 11)
-		var stage := VesperTime.stage_for(get_node("/root/Episode").scene_id, get_node("/root/Episode").phase_name())
-		var rain_off: bool = get_node("/root/Episode").flags.get("rain_stopped", false)
-		if stage != VesperTime.stage or rain_off != _rain_off:
-			_rain_off = rain_off
-			VesperTime.apply(self, stage)
+		# the night moves on with the story (Pass 11) — gradually (Motion Polish Pass G)
+		VesperTime.update(self, get_node("/root/Episode"), _delta)
 	# interactables/observables bound to moving NPCs or interactables
 	for it in get_tree().get_nodes_in_group("interactables"):
 		if it.has_meta("follow_npc"):

@@ -8,6 +8,9 @@ extends Node3D
 ## The public surface is unchanged — `head`, `hand_l`, `hand_r` (READ tells attach there), `pose`,
 ## `set_pose`, `set_crouch`, `look_target` — so a production rig can replace this file 1:1.
 
+signal footfall(running: bool)    # a foot lands (sound in time with the walk cycle)
+signal work_beat(step: int)       # bar routine: 0 polish, 1 set down, 2 bottles, 3 lean
+
 const POSES := {
 	"rest": [Vector3(-0.3, 0.85, 0.02), Vector3(0.3, 0.85, 0.02)],
 	"pocket": [Vector3(-0.3, 0.85, 0.02), Vector3(0.12, 1.32, -0.2)],     # right hand to inside breast pocket
@@ -501,7 +504,10 @@ func _process(delta: float) -> void:
 	var walking := speed > 0.25 and _crouch < 0.5
 	var running := speed > 3.8 and _crouch < 0.5
 	if walking:
+		var was := sin(_phase)
 		_phase += delta * (4.2 + speed * 1.6)
+		if signf(sin(_phase)) != signf(was):
+			footfall.emit(running)
 		_idle_t = 0.0
 	else:
 		_idle_t += delta
@@ -756,6 +762,7 @@ func _tick_work(delta: float, walking: bool) -> void:
 	_work_t -= delta
 	if _work_t <= 0.0:
 		_work_step = (_work_step + 1) % 4
+		work_beat.emit(_work_step)
 		_work_t = [5.0, 1.6, 2.4, 3.0][_work_step] * _rng.randf_range(0.8, 1.25)
 	var k := H / 1.75
 	var tw := 0.0

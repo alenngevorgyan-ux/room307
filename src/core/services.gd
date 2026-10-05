@@ -11,6 +11,7 @@ static var read: Node = null           # ReadSystem
 static var chase: Node = null          # ChaseDirector
 static var hud: Node = null
 static var hints: Node = null          # HintDirector
+static var audio: Node = null          # AudioDirector
 
 
 static func clear() -> void:

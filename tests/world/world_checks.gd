@@ -504,3 +504,104 @@ func check_conversation_staging() -> void:
 	expect(hero_off > deg_to_rad(12) and hero_off < deg_to_rad(60), "EL angles his body too (%.0f°)" % rad_to_deg(hero_off))
 	Services.conversation.end_active("TEST")
 	Services.conversation.auto_triggers = true
+
+
+## Motion Polish Pass E: doors move when people pass and settle back; the kitchen steams.
+func check_world_keeps_moving() -> void:
+	root.get_node("Episode").reset()
+	Services.scenes.debug_jump("S07")
+	await frames(5)
+	var vm: Node = Services.world.get_node("VesperMotion")
+	var d: Node = Services.world.door("KITCHEN_SCORR")
+	var mi: Node3D = d.get_node("Visual").get_child(0)
+	var rest := mi.transform
+	vm.call("_kick", d, true)
+	await frames(12)
+	expect(not mi.transform.is_equal_approx(rest), "the kitchen swing door flaps when someone passes")
+	await frames(240)
+	expect(mi.transform.is_equal_approx(rest), "… and settles back shut")
+	var hd: Node = Services.world.door("HALL_307")
+	var hmi: Node3D = hd.get_node("Visual").get_child(0)
+	vm.call("_kick", hd, false)
+	await frames(15)
+	var b := hmi.transform.basis
+	expect(absf(b.x.z) > 0.3 or absf(b.z.x) > 0.3, "Room 307's door swings on its hinge")
+	var steam := 0
+	for c in Services.world.zone_node("KITCHEN").get_node("Geometry").get_children():
+		for p in c.find_children("*", "CPUParticles3D", true, false):
+			if (p as CPUParticles3D).emitting:
+				steam += 1
+	expect(steam >= 2, "the kitchen steams (%d emitters)" % steam)
+
+
+## Motion Polish Pass G: the light drifts toward a new moment instead of jumping.
+func check_light_drifts() -> void:
+	root.get_node("Episode").reset()
+	Services.scenes.debug_jump("S08")
+	await frames(5)
+	var before := float(VesperTime.cur.lift)
+	Services.scenes.goto_scene("EPI")
+	await frames(30)
+	var mid := float(VesperTime.cur.lift)
+	expect(mid > before + 0.02 and mid < 1.6, "half a second into the epilogue the morning is still arriving (%.2f → %.2f)" % [before, mid])
+	await frames(600)
+	expect(float(VesperTime.cur.lift) > 1.75, "… and it arrives (%.2f)" % float(VesperTime.cur.lift))
+
+
+## Motion Polish Pass H: footsteps land with the feet (walk cycle), not on a timer.
+func check_footsteps_follow_feet() -> void:
+	await _bar_with_hero_watching()
+	var lobby: Node = Services.world.zone_node("LOBBY")
+	await _settle_hero_at(lobby.global_position + Vector3(9.0, 0, 6.0), "LOBBY")
+	await frames(10)
+	var count := [0]
+	var cb := func(_r: bool): count[0] += 1
+	hero().body_vis.footfall.connect(cb)
+	var key := key_toward(Vector3(1, 0, 0))
+	Input.action_press(key)
+	await frames(90)
+	Input.action_release(key)
+	hero().body_vis.footfall.disconnect(cb)
+	expect(count[0] >= 3 and count[0] <= 8, "%d footfalls in 1.5 s of walking (want 3–8)" % count[0])
+
+
+## Motion Polish Pass F: a subtitle eases in and fades out — it never pops.
+func check_ui_eases() -> void:
+	var hud: Node = Services.hud
+	for i in 600:   # let whatever line is playing finish
+		if not hud.sub_box.visible:
+			break
+		await frames(1)
+	hud.call("show_thought", "проверка", 1.4)
+	await frames(1)
+	var a0: float = hud.sub_box.modulate.a
+	await frames(20)
+	var a1: float = hud.sub_box.modulate.a
+	expect(a0 < 0.8 and a1 > 0.9, "subtitle eases in (%.2f → %.2f)" % [a0, a1])
+	var partial := false
+	var gone := false
+	for i in 400:
+		await frames(1)
+		if hud.sub_box.visible and hud.sub_box.modulate.a > 0.05 and hud.sub_box.modulate.a < 0.95:
+			partial = true
+		if not hud.sub_box.visible:
+			gone = true
+			break
+	expect(partial, "subtitle fades out")
+	expect(gone, "… and is gone")
+
+
+## Motion Polish Pass A: follow cameras stay a 2.5D cinematic angle — none look straight down.
+func check_camera_pitch() -> void:
+	for zid in Services.world.zones:
+		if zid == "MEZZANINE":
+			continue   # deliberately looks down over the rail into the lobby
+		var rigs: Dictionary = Services.world.zone_def(zid).get("rigs", {})
+		for rid in rigs:
+			var r: Dictionary = rigs[rid]
+			if String(r.get("type", "follow")) != "follow":
+				continue
+			var o: Array = r.get("offset", [0, 6, 8])
+			var l: Array = r.get("look", [0, 1, 0])
+			var pitch := rad_to_deg(atan2(float(o[1]) - float(l[1]), Vector2(float(o[0]) - float(l[0]), float(o[2]) - float(l[2])).length()))
+			expect(pitch <= 33.0, "%s/%s pitch %.0f° (≤ 33°)" % [zid, rid, pitch])

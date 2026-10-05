@@ -71,6 +71,7 @@ func setup(id: String, d: Dictionary) -> void:
 	body_vis.proxy_id = proxy_for(id, d)
 	add_child(body_vis)
 	body_vis.build(Graybox.color(gb.get("color", [0.5, 0.5, 0.5])), 1.0 if body_vis.proxy_id == id else float(gb.get("scale", 1.0)), gb)
+	body_vis.footfall.connect(_on_footfall)
 	nav = NavigationAgent3D.new()
 	nav.path_desired_distance = 0.4
 	nav.target_desired_distance = ARRIVE
@@ -866,3 +867,12 @@ func say(text: String, dur: float) -> void:
 func _on_noise(pos: Vector3, radius: float, _src: String) -> void:
 	if perception and spawned:
 		perception.on_noise(pos, radius)
+
+
+## Footsteps of people near EL (same room, within earshot), in time with their walk cycle.
+func _on_footfall(running: bool) -> void:
+	var h: Node = Services.hero
+	if not is_instance_valid(Services.audio) or h == null or not spawned or current_zone != String(h.get("current_zone")):
+		return
+	if global_position.distance_to((h as Node3D).global_position) < 10.0:
+		Services.audio.step(global_position, current_zone, running)

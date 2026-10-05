@@ -167,6 +167,8 @@ func debug_jump(id: String) -> void:
 			break
 		ActionRunner.run(D.scenes[sid].get("seed", []), {"source": "debug_seed"})
 	goto_scene(id)
+	if Services.world:   # a jump is a cut: the light of the new moment is already there
+		VesperTime.snap(Services.world, _ep())
 	var s: Dictionary = D.scenes.get(id, {})
 	if s.has("debug_hero"):
 		var m := String(s.debug_hero)
