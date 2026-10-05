@@ -84,16 +84,29 @@ func _exit_tree() -> void:
 var _amb_target := Color(0.36, 0.33, 0.36)
 var _amb_energy := 0.55
 var _mood_mult := 1.0
+var _rain_off := false
 
 
 func _process(_delta: float) -> void:
 	# wing ambience follows the hero (warm public rooms, cooler guest floors, flat service)
 	if hero and env and VesperLook.enabled():
-		var wa: Array = VesperLook.WING_AMBIENT.get(VesperLook.wing(hero.current_zone), VesperLook.WING_AMBIENT.PUBLIC)
+		var w := VesperLook.wing(hero.current_zone)
+		var wa: Array = VesperLook.WING_AMBIENT.get(w, VesperLook.WING_AMBIENT.PUBLIC)
+		var ta: Array = VesperTime.ambient(w, wa[0], float(wa[1]))
 		var e := env.environment
 		var k := minf(1.0, _delta * 2.0)
-		e.ambient_light_color = e.ambient_light_color.lerp(wa[0], k)
-		e.ambient_light_energy = lerpf(e.ambient_light_energy, float(wa[1]) * _mood_mult, k)
+		e.ambient_light_color = e.ambient_light_color.lerp(ta[0], k)
+		e.ambient_light_energy = lerpf(e.ambient_light_energy, float(ta[1]) * _mood_mult, k)
+		# READ (Pass 7): the world drains of colour and cools slightly while EL studies it
+		var reading: bool = Services.read != null and Services.read.active
+		e.adjustment_saturation = lerpf(e.adjustment_saturation, 0.58 if reading else 0.92, minf(1.0, _delta * 5.0))
+		e.adjustment_brightness = lerpf(e.adjustment_brightness, 0.94 if reading else 1.0, minf(1.0, _delta * 5.0))
+		# the night moves on with the story (Pass 11)
+		var stage := VesperTime.stage_for(get_node("/root/Episode").scene_id, get_node("/root/Episode").phase_name())
+		var rain_off: bool = get_node("/root/Episode").flags.get("rain_stopped", false)
+		if stage != VesperTime.stage or rain_off != _rain_off:
+			_rain_off = rain_off
+			VesperTime.apply(self, stage)
 	# interactables/observables bound to moving NPCs or interactables
 	for it in get_tree().get_nodes_in_group("interactables"):
 		if it.has_meta("follow_npc"):

@@ -345,3 +345,30 @@ func check_body_language_states() -> void:
 	expect(hero().body_vis.mood == "attention", "EL: sudden attention on a READ notice (got %s)" % hero().body_vis.mood)
 	await frames(150)
 	expect(hero().body_vis.mood == "", "EL: back to relaxed observation")
+
+
+## V1.8: the night moves on with the story; the rain stops when the story says so.
+func check_time_of_day_and_rain() -> void:
+	root.get_node("Episode").reset()   # earlier checks ran the finale (rain_stopped)
+	Services.scenes.debug_jump("S04")
+	await frames(10)
+	expect(VesperTime.stage == "deep_night", "S04 is deep night (got %s)" % VesperTime.stage)
+	var rain: Node = Services.world.zone_node("ROOF_SMOKING").get_node("Rain")
+	expect(rain.emitting, "it rains over the roof")
+	Services.scenes.debug_jump("EPI")
+	await frames(10)
+	expect(VesperTime.stage == "dawn", "the epilogue is cold dawn (got %s)" % VesperTime.stage)
+	expect(not rain.emitting, "the rain has stopped by dawn")
+
+
+## V1.8 Pass 7: READ is a grade change (desaturation), not detective vision.
+func check_read_desaturates() -> void:
+	await _bar_with_hero_watching()
+	var e: Environment = Services.world.env.environment
+	var sat0 := e.adjustment_saturation
+	Input.action_press("read")
+	await frames(40)
+	expect(e.adjustment_saturation < sat0 - 0.2, "READ drains colour (%.2f -> %.2f)" % [sat0, e.adjustment_saturation])
+	Input.action_release("read")
+	await frames(60)
+	expect(e.adjustment_saturation > 0.85, "and colour comes back")

@@ -127,14 +127,9 @@ func _find_focus() -> Observable:
 	return best
 
 
+## Line of sight from the camera; invisible geometry (the camera-side cutaway walls) does not count.
 func _los(target: Vector3) -> bool:
-	var space := camera.get_world_3d().direct_space_state
-	var from := camera.global_position
-	var q := PhysicsRayQueryParameters3D.create(from, target, Graybox.LAYER_WORLD)
-	var hit := space.intersect_ray(q)
-	if hit.is_empty():
-		return true
-	return from.distance_to(hit.position) >= from.distance_to(target) - 0.35
+	return NPC._clear_line(camera.get_world_3d().direct_space_state, camera.global_position, target)
 
 
 func _notice(o: Observable) -> void:

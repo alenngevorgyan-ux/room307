@@ -7,8 +7,8 @@ const LIFE := 2.8
 
 func show_caption(text_ru: String, at: Vector3) -> void:
 	text = text_ru
-	font_size = 44
-	pixel_size = 0.0038
+	font_size = 34               # a small note near the thing itself — the player interprets
+	pixel_size = 0.0034
 	modulate = Color(0.97, 0.94, 0.82, 0.0)
 	outline_size = 10
 	outline_modulate = Color(0.05, 0.04, 0.03, 0.85)

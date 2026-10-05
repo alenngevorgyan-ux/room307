@@ -37,6 +37,10 @@ func enter() -> void:
 		Services.conversation.addressee_provider = func(): return addressed
 	_apply_kitchen_noise()
 	if Services.world:
+		# V1.8 Pass 12: people stand, step to the window, watch the exits — social chess
+		var life: Node = preload("res://src/scenes_logic/finale_life.gd").new()
+		life.name = "FinaleLife"
+		add_child(life)
 		ring = MeshInstance3D.new()
 		var tm := TorusMesh.new()
 		tm.inner_radius = 0.42

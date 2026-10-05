@@ -1,12 +1,12 @@
 {
-  "O_EVA_POCKET": {"caption": "трогает карман — второй телефон?", "mode": "TELL", "anchor": {"npc": "eva", "part": "pocket", "off": [0.12, -0.35, 0.0]}},
-  "O_EVA_LIGHTER": {"caption": "зажигалка с крыши… такая же в 308", "anchor": {"npc": "eva", "part": "left_hand"}, "requires": "O_308_SAME_LIGHTER", "dist": 4.0},
+  "O_EVA_POCKET": {"caption": "трогает карман. Опять.", "mode": "TELL", "anchor": {"npc": "eva", "part": "pocket", "off": [0.12, -0.35, 0.0]}},
+  "O_EVA_LIGHTER": {"caption": "зажигалка с логотипом бара на крыше", "anchor": {"npc": "eva", "part": "left_hand"}, "requires": "O_308_SAME_LIGHTER", "dist": 4.0},
   "O_PAVEL_CODE_A": {"caption": "«3… 0…»", "mode": "TELL", "anchor": {"zone": "LOBBY", "p": [26.5, 1.3, 0.2]}, "dist": 14.0, "focus": 0.5, "requires": "!O_PAVEL_CODE_FULL"},
   "O_PAVEL_CODE_B": {"caption": "«…7… 1»", "mode": "TELL", "anchor": {"zone": "LOBBY", "p": [26.45, 1.25, 0.2]}, "dist": 14.0, "focus": 0.5, "requires": {"all": ["O_PAVEL_CODE_A", "!O_PAVEL_CODE_FULL"]}},
   "O_PAVEL_CODE_FULL": {"caption": "«3-0-7-1»", "mode": "TELL", "anchor": {"zone": "LOBBY", "p": [26.55, 1.3, 0.22]}, "dist": 3.0},
-  "O_DANIEL_CAMERA_CONCERN": {"caption": "он торопит тебя от мониторов", "mode": "TELL", "anchor": {"npc": "daniel", "part": "face"}, "dist": 6.0},
+  "O_DANIEL_CAMERA_CONCERN": {"caption": "встаёт между тобой и мониторами", "mode": "TELL", "anchor": {"npc": "daniel", "part": "face"}, "dist": 6.0},
   "O_VID_HANDS": {"caption": "руки на краю стола — как на руле", "anchor": {"zone": "SECURITY", "p": [3.0, 1.25, 0.4]}, "dist": 4.0, "requires": "flag:vid_bar_0020"},
-  "O_VID_STAIR_DEAD": {"caption": "камеру на служебной лестнице отключили в 00:15", "anchor": {"zone": "SECURITY", "p": [3.0, 1.2, 0.42]}, "dist": 4.0, "requires": "flag:vid_stair_dead"},
+  "O_VID_STAIR_DEAD": {"caption": "служебная лестница: нет сигнала с 00:15", "anchor": {"zone": "SECURITY", "p": [3.0, 1.2, 0.42]}, "dist": 4.0, "requires": "flag:vid_stair_dead"},
   "O_LAUNDRY_WINDOW": {"caption": "седой курит под навесом", "anchor": {"zone": "LAUNDRY", "p": [13.9, 1.5, 4.0]}, "dist": 5.0, "requires": "flag:thomas_at_canopy"},
   "O_ADRIAN_DANIEL_ARGUE": {"caption": "спорят у лифта, вполголоса", "mode": "TELL", "anchor": {"npc": "adrian", "part": "face"}, "dist": 12.0}
 }

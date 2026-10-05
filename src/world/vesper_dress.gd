@@ -393,7 +393,9 @@ static func _bottle_rows(vis: Node3D, s: Vector3, rows: int) -> void:
 ## Windows: mullions, a cool night glow and cool exterior spill into the room.
 static func _window(z: Zone, n: Node3D, s: Vector3, w: String) -> void:
 	var vis: Node3D = n.get_node("Visual")
-	(vis.get_child(0) as MeshInstance3D).material_override = VesperLook.emissive(Color(0.16, 0.24, 0.33), 0.55)
+	var glass := VesperLook.emissive(Color(0.16, 0.24, 0.33), 0.55)
+	(vis.get_child(0) as MeshInstance3D).material_override = glass
+	VesperTime.window_glass = glass   # the night outside changes through this one material
 	var horiz := s.x >= s.z
 	var len := s.x if horiz else s.z
 	var frame := mat("walnut") if w == "PUBLIC" else mat("guest_dado") if w == "GUEST" else mat("steel")
@@ -408,6 +410,7 @@ static func _window(z: Zone, n: Node3D, s: Vector3, w: String) -> void:
 	if horiz and n.position.z > z.size.y / 2.0:
 		into = Vector3(0, 0, -0.9)
 	lamp_light(vis, into, Color(0.55, 0.68, 0.9), 0.6 + 0.12 * len, maxf(3.0, len * 0.9))
+	VesperTime.window_lights.append(vis.get_child(vis.get_child_count() - 1))
 
 
 # ================================================================== foreground layer

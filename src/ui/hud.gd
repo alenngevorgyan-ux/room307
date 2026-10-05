@@ -56,6 +56,10 @@ var _chips_on := false
 var _title_t := 0.0
 var _toast_t := 0.0
 var _threads_expanded := false
+var _threads_show := 0.0
+var _threads_sig := ""
+const THREADS_SHOW := 6.0
+const THREADS_MAX := 3
 var _q_held := 0.0
 var read_on := false
 var read_focus := 0.0
@@ -473,6 +477,8 @@ func _update_prompt() -> void:
 	prompt_bar.position = sp + Vector2(0, prompt_box.size.y + 3)
 
 
+## Threads are hypotheses, not objectives (Pass 8): they surface briefly when something changes
+## (offered / pinned / struck), then fold away; holding Q shows them (max 3 lines, quiet type).
 func _update_threads(rd: float) -> void:
 	var E := get_node("/root/Episode")
 	var D := get_node("/root/Data")
@@ -481,22 +487,38 @@ func _update_threads(rd: float) -> void:
 	else:
 		if _q_held > 0.0 and _q_held < 0.35:
 			_pin_next()
+			_threads_show = THREADS_SHOW
 		_q_held = 0.0
 	_threads_expanded = _q_held >= 0.35
-	var t := ""
+	var sig := "%s|%s|%s" % [E.threads_pinned, E.threads_struck, E.threads_available]
+	if sig != _threads_sig:
+		_threads_sig = sig
+		_threads_show = THREADS_SHOW
+	_threads_show = maxf(0.0, _threads_show - rd)
+	var lines: Array = []
 	for tid in E.threads_pinned:
-		t += "[color=#f2e6c8]— %s[/color]\n" % D.threads.get(tid, {}).get("text", tid)
-	for tid in E.threads_struck:
-		if _threads_expanded:
-			t += "[color=#777777][s]%s[/s][/color]\n" % D.threads.get(tid, {}).get("text", tid)
+		lines.append("[color=#e9dcc0]%s[/color]" % _thread_text(D, tid))
 	if not E.threads_available.is_empty():
 		var first: String = E.threads_available[0]
-		t += "[color=#b8c8d8][i]%s[/i]   [Q] закрепить[/color]\n" % D.threads.get(first, {}).get("text", first)
-		if _threads_expanded:
-			for i in range(1, E.threads_available.size()):
-				var tid: String = E.threads_available[i]
-				t += "[color=#8898a8][i]%s[/i][/color]\n" % D.threads.get(tid, {}).get("text", tid)
-	threads_label.text = t
+		lines.append("[color=#aab4bc][i]%s[/i][/color]  [color=#8a8f94][Q][/color]" % _thread_text(D, first))
+	if _threads_expanded:
+		for i in range(1, E.threads_available.size()):
+			lines.append("[color=#7f8890][i]%s[/i][/color]" % _thread_text(D, E.threads_available[i]))
+		for tid in E.threads_struck:
+			lines.append("[color=#6a6a6a][s]%s[/s][/color]" % _thread_text(D, tid))
+	else:
+		lines = lines.slice(maxi(0, lines.size() - THREADS_MAX))
+	threads_label.text = "\n".join(lines)
+	var target := 0.0
+	if _threads_expanded:
+		target = 1.0
+	elif _threads_show > 0.0:
+		target = 0.85 if _threads_show > 1.0 else _threads_show * 0.85
+	threads_label.modulate.a = move_toward(threads_label.modulate.a, target, rd * 3.0)
+
+
+func _thread_text(D: Node, tid: String) -> String:
+	return String(D.threads.get(tid, {}).get("text", tid))
 
 
 func _pin_next() -> void:

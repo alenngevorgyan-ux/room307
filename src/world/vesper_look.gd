@@ -157,6 +157,8 @@ const DRESS := preload("res://src/world/vesper_dress.gd")
 
 
 static func apply(world: Node) -> void:
+	VesperTime.stage = ""          # re-applied on the first frame of this world
+	VesperTime.window_lights.clear()
 	for zid in world.zones:
 		skin_zone(world.zones[zid])
 	for it in world.get_tree().get_nodes_in_group("interactables"):
