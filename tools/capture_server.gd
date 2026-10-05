@@ -132,6 +132,10 @@ func _handle(req: Dictionary) -> void:
 		_boot()
 		for i in 10:
 			await process_frame
+	if shots == null or not shots.has_method("run_shots"):
+		_write("done_%s.txt" % last_id, "error: shots script failed to load (see server.log)")
+		busy = false
+		return
 	await shots.run_shots(String(req.out), Array(req.get("only", [])))
 	_write("done_%s.txt" % last_id, "ok")
 	busy = false

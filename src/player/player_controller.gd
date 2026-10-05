@@ -6,6 +6,11 @@ extends CharacterBody3D
 const RUN := 6.0
 const SPEED := {"walk": 0.35, "fast": 0.6, "run": 1.0, "crouch": 0.3, "slide": 1.2}
 const ACCEL := 14.0
+## Movement feel (Design + Motion Polish V1): a short, weighted start, a firm stop, never floaty.
+## m/s² per gait — walk reaches speed in ~0.2 s, a run in ~0.3 s; stopping is quicker than starting.
+const GAIT_ACCEL := {"walk": 11.0, "fast": 14.0, "run": 20.0, "crouch": 10.0, "slide": 30.0}
+const GAIT_DECEL := 22.0
+const TURN_RATE := 10.0     # body yaw follow (rad/s-ish): turns read, never pirouette
 const GRAVITY := 18.0
 const INTERACT_RADIUS := 1.7
 const NPC_TALK_RADIUS := 2.2
@@ -149,7 +154,10 @@ func _physics_process(delta: float) -> void:
 		sp *= 0.5
 	var target_v := dir * sp
 	var hv := Vector3(velocity.x, 0, velocity.z)
-	hv = hv.move_toward(target_v, ACCEL * delta * (2.5 if speed_state == "slide" else 1.0) * RUN)
+	var acc: float = GAIT_ACCEL.get(speed_state, 12.0)
+	if target_v.length() < hv.length() - 0.05 or (hv.length() > 0.3 and target_v.normalized().dot(hv.normalized()) < 0.2):
+		acc = maxf(acc, GAIT_DECEL)   # stopping / reversing: firm, not slidey
+	hv = hv.move_toward(target_v, acc * delta)
 	velocity.x = hv.x
 	velocity.z = hv.z
 	if not is_on_floor():
@@ -160,7 +168,7 @@ func _physics_process(delta: float) -> void:
 	if hv.length() > 0.3:
 		facing = hv.normalized()
 		var yaw := atan2(-facing.x, -facing.z)
-		body_vis.rotation.y = lerp_angle(body_vis.rotation.y, yaw, minf(1.0, delta * 12.0))
+		body_vis.rotation.y = lerp_angle(body_vis.rotation.y, yaw, minf(1.0, delta * TURN_RATE))
 		_footsteps(delta, hv.length())
 	_check_auto_doors(hv)
 	_update_target()

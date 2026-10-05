@@ -9,6 +9,8 @@ var current := ""
 var _rule_hold: Dictionary = {}
 var paused := false
 var autosave := true
+const KEEP_HERO_DIST := 6.0
+const CUT_FADE := 0.45
 
 
 func _ready() -> void:
@@ -55,6 +57,7 @@ func goto_scene(id: String) -> void:
 		logic.queue_free()
 		logic = null
 	var s: Dictionary = D.scenes[id]
+	var previous := current
 	current = id
 	E.scene_id = id
 	if s.has("phase"):
@@ -63,14 +66,25 @@ func goto_scene(id: String) -> void:
 	_rule_hold = {}
 	if Services.conversation:
 		Services.conversation.end_active("SCENE")
+	# Hero placement (Design + Motion Polish V1, scene transitions): if EL is already close to the
+	# scene's start mark in the same zone he simply stays — no visible reposition. Otherwise the
+	# move happens under a short cut to black, and the new cast is staged behind it.
+	var keep_hero := false
+	var cut: bool = s.has("hero")
+	if s.has("hero") and Services.world and Services.hero:
+		var hm := String(s.hero)
+		var same_zone: bool = Services.hero.current_zone == D.marker_zone(hm)
+		keep_hero = previous != "" and same_zone and not s.get("hero_seated", false) \
+			and Services.hero.global_position.distance_to(D.marker(hm)) < KEEP_HERO_DIST
+		cut = not keep_hero
+		if cut and previous != "" and Services.hud:
+			Services.hud.set_fade(1.0)
+			Services.hud.fade(CUT_FADE, false)
 	# NPCs
 	if s.get("despawn_others", true):
 		for npc in E.characters:
 			if not s.get("npcs", {}).has(npc) and not Array(s.get("keep_npcs", [])).has(npc):
 				ActionRunner.run([{"despawn": npc}])
-	# a scene that places the hero is a camera cut: its cast is simply there. A continuous scene
-	# (no hero placement) lets anyone the hero could see walk in through a door instead.
-	var cut: bool = s.has("hero")
 	for npc in s.get("npcs", {}):
 		var nd: Dictionary = s.npcs[npc]
 		if nd.has("if") and not Conditions.check(nd["if"], E):
@@ -84,9 +98,12 @@ func goto_scene(id: String) -> void:
 		if nd.has("look"):
 			ActionRunner.run([{"npc": [npc, "look", {"target": nd.look}]}])
 	# hero
-	if s.has("hero") and Services.world:
+	if s.has("hero") and Services.world and not keep_hero:
 		Services.world.place_hero(String(s.hero), bool(s.get("hero_seated", false)))
-	if s.has("hero"):
+	if keep_hero:
+		Presence.place("hero", Services.hero.current_zone, Services.hero.global_position)
+		E.hero_zone = Services.hero.current_zone
+	elif s.has("hero"):
 		Presence.place("hero", D.marker_zone(String(s.hero)), D.marker(String(s.hero)))
 		E.hero_zone = D.marker_zone(String(s.hero))
 	if s.has("mood") and Services.world:

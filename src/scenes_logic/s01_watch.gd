@@ -6,6 +6,8 @@ var _moved := false
 
 func enter() -> void:
 	if Services.hud and Services.hud.has_method("show_opening"):
+		Services.hud.set_fade(1.0)
+		Services.hud.fade(1.6, false)   # the night fades up; no hard first frame
 		Services.hud.show_opening("THE VESPER", "02:17")
 
 

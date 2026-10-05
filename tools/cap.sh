@@ -17,7 +17,7 @@ ID="$(date +%s)$$"
 LIST=$(echo "$ONLY" | awk -F, '{for(i=1;i<=NF;i++) printf "%s\"%s\"", (i>1?",":""), $i}')
 printf '{"id":"%s","out":"%s","only":[%s],"reload":%s}' "$ID" "$OUT" "$LIST" "$RELOAD" > "$INBOX/req.json.tmp"
 mv "$INBOX/req.json.tmp" "$INBOX/req.json"
-i=0; while [ ! -f "$INBOX/done_$ID.txt" ] && [ $i -lt 600 ]; do sleep 1; i=$((i+1)); done
+i=0; while [ ! -f "$INBOX/done_$ID.txt" ] && [ $i -lt 1800 ]; do sleep 1; i=$((i+1)); done
 [ -f "$INBOX/done_$ID.txt" ] && echo "done $ID" || echo "TIMEOUT $ID"
 grep -E "SCRIPT ERROR|reloaded" "$INBOX/server.log" | tail -5
 ls "$OUT"

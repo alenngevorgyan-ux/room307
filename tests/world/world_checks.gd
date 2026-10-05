@@ -372,3 +372,79 @@ func check_read_desaturates() -> void:
 	Input.action_release("read")
 	await frames(60)
 	expect(e.adjustment_saturation > 0.85, "and colour comes back")
+
+
+# ================================================================== Design + Motion Polish V1
+
+## Pass B: the camera eases into a new composition — no frame-to-frame jump, even across a
+## camera sub-zone boundary (Room 307 bedroom -> bathroom rig).
+func check_camera_never_snaps() -> void:
+	Services.scenes.debug_jump("S03")
+	await frames(10)
+	var room: Node = Services.world.zone_node("ROOM_307")
+	await _settle_hero_at(room.global_position + Vector3(4.5, 0, 3.9), "ROOM_307")   # in line with the bathroom doorway
+	await frames(60)
+	var cam: Camera3D = Services.world.camera_director.cam
+	var key := key_toward(Vector3(1, 0, 0))
+	Input.action_press(key)
+	var last := cam.global_position
+	var worst := 0.0
+	var rigs: Dictionary = {}
+	for f in 150:
+		await physics_frame
+		worst = maxf(worst, cam.global_position.distance_to(last))
+		last = cam.global_position
+		rigs[Services.world.camera_director.rig_key] = true
+	Input.action_release(key)
+	expect(rigs.size() >= 2, "walked across a rig boundary (%s)" % [rigs.keys()])
+	expect(worst < 0.12, "largest camera step per frame %.3f m (no snap)" % worst)
+
+
+## Pass I: a weighted start and a firm stop — neither instant nor floaty.
+func check_movement_feel() -> void:
+	await _bar_with_hero_watching()
+	var lobby: Node = Services.world.zone_node("LOBBY")
+	await _settle_hero_at(lobby.global_position + Vector3(9.0, 0, 6.0), "LOBBY")
+	await frames(20)
+	var key := key_toward(Vector3(1, 0, 0))
+	var walk := 2.1   # RUN 6.0 × walk 0.35 (literal: this script compiles before the autoloads)
+	Input.action_press(key)
+	var f_up := -1
+	for f in 60:
+		await physics_frame
+		if Vector2(hero().velocity.x, hero().velocity.z).length() >= walk * 0.9:
+			f_up = f + 1
+			break
+	expect(f_up >= 5 and f_up <= 24, "walk reaches speed in %d frames (want 5–24)" % f_up)
+	await frames(30)
+	Input.action_release(key)
+	var f_stop := -1
+	for f in 60:
+		await physics_frame
+		if Vector2(hero().velocity.x, hero().velocity.z).length() < 0.05:
+			f_stop = f + 1
+			break
+	expect(f_stop >= 2 and f_stop <= 14, "walk stops in %d frames (want 2–14)" % f_stop)
+
+
+## Pass J: a scene change never repositions EL on screen — he stays if he is already close,
+## otherwise the move happens under a cut to black.
+func check_scene_change_hides_reposition() -> void:
+	root.get_node("Episode").reset()
+	Services.scenes.debug_jump("S03")
+	await frames(10)
+	var hall: Node = Services.world.zone_node("HALL_3F")
+	await _settle_hero_at(hall.global_position + Vector3(20.0, 0, 2.4), "HALL_3F")   # by Daniel, far from hub_start
+	var before: Vector3 = hero().global_position
+	Services.scenes.goto_scene("S04")
+	var fade: float = Services.hud.fade_rect.color.a
+	expect(hero().global_position.distance_to(before) > 3.0, "setup: EL is moved to the hub start")
+	expect(fade > 0.95, "...under black (fade %.2f)" % fade)
+	await frames(60)
+	expect(Services.hud.fade_rect.color.a < 0.05, "and the picture comes back")
+	# close to the start mark: no move at all
+	await _settle_hero_at(hall.global_position + Vector3(4.0, 0, 2.4), "HALL_3F")
+	var near: Vector3 = hero().global_position
+	Services.scenes.goto_scene("S04")
+	expect(hero().global_position.distance_to(near) < 0.01, "EL already near his mark stays where he is")
+	expect(Services.hud.fade_rect.color.a < 0.5, "and no cut is needed")

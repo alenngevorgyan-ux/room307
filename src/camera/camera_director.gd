@@ -24,10 +24,36 @@ var _override_t := 0.0
 var _read_push := 0.0
 var shake := 0.0
 var mode_name := "explore"
+# Design + Motion Polish V1: the camera is three critically-damped springs (position, look point,
+# FOV) instead of a transform lerp — it eases into every new framing and never snaps.
+var _pos := Vector3.ZERO
+var _pos_v := Vector3.ZERO
+var _look := Vector3.ZERO
+var _look_v := Vector3.ZERO
+var _fov_v := 0.0
+var _fov_s := 50.0
+var _lead := Vector3.ZERO
+var _lead_v := Vector3.ZERO
+var _t := 0.0
+var _primed := false
+const POS_TIME := 0.34        # seconds to (mostly) settle — calm, not laggy
+const LOOK_TIME := 0.24
+const FOV_TIME := 0.5
+const LEAD_TIME := 0.7
+const LEAD_SEC := 0.2         # look a little ahead of where EL is walking (orientation)
+const LEAD_MAX := 1.1
+const SETTLE_BACK := 0.55
+const RECOMPOSE_TIME := 0.62  # spring time while travelling to a new composition
+const RECOMPOSE_SEC := 1.4
+var _recompose := 0.0
+var _last_target := Vector3.INF     # after a cut, start slightly wider and ease into the composition
 var _faded: Dictionary = {}      # occluder body -> current fade
 var _occ_t := 0.0
 var _occ_want: Dictionary = {}
 var _social := 0.0               # 0..1 eased weights so modes glide in and out
+var _social_raw := 0.0
+var _chase_raw := 0.0
+var _read_raw := 0.0
 var _chase := 0.0
 const FINALE_STAGE_RADIUS := 6.5
 
@@ -54,21 +80,61 @@ func _on_hint(h: Dictionary) -> void:
 		shake = float(h.shake)
 
 
+## Rig changes need no explicit blend any more: the springs carry the camera to the new framing.
 func _start_blend() -> void:
-	_from_xf = cam.global_transform
-	_from_fov = cam.fov
-	_blend_t = 0.0
+	pass
 
 
-func snap() -> void:
+## A cut (door, scene start): the new composition is reached by a short settle from slightly
+## wider and higher — the eye lands, then the frame finishes composing itself.
+func snap(settle: bool = true) -> void:
 	rig_key = ""
 	_blend_t = 1.0
-	_process(0.0)
+	_lead = Vector3.ZERO
+	_lead_v = Vector3.ZERO
 	var d := _desired()
-	if not d.is_empty():
-		cam.global_transform = d.xf
-		cam.fov = d.fov
-	_blend_t = 1.0
+	if d.is_empty():
+		return
+	var pos: Vector3 = d.pos
+	var look: Vector3 = d.look
+	_look = look
+	_look_v = Vector3.ZERO
+	_pos = pos
+	if settle:
+		var back := (pos - look).normalized()
+		_pos = pos + back * SETTLE_BACK + Vector3(0, SETTLE_BACK * 0.35, 0)
+	_pos_v = Vector3.ZERO
+	_fov_s = float(d.fov) + (2.0 if settle else 0.0)
+	_fov_v = 0.0
+	_primed = true
+	_last_target = Vector3.INF
+	_recompose = 0.0
+	_apply()
+	rig_key = String(d.key)
+
+
+## Unity-style SmoothDamp (critically damped spring): returns [value, velocity].
+static func smooth_damp(cur: Vector3, target: Vector3, vel: Vector3, t: float, dt: float) -> Array:
+	t = maxf(0.0001, t)
+	var omega := 2.0 / t
+	var x := omega * dt
+	var e := 1.0 / (1.0 + x + 0.48 * x * x + 0.235 * x * x * x)
+	var change := cur - target
+	var temp := (vel + omega * change) * dt
+	return [target + (change + temp) * e, (vel - omega * temp) * e]
+
+
+static func smooth_damp_f(cur: float, target: float, vel: float, t: float, dt: float) -> Array:
+	var r := smooth_damp(Vector3(cur, 0, 0), Vector3(target, 0, 0), Vector3(vel, 0, 0), t, dt)
+	return [(r[0] as Vector3).x, (r[1] as Vector3).x]
+
+
+func _apply() -> void:
+	var xf := Transform3D.IDENTITY.translated(_pos)
+	if _pos.distance_to(_look) > 0.01:
+		xf = xf.looking_at(_look, Vector3.UP)
+	cam.global_transform = xf
+	cam.fov = _fov_s
 
 
 func current_rig() -> Dictionary:
@@ -143,11 +209,8 @@ func _desired() -> Dictionary:
 			look = c + Vector3(0, 0.9, 0)
 		_:
 			var off := Data.vec3(r.get("offset", [0, 6, 8]))
-			var lead := float(r.get("lead", 0.0))
-			var lv := Vector3.ZERO
-			if lead > 0.0 and hero is CharacterBody3D:
-				lv = Vector3(hero.velocity.x, 0, 0) * lead
-			pos = hp + off + lv
+			var lv := _lead * (1.0 - 0.7 * _social)   # conversations hold the frame on the pair
+			pos = hp + off + lv * 0.6
 			look = hp + Data.vec3(r.get("look", [0, 1, 0])) + lv
 			var lp := pos - o
 			if r.has("clamp_x"):
@@ -206,7 +269,8 @@ func _desired() -> Dictionary:
 	var xf := Transform3D.IDENTITY.translated(pos)
 	if pos.distance_to(look) > 0.01:
 		xf = xf.looking_at(look, Vector3.UP)
-	return {"xf": xf, "fov": fov, "key": cr.key, "damp": float(r.get("damp", 6.0))}
+	return {"xf": xf, "pos": pos, "look": look, "fov": fov, "key": cr.key, "damp": float(r.get("damp", 6.0)),
+		"follow": is_follow and _override.is_empty()}
 
 
 var _last_mid := Vector3.ZERO
@@ -223,8 +287,11 @@ func _update_mode(real_dt: float) -> void:
 	var reading: bool = Services.read != null and Services.read.active
 	var chasing: bool = Services.chase != null and Services.chase.get("active") == true
 	var talking := _conversation_partner() != null and not chasing
-	_social = move_toward(_social, 1.0 if talking else 0.0, real_dt / 0.9)
-	_chase = move_toward(_chase, 1.0 if chasing else 0.0, real_dt / 1.2)
+	# linear ramps underneath, eased weights on top: framing changes start and land softly
+	_social_raw = move_toward(_social_raw, 1.0 if talking else 0.0, real_dt / 1.1)
+	_chase_raw = move_toward(_chase_raw, 1.0 if chasing else 0.0, real_dt / 1.4)
+	_social = smoothstep(0.0, 1.0, _social_raw)
+	_chase = smoothstep(0.0, 1.0, _chase_raw)
 	if not _override.is_empty():
 		mode_name = "cine"
 	elif chasing:
@@ -247,7 +314,8 @@ func _process(delta: float) -> void:
 			_override = {}
 			_start_blend()
 	var reading: bool = Services.read != null and Services.read.active
-	_read_push = move_toward(_read_push, 1.0 if reading else 0.0, real_dt * 4.0)
+	_read_raw = move_toward(_read_raw, 1.0 if reading else 0.0, real_dt * 2.2)
+	_read_push = smoothstep(0.0, 1.0, _read_raw)
 	_update_mode(real_dt)
 	var d := _desired()
 	if d.is_empty():
@@ -256,19 +324,46 @@ func _process(delta: float) -> void:
 		if rig_key != "":
 			_start_blend()
 		rig_key = d.key
-	var target_xf: Transform3D = d.xf
-	if _blend_t < 1.0:
-		_blend_t = minf(1.0, _blend_t + real_dt / BLEND)
-		var w := smoothstep(0.0, 1.0, _blend_t)
-		cam.global_transform = _from_xf.interpolate_with(target_xf, w)
-		cam.fov = lerpf(_from_fov, d.fov, w)
-	else:
-		var k := minf(1.0, real_dt * float(d.damp))
-		cam.global_transform = cam.global_transform.interpolate_with(target_xf, k)
-		cam.fov = lerpf(cam.fov, d.fov, k)
+	if not _primed:
+		snap(false)
+		return
+	_t += real_dt
+	# look-ahead: the frame leans toward where EL is heading (smoothed; stillness re-centres)
+	var hero: Node3D = Services.hero
+	var want_lead := Vector3.ZERO
+	if hero is CharacterBody3D and bool(d.get("follow", false)):
+		var v: Vector3 = (hero as CharacterBody3D).velocity
+		want_lead = Vector3(v.x, 0, v.z) * LEAD_SEC
+		if want_lead.length() > LEAD_MAX:
+			want_lead = want_lead.normalized() * LEAD_MAX
+	var lr := smooth_damp(_lead, want_lead, _lead_v, LEAD_TIME, real_dt)
+	_lead = lr[0]
+	_lead_v = lr[1]
+	# rig "damp" (data) maps onto the spring time; cines settle a touch quicker
+	var k := 6.0 / maxf(0.5, float(d.damp))
+	var pt := POS_TIME * k * (0.8 if not _override.is_empty() else 1.0)
+	# a new composition (rig / sub-zone change): the target jumps; travel there calmly
+	if _last_target != Vector3.INF and (d.pos as Vector3).distance_to(_last_target) > 0.8:
+		_recompose = RECOMPOSE_SEC
+	_last_target = d.pos
+	if _recompose > 0.0:
+		_recompose -= real_dt
+		pt = maxf(pt, RECOMPOSE_TIME)
+	var pr := smooth_damp(_pos, d.pos, _pos_v, pt, real_dt)
+	_pos = pr[0]
+	_pos_v = pr[1]
+	var lk := smooth_damp(_look, d.look, _look_v, LOOK_TIME * k, real_dt)
+	_look = lk[0]
+	_look_v = lk[1]
+	var fr := smooth_damp_f(_fov_s, float(d.fov), _fov_v, FOV_TIME, real_dt)
+	_fov_s = fr[0]
+	_fov_v = fr[1]
+	_apply()
 	if shake > 0.0:
+		# a short, smooth tremor (never per-frame random jitter)
 		shake = maxf(0.0, shake - real_dt)
-		cam.global_position += Vector3(randf_range(-1, 1), randf_range(-1, 1), 0) * 0.04 * shake
+		var a := 0.03 * shake
+		cam.global_position += Vector3(sin(_t * 31.0) + 0.5 * sin(_t * 53.0), sin(_t * 27.0 + 1.3), 0) * a
 	_update_occluders(real_dt)
 
 
@@ -311,5 +406,6 @@ func _update_occluders(dt: float) -> void:
 			_faded[b] = f
 
 
+## True while the camera is still travelling to a new framing.
 func blending() -> bool:
-	return _blend_t < 1.0
+	return _pos_v.length() > 0.4 or _look_v.length() > 0.4

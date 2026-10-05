@@ -26,7 +26,7 @@ func hero_at(marker: String, face: String = "") -> void:
 	if face != "":
 		Services.hero.facing = (D().marker(face) - Services.hero.global_position).normalized()
 		Services.hero.body_vis.rotation.y = atan2(-Services.hero.facing.x, -Services.hero.facing.z)
-	Services.world.camera_director.snap()
+	Services.world.camera_director.snap(false)
 
 
 func jump(scene_id: String) -> void:
@@ -147,7 +147,7 @@ func s_10_social() -> void:
 	get_tree().root.get_node("Bus").camera_hint.emit({"clear": true})
 	hero_at("BAR:hale_a")
 	Services.hero.teleport_to(D().marker("BAR:hale_a") + Vector3(1.2, 0, 1.0), "BAR")
-	Services.world.camera_director.snap()
+	Services.world.camera_director.snap(false)
 	await wait(1.0)
 	await shot("10a_explore_bar")
 	Services.conversation.start("X_S01_HALE", true)
@@ -200,7 +200,7 @@ func s_20_tour() -> void:
 			await _quiet()
 		hero_at(t[1])
 		root_bus().camera_hint.emit({"clear": true})
-		Services.world.camera_director.snap()
+		Services.world.camera_director.snap(false)
 		await wait(0.8)
 		await shot("t_" + String(t[1]).replace(":", "_"))
 
@@ -214,7 +214,7 @@ func s_99_debug_lobby() -> void:
 	await _quiet()
 	hero_at("LOBBY:adrian_mid")
 	root_bus().camera_hint.emit({"clear": true})
-	Services.world.camera_director.snap()
+	Services.world.camera_director.snap(false)
 	await wait(0.8)
 	var cam: Camera3D = Services.world.camera_director.cam
 	print("[dbg] cam pos ", cam.global_position, " rot ", cam.global_rotation_degrees, " fov ", cam.fov, " hero ", Services.hero.global_position, " zone ", Services.hero.current_zone)
@@ -296,3 +296,106 @@ func s_42_epilogue() -> void:
 	hero_at("STREET:enter")
 	await wait(2.0)
 	await shot("42_epilogue_dawn")
+
+
+# ------------------------------------------------------------------ QA set (Design + Motion Polish V1)
+# Same recipes before and after the polish: gameplay cameras only, plus frames DURING motion.
+
+func _hold(action: String, sec: float, frames_at: Array, prefix: String) -> void:
+	Input.action_press(action)
+	var t := 0.0
+	for f in frames_at:
+		await wait(float(f) - t)
+		t = float(f)
+		await shot("%s_%.1fs" % [prefix, t])
+	Input.action_release(action)
+	if sec > t:
+		await wait(sec - t)
+
+
+func _key_toward(dir: Vector3) -> String:
+	var cam: Camera3D = Services.world.camera_director.cam
+	var yaw := cam.global_rotation.y
+	var keys := {"move_left": Vector2(-1, 0), "move_right": Vector2(1, 0), "move_fwd": Vector2(0, 1), "move_back": Vector2(0, -1)}
+	var best := ""
+	var bd := -2.0
+	for k in keys:
+		var kv: Vector2 = keys[k]
+		var d := Vector3(cos(yaw), 0, -sin(yaw)) * kv.x + Vector3(-sin(yaw), 0, -cos(yaw)) * kv.y
+		if d.dot(dir) > bd:
+			bd = d.dot(dir)
+			best = k
+	return best
+
+
+func s_50_qa() -> void:
+	# 01 bar — the opening (seated, the scene's own start camera)
+	await _quiet()
+	Services.scenes.goto_scene("S01")
+	await wait(4.0)
+	await shot("qa_01_bar_opening")
+	# 02 bar — Nico at work during the hub
+	await jump("S04")
+	await _quiet()
+	hero_at("BAR:nico_tables")
+	await wait(1.5)
+	await shot("qa_02_bar_nico")
+	# 03 room 307
+	await jump("S03")
+	await _quiet()
+	hero_at("ROOM_307:desk")
+	await wait(1.5)
+	await shot("qa_03_room307")
+	# 04 hub corridor
+	await jump("S04")
+	await _quiet()
+	hero_at("HALL_3F:door_307")
+	await wait(1.5)
+	await shot("qa_04_hub")
+	# 05 rooftop with Eva
+	hero_at("ROOF_SMOKING:arrive")
+	await wait(1.5)
+	await shot("qa_05_rooftop")
+	# 06 security
+	hero_at("SECURITY:enter_staff")
+	await wait(1.5)
+	await shot("qa_06_security")
+	# 07 loading dock, Thomas leaving
+	await jump("S06")
+	await _quiet()
+	hero_at("LOADING_DOCK:hero_block")
+	await wait(3.0)
+	await shot("qa_07_loading_thomas")
+	# 08 chase start, then running through the kitchen
+	await jump("S07")
+	await wait(1.5)
+	await shot("qa_08_chase_start")
+	hero_at("KITCHEN:enter")
+	await wait(0.6)
+	await _hold(_key_toward(Vector3(1, 0, 0)), 1.6, [0.4, 0.8, 1.2], "qm_08_kitchen_run")
+	# 09 Mara in the Orchid room
+	await jump("S08")
+	await wait(2.5)
+	await shot("qa_09_mara_orchid")
+	# 10 restaurant finale (live)
+	await s_40_finale_live()
+	# 11 epilogue
+	await s_42_epilogue()
+
+
+func s_51_qa_motion() -> void:
+	# walking through the lobby (camera follow, easing, framing)
+	await jump("S04")
+	await _quiet()
+	hero_at("LOBBY:arrive_bar")
+	await wait(1.0)
+	await _hold(_key_toward(Vector3(1, 0, 0)), 2.4, [0.3, 0.9, 1.6, 2.2], "qm_01_lobby_walk")
+	await wait(0.5)
+	await shot("qm_01_lobby_walk_stop")
+	# conversation with Nico (working while talking)
+	hero_at("BAR:nico_tables")
+	await wait(1.0)
+	Services.conversation.talk_to("nico")
+	for i in 4:
+		await wait(1.2)
+		await shot("qm_02_nico_talk_%d" % i)
