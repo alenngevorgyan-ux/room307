@@ -634,3 +634,12 @@ func s_66_perf_room307() -> void:
 	hero_at("ROOM_307:desk")
 	await _perf("room307_desk", 30.0, 3, 60.0)
 	Services.conversation.auto_triggers = true
+
+
+func s_67_perf_room307_short() -> void:
+	await jump("S03")
+	await _quiet()
+	Services.conversation.auto_triggers = false
+	hero_at("ROOM_307:desk")
+	await _perf("room307_desk_short", 10.0, 3, 20.0)
+	Services.conversation.auto_triggers = true

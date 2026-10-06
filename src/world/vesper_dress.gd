@@ -983,6 +983,15 @@ static func _r307_room(z: Zone, world: Node) -> void:
 	box(root, Vector3(0.012, 1.35, z.size.y), Vector3(z.size.x - 0.006, 0.675, z.size.y / 2.0), VesperLook.material("v_tile_bath"))  # E wall
 	box(root, Vector3(bw, 0.03, 0.025), Vector3(bx0 + bw / 2.0, 1.36, 0.012), mat("walnut"))
 	box(root, Vector3(0.025, 0.03, z.size.y), Vector3(z.size.x - 0.012, 1.36, z.size.y / 2.0), mat("walnut"))
+	# draw-call budget: static decor of each dressed prop collapses into one mesh per material
+	var geo: Node = z.get_node_or_null("Geometry")
+	var no_merge := OS.is_debug_build() and FileAccess.file_exists("/tmp/room307_nomerge")   # A/B probe
+	if geo and not no_merge:
+		for n in geo.get_children():
+			if n.has_meta("def") and String(n.get_meta("def").get("id", "")) in MERGE_IDS:
+				_merge_static(n.get_node("Visual"))
+	if not no_merge:
+		_merge_static(root, ["RainLight"])
 	# small evidence objects: grounded by a faint contact, never lit or outlined
 	for it in world.get_tree().get_nodes_in_group("interactables"):
 		if String(it.def.get("zone", "")) != z.zone_id or it.has_meta("follow_npc"):
@@ -996,4 +1005,45 @@ static func _r307_room(z: Zone, world: Node) -> void:
 		var c := contact(mn.get_parent() as Node3D, Vector2(maxf(ms.x, 0.08) * 2.2, maxf(ms.z, 0.08) * 2.2),
 			(mn as Node3D).position - Vector3(0, ms.y / 2.0 - 0.003, 0), 0.35)
 		c.name = "ClueContact"
+
+
+const MERGE_IDS := ["bed", "headboard", "nightstand", "desk", "sink", "shower_tray", "mirror", "tv"]
+
+
+## Merge the static decor meshes under `parent` (not the prop's own first mesh, not transparent
+## cards, not named special nodes) into one MeshInstance3D per material. Visual result unchanged.
+static func _merge_static(parent: Node3D, keep_names: Array = []) -> void:
+	var groups: Dictionary = {}
+	var first := true
+	for c in parent.get_children():
+		var is_first := first
+		first = false
+		if not (c is MeshInstance3D) or c.get_child_count() > 0:
+			continue
+		var mi := c as MeshInstance3D
+		if (is_first and parent.name == "Visual") or String(mi.name) in keep_names or mi.transparency > 0.0:
+			continue
+		var m := mi.material_override
+		if m == null or mi.mesh == null or m == _contact_mat or (m is BaseMaterial3D and (m as BaseMaterial3D).transparency != BaseMaterial3D.TRANSPARENCY_DISABLED):
+			continue
+		if not groups.has(m):
+			groups[m] = []
+		groups[m].append(mi)
+	for m in groups:
+		var list: Array = groups[m]
+		if list.size() < 2:
+			continue
+		var st := SurfaceTool.new()
+		st.begin(Mesh.PRIMITIVE_TRIANGLES)
+		for mi in list:
+			st.append_from((mi as MeshInstance3D).mesh, 0, (mi as MeshInstance3D).transform)
+		var merged := MeshInstance3D.new()
+		merged.name = "Merged"
+		merged.mesh = st.commit()
+		merged.material_override = m
+		merged.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		parent.add_child(merged)
+		for mi in list:
+			parent.remove_child(mi)
+			mi.queue_free()
 
