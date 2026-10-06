@@ -467,6 +467,12 @@ static func _foreground(z: Zone, w: String) -> void:
 				box(root, Vector3(0.9, 0.35, 0.18), Vector3(x, 1.05, y0 + 0.16), fg)
 			"SERVICE":
 				box(root, Vector3(1.4, 0.7, 0.5), Vector3(x, 0.35, y0), fg)   # trolley edge (low: the camera is lower now)
+			"GUEST" when VesperArt.zone_on(z.zone_id):
+				# final language: a reading chair seen from behind, same family as the BAR chairs
+				var chair_g := VesperLook.material("dark", Color(0.07, 0.045, 0.04))
+				box(root, Vector3(0.78, 0.4, 0.56), Vector3(x, 0.2, y0), chair_g)
+				var back_g := cyl(root, 0.26, 0.26, 0.78, Vector3(x, 0.56, y0 + 0.18), chair_g, 16)
+				back_g.rotation_degrees = Vector3(0, 0, 90)
 			"GUEST":
 				box(root, Vector3(0.5, 1.6, 0.3), Vector3(x, 0.8, y0), fg)   # door edge / wardrobe
 			"EXTERIOR":
