@@ -1,0 +1,40 @@
+{
+  "draw_calls": 188,
+  "label": "room307_desk_short",
+  "objects": 283,
+  "primitives": 13362,
+  "texture_mem_mb": 32.5490608215332,
+  "video_mem_mb": 49.3859977722168,
+  "windows": [
+    {
+      "cpu_median": 9.16800022125244,
+      "cpu_p95": 26.0219993591309,
+      "gpu_median": 0.0,
+      "gpu_p95": 0.0,
+      "n": 430,
+      "over_33ms": 57,
+      "wall_median": 24.739,
+      "wall_p95": 51.14
+    },
+    {
+      "cpu_median": 8.62899971008301,
+      "cpu_p95": 21.0160007476807,
+      "gpu_median": 0.0,
+      "gpu_p95": 0.0,
+      "n": 533,
+      "over_33ms": 53,
+      "wall_median": 23.128,
+      "wall_p95": 45.072
+    },
+    {
+      "cpu_median": 10.4910001754761,
+      "cpu_p95": 24.3409996032715,
+      "gpu_median": 0.0,
+      "gpu_p95": 0.0,
+      "n": 486,
+      "over_33ms": 70,
+      "wall_median": 26.611,
+      "wall_p95": 43.933
+    }
+  ]
+}
