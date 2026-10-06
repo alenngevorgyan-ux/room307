@@ -8,7 +8,7 @@ extends RefCounted
 ##   /tmp/room307_art_v1 (debug only)  same, picked up by the persistent capture server
 ## No reference to Data or other autoload-dependent classes (tests compile this before autoloads).
 
-const ROLLOUT := ["BAR"]   # Phase 1: BAR only. Later phases add zones here after visual validation.
+const ROLLOUT := ["BAR", "ROOM_307"]   # Phase 1 BAR (accepted), Phase 2 ROOM_307. Later zones after validation.
 
 
 static func enabled() -> bool:

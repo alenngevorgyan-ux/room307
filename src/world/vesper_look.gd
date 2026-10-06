@@ -88,6 +88,15 @@ const MATS := {
 	"v_brass_aged": [0, "8a6c3e", "8a6c3e", 1.0, 0.0, 0.5, 0.85, 0.03, 0.0],
 	"v_oxblood": [0, "5a2a26", "5a2a26", 1.0, 0.0, 0.75, 0.0, 0.04, 0.0],
 	"v_bar_wall": [3, "2f3f35", "28362d", 1.0, 0.25, 0.88, 0.0, 0.05, 0.0],
+	"v_carpet": [4, "5a4c41", "6e5e51", 0.7, 0.16, 0.96, 0.0, 0.04, 0.0],
+	"v_room_wall": [0, "7d7262", "7d7262", 1.0, 0.0, 0.9, 0.0, 0.03, 0.0],
+	"v_dado": [7, "cfc4ad", "b2a68f", 1.3, 0.25, 0.72, 0.0, 0.03, 0.0],
+	"v_linen": [0, "d8ccb3", "d8ccb3", 1.0, 0.0, 0.94, 0.0, 0.03, 0.0],
+	"v_duvet": [0, "cdc5b4", "cdc5b4", 1.0, 0.0, 0.95, 0.0, 0.03, 0.0],
+	"v_curtain": [0, "5c3b37", "5c3b37", 1.0, 0.0, 0.9, 0.0, 0.04, 0.0],
+	"v_tile_bath": [2, "c9c3b6", "8d877c", 6.0, 0.55, 0.32, 0.0, 0.03, 0.0],
+	"v_tile_floor_bath": [2, "a9a397", "6f6a62", 3.0, 0.55, 0.45, 0.0, 0.04, 0.0],
+	"v_ceramic": [0, "dcd6ca", "dcd6ca", 1.0, 0.0, 0.22, 0.0, 0.02, 0.0],
 }
 
 ## Authored detail layer per final profile: [map, repeats/m, mix, dark, light, wear, wear colour,
@@ -101,6 +110,15 @@ const DETAIL := {
 	"v_brass_aged": ["brush", 1.5, 0.8, "57422b", "b59a5e", 0.4, "3d3426", 0.27, 0.45],
 	"v_oxblood": ["brush", 1.2, 0.7, "3c2023", "70403b", 0.25, "7a4a42", 0.2, 0.0],
 	"v_bar_wall": ["brush", 0.6, 0.55, "26342c", "3e5246", 0.15, "4a5a4e", 0.08, 0.0],
+	"v_carpet": ["brush", 0.45, 0.5, "54473c", "86735f", 0.2, "8f7a64", 0.05, 0.0],   # lighter ground: dark figures read against it
+	"v_room_wall": ["brush", 0.5, 0.7, "766452", "a88f72", 0.18, "b29a7c", 0.06, 0.0],
+	"v_dado": ["brush", 0.8, 0.4, "b7ab93", "d9cfba", 0.3, "9c907a", 0.1, 0.0],
+	"v_linen": ["brush", 0.9, 0.45, "bdb19a", "e6dbc4", 0.2, "c9bda5", 0.05, 0.0],
+	"v_duvet": ["brush", 0.7, 0.5, "b3ab9c", "e0d8c8", 0.25, "c4bcac", 0.05, 0.0],
+	"v_curtain": ["brush", 1.4, 0.55, "4a2e2c", "74504a", 0.25, "3a2422", 0.08, 0.0],
+	"v_tile_bath": ["brush", 1.0, 0.18, "bdb7aa", "d6d0c3", 0.15, "a59f92", 0.1, 0.0],
+	"v_tile_floor_bath": ["brush", 0.8, 0.22, "9c968a", "bab4a7", 0.2, "8a8478", 0.12, 0.0],
+	"v_ceramic": ["brush", 1.2, 0.12, "cfc9bd", "e4ded2", 0.1, "c2bcb0", 0.06, 0.0],
 }
 const DETAIL_MAPS := {
 	"wood": preload("res://assets/vesper/textures/wood.png"),
@@ -112,7 +130,8 @@ const ART_ALIAS := {
 	"timber_floor": "v_wood_floor", "bar_wall": "v_bar_wall", "walnut_wainscot": "v_wood_panel",
 	"walnut": "v_wood_dark", "walnut_panel": "v_wood_panel", "door_timber": "v_wood_panel",
 	"marble_green": "v_marble_dark", "marble_cream": "v_marble_cream", "brass": "v_brass_aged",
-	"oxblood": "v_oxblood",
+	"oxblood": "v_oxblood", "room_carpet": "v_carpet", "room_wall": "v_room_wall", "guest_wall": "v_room_wall",
+	"guest_dado": "v_dado", "linen": "v_linen",
 }
 ## The zone currently being skinned/dressed (set only while VesperLook/VesperDress build a zone).
 static var art_zone := ""
@@ -514,7 +533,7 @@ static func _sconces(z: Zone, w: String) -> void:
 		shade.bottom_radius = 0.11
 		shade.height = 0.16
 		_mesh(root, shade, emissive(WARM_SHADE, 2.4), Vector3(x, y + 0.08, 0.13))
-		if zone_on_art(z.zone_id):
+		if z.zone_id == "BAR" and zone_on_art(z.zone_id):
 			continue   # final language (BAR): glow-only sconces keep the floor under the 16-light cap
 		var l := OmniLight3D.new()
 		l.position = Vector3(x, y + 0.1, 0.35)

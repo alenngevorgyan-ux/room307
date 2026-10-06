@@ -25,6 +25,8 @@ static func apply(world: Node) -> void:
 		_foreground(z, w)
 		if zid == "BAR" and VesperArt.zone_on(zid):
 			_bar_backdrop(z)
+		if zid == "ROOM_307" and VesperArt.zone_on(zid):
+			_r307_room(z, world)
 	VesperLook.art_zone = ""
 
 
@@ -262,6 +264,8 @@ static func _decorate(z: Zone, n: Node3D, w: String) -> void:
 		return
 	if zid == "BAR" and VesperArt.zone_on(zid) and _bar_kit(n, vis, id, s, top):
 		return
+	if zid == "ROOM_307" and VesperArt.zone_on(zid) and _r307_kit(n, vis, id, s, top):
+		return
 	match id:
 		"counter":
 			if zid == "BAR":
@@ -420,6 +424,9 @@ static func _window(z: Zone, n: Node3D, s: Vector3, w: String) -> void:
 		box(vis, Vector3(0.05, s.y + 0.06, 0.08) if horiz else Vector3(0.08, s.y + 0.06, 0.05), Vector3(o, 0, 0) if horiz else Vector3(0, 0, o), frame)
 	for y in [-s.y / 2.0, s.y / 2.0]:
 		box(vis, Vector3(len + 0.1, 0.07, 0.1) if horiz else Vector3(0.1, 0.07, len + 0.1), Vector3(0, y, 0), frame)
+	if z.zone_id == "ROOM_307" and VesperArt.zone_on("ROOM_307") and on_wall:
+		box(vis, Vector3(len + 0.24, 0.045, 0.24), Vector3(0, -s.y / 2.0 - 0.03, 0.12), mat("walnut"))   # sill
+		rain_light(z, Vector3(n.position.x, 0.006, n.position.z + 1.35), Vector2(len + 0.2, 2.4))
 	# the cool 6500 K spill that pairs with the warm practicals (warm / cool split)
 	var into := Vector3(0, 0, 0.9) if horiz else (Vector3(0.9, 0, 0) if n.position.x < z.size.x / 2.0 else Vector3(-0.9, 0, 0))
 	if horiz and n.position.z > z.size.y / 2.0:
@@ -758,4 +765,229 @@ static func _bar_backdrop(z: Zone) -> void:
 			(c as MeshInstance3D).layers = 2
 		elif c is OmniLight3D:
 			(c as OmniLight3D).light_cull_mask = 2
+
+
+# ================================================================== FINAL VISUAL LANGUAGE V1 — ROOM 307 kit
+# Visual only, inside each prop's footprint; bodies, nav, markers, interactables untouched. Nothing is
+# placed on top of a clue (desk slip/glasses/bottle, nightstand pills, floor phone/shoes, towels).
+
+static var _rain_mat: ShaderMaterial = null
+
+
+## Cool rain light lying on the floor in front of a window: soft pane shape, mullion, rain shadows
+## sliding down (additive, unshaded, faint) — the cool half of the warm/cool split.
+static func rain_light(z: Zone, pos: Vector3, size: Vector2) -> MeshInstance3D:
+	if _rain_mat == null:
+		var sh := Shader.new()
+		sh.code = """shader_type spatial;
+render_mode unshaded, blend_add, depth_draw_never, cull_disabled;
+uniform vec3 tint : source_color = vec3(0.42, 0.52, 0.78);
+uniform float strength = 0.11;
+void fragment() {
+	vec2 uv = UV;
+	float pane = smoothstep(0.0, 0.14, uv.x) * smoothstep(1.0, 0.86, uv.x) * smoothstep(0.0, 0.06, uv.y) * smoothstep(1.0, 0.35, uv.y);
+	float mull = 1.0 - 0.35 * smoothstep(0.035, 0.0, abs(uv.x - 0.5));
+	float col_id = floor(uv.x * 26.0);
+	float h = fract(sin(col_id * 12.9898) * 43758.5453);
+	float streak = smoothstep(0.86, 1.0, fract(uv.y * 1.2 - TIME * (0.22 + h * 0.3) + h)) * step(0.45, h);
+	ALBEDO = tint * strength * pane * mull * (1.0 - 0.5 * streak);
+}"""
+		_rain_mat = ShaderMaterial.new()
+		_rain_mat.shader = sh
+	var q := QuadMesh.new()
+	q.size = size
+	var mi := MeshInstance3D.new()
+	mi.name = "RainLight"
+	mi.mesh = q
+	mi.material_override = _rain_mat
+	mi.rotation_degrees = Vector3(-90, 0, 0)
+	mi.position = pos
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	look_root(z).add_child(mi)
+	return mi
+
+
+static func _r307_kit(n: Node3D, vis: Node3D, id: String, s: Vector3, top: Vector3) -> bool:
+	var floor_y := -s.y / 2.0 + 0.006
+	match id:
+		"bed":
+			(vis.get_child(0) as MeshInstance3D).material_override = mat("linen")
+			box(vis, Vector3(s.x + 0.06, 0.2, s.z + 0.04), Vector3(0, -s.y / 2.0 + 0.1, 0), mat("walnut"))   # plinth
+			box(vis, Vector3(s.x - 0.02, 0.04, s.z - 0.04), top + Vector3(0, 0.02, 0), mat("linen"))       # sheet
+			# duvet over the foot 60%, turned back at the head edge and pushed aside on one side:
+			# someone got up from this bed not long ago
+			var duv := VesperLook.material("v_duvet")
+			box(vis, Vector3(s.x + 0.06, 0.09, s.z * 0.58), top + Vector3(0.04, 0.065, s.z * 0.21), duv)
+			var fold := cyl(vis, 0.055, 0.055, s.x * 0.7, top + Vector3(0.3, 0.11, s.z * 0.21 - s.z * 0.29), duv, 12)
+			fold.rotation_degrees = Vector3(0, 12, 90)
+			var corner := box(vis, Vector3(0.62, 0.05, 0.5), top + Vector3(-s.x / 2.0 + 0.4, 0.13, s.z * 0.05), duv)
+			corner.rotation_degrees = Vector3(0, 28, 4)
+			for sx in [-1.0, 1.0]:   # drapes over the sides (never over the foot: the phone lies there)
+				box(vis, Vector3(0.03, 0.3, s.z * 0.58), Vector3(sx * (s.x / 2.0 + 0.045), s.y / 2.0 - 0.06, s.z * 0.21), duv)
+			for i in 2:
+				var pil := sphere(vis, 0.3, 0.16, top + Vector3(-0.45 + i * 0.92, 0.1, -s.z / 2.0 + 0.32), mat("linen"))
+				pil.scale = Vector3(1.0, 1.0 - 0.2 * i, 0.55)
+				pil.rotation_degrees = Vector3(0, -6 + i * 16, i * 4)
+			box(vis, Vector3(s.x + 0.08, 0.025, 0.42), top + Vector3(0, 0.118, s.z / 2.0 - 0.32), mat("oxblood"))   # runner
+			contact(vis, Vector2(s.x + 0.5, s.z + 0.5), Vector3(0, floor_y, 0), 0.45)
+			return true
+		"headboard":
+			(vis.get_child(0) as MeshInstance3D).material_override = mat("walnut_panel")
+			box(vis, Vector3(s.x - 0.24, s.y - 0.34, 0.04), Vector3(0, 0.02, s.z / 2.0 + 0.02), VesperLook.material("v_curtain"))
+			box(vis, Vector3(s.x + 0.06, 0.05, s.z + 0.04), top + Vector3(0, 0.025, 0), mat("walnut"))
+			return true
+		"nightstand":
+			(vis.get_child(0) as MeshInstance3D).material_override = mat("walnut")
+			box(vis, Vector3(s.x - 0.06, 0.16, 0.02), Vector3(0, 0.08, s.z / 2.0 + 0.01), mat("walnut_panel"))   # drawer
+			sphere(vis, 0.018, 0.03, Vector3(0, 0.08, s.z / 2.0 + 0.03), mat("brass"))
+			table_lamp(vis, top + Vector3(0.11, 0.0, -0.12), true, 2.0, 0.8)   # back corner: the pills stay in view
+			cyl(vis, 0.032, 0.028, 0.11, top + Vector3(-0.15, 0.055, 0.13), _glass_mat(), 12)   # half-drunk glass
+			cyl(vis, 0.026, 0.024, 0.05, top + Vector3(-0.15, 0.03, 0.13), VesperLook.material("object", Color(0.62, 0.68, 0.7)), 10)
+			contact(vis, Vector2(s.x + 0.25, s.z + 0.25), Vector3(0, floor_y, 0), 0.4)
+			return true
+		"desk":
+			(vis.get_child(0) as MeshInstance3D).material_override = mat("walnut")
+			box(vis, Vector3(0.02, s.y - 0.24, s.z * 0.55), Vector3(s.x / 2.0 + 0.002, -0.08, 0.1), mat("dark"))   # kneehole
+			box(vis, Vector3(s.x + 0.04, 0.035, s.z + 0.04), top + Vector3(0, 0.0175, 0), mat("walnut"))
+			table_lamp(vis, top + Vector3(0, 0.035, -s.z / 2.0 + 0.2), true, 2.0, 0.85)
+			contact(vis, Vector2(s.x + 0.35, s.z + 0.3), Vector3(0, floor_y, 0), 0.4)
+			return true
+		"wardrobe":
+			_consolidated_wardrobe(n, vis, s)
+			contact(vis, Vector2(s.x + 0.3, s.z + 0.3), Vector3(0, floor_y, 0), 0.45)
+			return true
+		"curtain":
+			(vis.get_child(0) as MeshInstance3D).material_override = mat_curtain()
+			for i in 3:   # gathered folds (children of Visual: they breathe with the curtain)
+				cyl(vis, 0.055, 0.065, s.y - 0.06, Vector3(0.0, 0.0, -0.1 + i * 0.1), mat_curtain(), 10)
+			return true
+		"tv":
+			box(vis, Vector3(s.x * 0.6, s.y + 0.05, s.z + 0.05), Vector3(0.02, 0, 0), mat("walnut"))
+			return false
+		"shower_tray":
+			(vis.get_child(0) as MeshInstance3D).material_override = VesperLook.material("v_ceramic")
+			var screen := box(vis, Vector3(0.012, 1.9, s.z * 0.65), Vector3(-s.x / 2.0, 0.98, s.z * 0.15), _screen_mat())
+			screen.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			box(vis, Vector3(0.02, 0.02, s.z * 0.65), Vector3(-s.x / 2.0, 1.94, s.z * 0.15), mat("brass"))
+			cyl(vis, 0.012, 0.012, 1.1, Vector3(0, 1.45, -s.z / 2.0 + 0.06), mat("brass"), 8)
+			var head := cyl(vis, 0.07, 0.05, 0.03, Vector3(0, 2.0, -s.z / 2.0 + 0.16), mat("brass"), 14)
+			head.rotation_degrees = Vector3(20, 0, 0)
+			return true
+		"sink":
+			(vis.get_child(0) as MeshInstance3D).material_override = VesperLook.material("v_marble_cream")
+			box(vis, Vector3(s.x + 0.06, 0.04, s.z + 0.06), top + Vector3(0, 0.02, 0), VesperLook.material("v_marble_cream"))
+			box(vis, Vector3(0.02, s.y * 0.6, s.z * 0.8), Vector3(-s.x / 2.0 - 0.003, -0.05, 0), mat("walnut"))   # cabinet door
+			cyl(vis, 0.2, 0.17, 0.08, top + Vector3(-0.04, 0.06, 0), VesperLook.material("v_ceramic"), 18)
+			cyl(vis, 0.15, 0.13, 0.012, top + Vector3(-0.04, 0.097, 0), VesperLook.material("object", Color(0.78, 0.8, 0.8)), 16)
+			cyl(vis, 0.02, 0.02, 0.006, top + Vector3(-0.04, 0.104, 0), mat("brass"), 8)   # drain
+			var tap := cyl(vis, 0.012, 0.012, 0.16, top + Vector3(0.22, 0.12, 0), mat("brass"), 8)
+			tap.rotation_degrees = Vector3(0, 0, 70)
+			contact(vis, Vector2(s.x + 0.25, s.z + 0.25), Vector3(0, floor_y, 0), 0.4)
+			return true
+		"mirror":
+			(vis.get_child(0) as MeshInstance3D).material_override = _mirror_mat()
+			box(vis, Vector3(0.02, s.y + 0.06, s.z + 0.06), Vector3(0.012, 0, 0), mat("brass"))
+			return true
+	return false
+
+
+static func mat_curtain() -> Material:
+	return VesperLook.material("v_curtain")
+
+
+## One mesh for body + raised doors + cornice + plinth, wearing the occluder's own (fadeable)
+## material: the camera can still dither the whole wardrobe out (one-mesh occluder contract).
+static func _consolidated_wardrobe(n: Node3D, vis: Node3D, s: Vector3) -> void:
+	var body := vis.get_child(0) as MeshInstance3D
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var parts := [
+		[s, Vector3.ZERO],
+		[Vector3(0.025, s.y * 0.8, s.z * 0.46), Vector3(s.x / 2.0 + 0.012, 0.04, -s.z * 0.245)],   # door L
+		[Vector3(0.025, s.y * 0.8, s.z * 0.46), Vector3(s.x / 2.0 + 0.012, 0.04, s.z * 0.245)],    # door R
+		[Vector3(s.x + 0.06, 0.07, s.z + 0.06), Vector3(0, s.y / 2.0 - 0.035, 0)],               # cornice
+		[Vector3(s.x + 0.02, 0.09, s.z + 0.02), Vector3(0, -s.y / 2.0 + 0.045, 0)],              # plinth
+		[Vector3(0.03, 0.14, 0.025), Vector3(s.x / 2.0 + 0.035, 0.08, -0.05)],                  # pulls
+		[Vector3(0.03, 0.14, 0.025), Vector3(s.x / 2.0 + 0.035, 0.08, 0.05)],
+	]
+	for p in parts:
+		var b := BoxMesh.new()
+		b.size = p[0]
+		st.append_from(b, 0, Transform3D(Basis(), p[1]))
+	body.mesh = st.commit()
+	body.material_override = VesperLook.material("walnut") if not n.has_meta("occluder") else body.material_override
+	if n.has_meta("occluder") and body.material_override is ShaderMaterial:
+		var m := (VesperLook.material("walnut") as ShaderMaterial).duplicate() as ShaderMaterial
+		body.material_override = m   # still its own instance: the camera fades only this wardrobe
+
+
+static var _glass_m: StandardMaterial3D = null
+static var _screen_m: StandardMaterial3D = null
+static var _mirror_m: ShaderMaterial = null
+
+
+static func _glass_mat() -> StandardMaterial3D:
+	if _glass_m == null:
+		_glass_m = StandardMaterial3D.new()
+		_glass_m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_glass_m.albedo_color = Color(0.82, 0.88, 0.9, 0.28)
+		_glass_m.roughness = 0.08
+		_glass_m.rim_enabled = true
+		_glass_m.rim = 0.4
+	return _glass_m
+
+
+static func _screen_mat() -> StandardMaterial3D:
+	if _screen_m == null:
+		_screen_m = StandardMaterial3D.new()
+		_screen_m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_screen_m.albedo_color = Color(0.78, 0.86, 0.9, 0.1)
+		_screen_m.roughness = 0.05
+		_screen_m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	return _screen_m
+
+
+## A painted mirror: dark cool depth with one soft diagonal highlight (no reflection camera).
+static func _mirror_mat() -> ShaderMaterial:
+	if _mirror_m == null:
+		var sh := Shader.new()
+		sh.code = """shader_type spatial;
+render_mode diffuse_burley, specular_schlick_ggx;
+void fragment() {
+	float band = smoothstep(0.16, 0.0, abs(UV.x + UV.y * 0.6 - 0.62)) * 0.5 + smoothstep(0.05, 0.0, abs(UV.x + UV.y * 0.6 - 0.9)) * 0.3;
+	vec3 depth = mix(vec3(0.16, 0.19, 0.21), vec3(0.3, 0.33, 0.35), UV.y);
+	ALBEDO = depth * 0.6;
+	ROUGHNESS = 0.08;
+	SPECULAR = 0.6;
+	EMISSION = depth * 0.12 + vec3(0.75, 0.8, 0.82) * band * 0.18;
+}"""
+		_mirror_m = ShaderMaterial.new()
+		_mirror_m.shader = sh
+	return _mirror_m
+
+
+## Room-level pieces: bathroom tile floor + wall cladding (inside the bath area, flush on the
+## perimeter walls only — never on the camera-fading partition walls), and quiet contact under clues.
+static func _r307_room(z: Zone, world: Node) -> void:
+	var root := look_root(z)
+	var bx0 := 6.7
+	var bw := z.size.x - bx0
+	box(root, Vector3(bw, 0.004, z.size.y), Vector3(bx0 + bw / 2.0, 0.002, z.size.y / 2.0), VesperLook.material("v_tile_floor_bath"))
+	box(root, Vector3(bw, 1.35, 0.012), Vector3(bx0 + bw / 2.0, 0.675, 0.006), VesperLook.material("v_tile_bath"))       # N wall
+	box(root, Vector3(0.012, 1.35, z.size.y), Vector3(z.size.x - 0.006, 0.675, z.size.y / 2.0), VesperLook.material("v_tile_bath"))  # E wall
+	box(root, Vector3(bw, 0.03, 0.025), Vector3(bx0 + bw / 2.0, 1.36, 0.012), mat("walnut"))
+	box(root, Vector3(0.025, 0.03, z.size.y), Vector3(z.size.x - 0.012, 1.36, z.size.y / 2.0), mat("walnut"))
+	# small evidence objects: grounded by a faint contact, never lit or outlined
+	for it in world.get_tree().get_nodes_in_group("interactables"):
+		if String(it.def.get("zone", "")) != z.zone_id or it.has_meta("follow_npc"):
+			continue
+		var mn: Node = it.get("mesh_node")
+		if mn == null or not (mn is MeshInstance3D):
+			continue
+		var ms := Data.vec3((it.def.get("mesh", {}) as Dictionary).get("s", [0.1, 0.1, 0.1]))
+		if ms.y > 0.5 or ms.x > 0.6:
+			continue
+		var c := contact(mn.get_parent() as Node3D, Vector2(maxf(ms.x, 0.08) * 2.2, maxf(ms.z, 0.08) * 2.2),
+			(mn as Node3D).position - Vector3(0, ms.y / 2.0 - 0.003, 0), 0.35)
+		c.name = "ClueContact"
 

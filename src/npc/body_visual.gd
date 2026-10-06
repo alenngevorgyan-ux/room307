@@ -414,12 +414,14 @@ func _hair(hd: Node3D, r: float, hdef: Dictionary) -> void:
 	var m := _mat(String(hdef.get("color", "1b1512")), 0.7)
 	match String(hdef.get("style", "short_neat")):
 		"curly_volume" when _fv:   # EL (final language bridge): one cap + a few shaped curl clumps
+			# two broad highlight groups (crown, left fringe) so the curls read as volume, not a dark ball
+			var hl := _mat(Color(String(hdef.get("color", "1b1512"))).lerp(Color(0.36, 0.27, 0.2), 0.45).to_html(false), 0.62)
 			_sphere(hd, r * 1.08, m, Vector3(0, r * 0.3, r * 0.08), Vector3(1.04, 0.84, 1.08))
-			_sphere(hd, r * 0.62, m, Vector3(-r * 0.32, r * 0.5, -r * 0.6), Vector3(1.15, 0.62, 0.9))   # fringe L
+			_sphere(hd, r * 0.62, hl, Vector3(-r * 0.32, r * 0.5, -r * 0.6), Vector3(1.15, 0.62, 0.9))   # fringe L
 			_sphere(hd, r * 0.55, m, Vector3(r * 0.36, r * 0.42, -r * 0.66), Vector3(1.1, 0.6, 0.85))   # fringe R (lower)
 			_sphere(hd, r * 0.6, m, Vector3(-r * 0.78, r * 0.3, r * 0.05), Vector3(0.7, 1.0, 1.15))     # side L
 			_sphere(hd, r * 0.6, m, Vector3(r * 0.8, r * 0.28, r * 0.08), Vector3(0.7, 1.0, 1.15))      # side R
-			_sphere(hd, r * 0.72, m, Vector3(0, r * 0.62, r * 0.42), Vector3(1.25, 0.75, 1.0))          # crown
+			_sphere(hd, r * 0.72, hl, Vector3(0, r * 0.62, r * 0.42), Vector3(1.25, 0.75, 1.0))         # crown
 		"curly_volume":   # EL: loose dark curls falling forward over the forehead
 			_sphere(hd, r * 1.08, m, Vector3(0, r * 0.28, r * 0.06), Vector3(1.05, 0.82, 1.08))
 			for i in 10:

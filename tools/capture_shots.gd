@@ -573,3 +573,64 @@ func s_63_perf_short() -> void:
 	await _perf("bar_opening_short", 3.0, 3, 15.0)
 	await shot("bar_shadow_probe")
 
+
+
+# ------------------------------------------------------------------ FINAL VISUAL LANGUAGE — ROOM 307 gate
+# Same gameplay cameras (follow rig + bath fixed rig); auto exchanges off so framing is deterministic.
+
+func s_64_room307_art() -> void:
+	await jump("S03")
+	await _quiet()
+	Services.conversation.auto_triggers = false
+	hero_at("ROOM_307:desk")
+	await wait(1.8)
+	await shot("r307_01_desk")
+	hero_at("ROOM_307:window")
+	await wait(1.8)
+	await shot("r307_02_window")
+	hero_at("ROOM_307:lina_bed")
+	await wait(1.8)
+	await shot("r307_03_bed")
+	hero_at("ROOM_307:enter")
+	await wait(1.8)
+	await shot("r307_04_room_from_door")
+	hero_at("ROOM_307:bath_center")
+	await wait(2.0)
+	await shot("r307_05_bath")
+	hero_at("ROOM_307:desk")
+	await wait(1.0)
+	Input.action_press("read")
+	await wait(1.2)
+	await shot("r307_06_read_desk")
+	Input.action_release("read")
+	await wait(0.6)
+	Services.conversation.auto_triggers = true
+
+
+func s_65_room307_motion() -> void:
+	await jump("S03")
+	await _quiet()
+	Services.conversation.auto_triggers = false
+	hero_at("ROOM_307:enter")
+	await wait(1.2)
+	var key := _key_toward(Vector3(0.45, 0, -1).normalized())
+	Input.action_press(key)
+	for i in 30:
+		await wait(0.1)
+		await shot("rm_walk_%02d" % i)
+	Input.action_release(key)
+	hero_at("ROOM_307:window")
+	await wait(0.8)
+	for i in 16:
+		await wait(0.25)
+		await shot("rm_curtain_%02d" % i)
+	Services.conversation.auto_triggers = true
+
+
+func s_66_perf_room307() -> void:
+	await jump("S03")
+	await _quiet()
+	Services.conversation.auto_triggers = false
+	hero_at("ROOM_307:desk")
+	await _perf("room307_desk", 30.0, 3, 60.0)
+	Services.conversation.auto_triggers = true
