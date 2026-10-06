@@ -1,0 +1,40 @@
+{
+  "draw_calls": 335,
+  "label": "bar_hub",
+  "objects": 386,
+  "primitives": 93070,
+  "texture_mem_mb": 33.198148727417,
+  "video_mem_mb": 58.2894878387451,
+  "windows": [
+    {
+      "cpu_median": 10.5819997787476,
+      "cpu_p95": 13.4029998779297,
+      "gpu_median": 0.0,
+      "gpu_p95": 0.0,
+      "n": 1273,
+      "over_33ms": 3,
+      "wall_median": 20.242,
+      "wall_p95": 25.98
+    },
+    {
+      "cpu_median": 10.4060001373291,
+      "cpu_p95": 13.3109998703003,
+      "gpu_median": 0.0,
+      "gpu_p95": 0.0,
+      "n": 1243,
+      "over_33ms": 5,
+      "wall_median": 23.401,
+      "wall_p95": 26.948
+    },
+    {
+      "cpu_median": 10.28600025177,
+      "cpu_p95": 12.2510004043579,
+      "gpu_median": 0.0,
+      "gpu_p95": 0.0,
+      "n": 1223,
+      "over_33ms": 3,
+      "wall_median": 23.227,
+      "wall_p95": 26.636
+    }
+  ]
+}
