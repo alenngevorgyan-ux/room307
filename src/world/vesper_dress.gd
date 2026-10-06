@@ -379,7 +379,8 @@ static func _bottle_wall(z: Zone, n: Node3D, vis: Node3D, s: Vector3) -> void:
 	# backlit shelf: warm and bright at the counter, falling off toward the ceiling (no flat slab)
 	for b in 3:
 		box(vis, Vector3(s.x, 0.5, 0.02), Vector3(0, 0.25 + b * 0.5, -s.z / 2.0 - 0.02), VesperLook.emissive(Color(0.82, 0.55, 0.32), [0.42, 0.22, 0.09][b]))
-	lamp_light(vis, Vector3(0, 0.9, 0.4), Color(1.0, 0.62, 0.3), 1.0, 4.0)
+	# above and behind the shelf: backlights the bottles, never sits where Nico's head and hands go
+	lamp_light(vis, Vector3(0, 1.7, -0.15), Color(1.0, 0.62, 0.3), 1.2, 4.0)
 
 
 static func _bottle_rows(vis: Node3D, s: Vector3, rows: int) -> void:
@@ -439,7 +440,7 @@ static func _foreground(z: Zone, w: String) -> void:
 				box(root, Vector3(0.9, 0.9, 0.5), Vector3(x, 0.45, y0), fg)
 				box(root, Vector3(0.9, 0.35, 0.18), Vector3(x, 1.05, y0 + 0.16), fg)
 			"SERVICE":
-				box(root, Vector3(1.4, 1.2, 0.5), Vector3(x, 0.6, y0), fg)   # shelving / trolley
+				box(root, Vector3(1.4, 0.7, 0.5), Vector3(x, 0.35, y0), fg)   # trolley edge (low: the camera is lower now)
 			"GUEST":
 				box(root, Vector3(0.5, 1.6, 0.3), Vector3(x, 0.8, y0), fg)   # door edge / wardrobe
 			"EXTERIOR":

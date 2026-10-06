@@ -49,8 +49,7 @@ void fragment() {
 		// aircraft warning light at the top edge
 		float top = smoothstep(0.985, 1.0, uv.y) * step(0.5, fract(TIME * 0.5 + seed));
 		col += top * vec3(1.0, 0.08, 0.05) * 3.0;
-		ALBEDO = vec3(0.0);
-		EMISSION = col * energy;
+		ALBEDO = col * energy;   // unshaded: ALBEDO is the final colour (EMISSION is ignored)
 	} else {
 		// each window gets its own timing (no two panes rain or flash in sync)
 		float ws = hash(floor(wpos.xz / 3.0) + seed);
@@ -61,7 +60,7 @@ void fragment() {
 		float on = step(cyc, 0.22) * traffic;
 		float x = cyc / 0.22 * 1.4 - 0.2;
 		float band = exp(-pow((uv.x - x) * 6.0, 2.0)) * smoothstep(0.42, 0.0, uv.y) * on;
-		col += band * vec3(1.0, 0.9, 0.75) * 0.45;
+		col += band * vec3(0.9, 0.9, 0.85) * 0.15;   // faint: a pane half-hidden behind a bar must not bloom into a blob
 		// rain: thin streaks running down, beads that catch the light
 		float colx = floor(uv.x * 46.0);
 		float speed = 0.35 + hash(vec2(colx, ws)) * 0.6;
@@ -71,8 +70,6 @@ void fragment() {
 		vec2 bead_cell = floor(uv * vec2(70.0, 40.0));
 		float bead = step(0.93, hash(bead_cell + ws)) * smoothstep(0.5, 0.15, length(fract(uv * vec2(70.0, 40.0)) - 0.5));
 		col += (streak * 0.22 + bead * 0.12) * rain * (sky_bottom + vec3(0.15));
-		// the glass itself is darker than the light behind it
-		ALBEDO = vec3(0.0);
-		EMISSION = col * energy;
+		ALBEDO = col * energy;
 	}
 }

@@ -605,3 +605,24 @@ func check_camera_pitch() -> void:
 			var l: Array = r.get("look", [0, 1, 0])
 			var pitch := rad_to_deg(atan2(float(o[1]) - float(l[1]), Vector2(float(o[0]) - float(l[0]), float(o[2]) - float(l[2])).length()))
 			expect(pitch <= 33.0, "%s/%s pitch %.0f° (≤ 33°)" % [zid, rid, pitch])
+
+
+## Motion Polish K: leaving a conversation through a scene change never drags the camera across
+## the map (the eased social framing used to keep pulling toward the old partner).
+func check_camera_no_fly_after_talk() -> void:
+	root.get_node("Episode").reset()
+	Services.scenes.debug_jump("S04")
+	await frames(10)
+	Services.world.place_hero("BAR:nico_tables", false)
+	await frames(10)
+	Services.conversation.talk_to("nico")
+	await frames(60)
+	Services.conversation.end_active("TEST")
+	Services.scenes.debug_jump("S03")
+	Services.world.place_hero("ROOM_307:desk", false)
+	var cd: Node = Services.world.camera_director
+	var worst := 0.0
+	for i in 40:
+		await frames(1)
+		worst = maxf(worst, cd.cam.global_position.distance_to(hero().global_position))
+	expect(worst < 12.0, "camera stays with EL after the cut (max %.1f m away)" % worst)

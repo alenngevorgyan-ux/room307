@@ -45,6 +45,7 @@ const LEAD_MAX := 1.1
 const SETTLE_BACK := 0.55
 const RECOMPOSE_TIME := 0.62  # spring time while travelling to a new composition
 const RECOMPOSE_SEC := 1.4
+const CUT_DIST := 25.0        # farther than this is another room: cut, never fly across the map
 var _recompose := 0.0
 var _last_target := Vector3.INF     # after a cut, start slightly wider and ease into the composition
 var _faded: Dictionary = {}      # occluder body -> current fade
@@ -242,8 +243,9 @@ func _desired() -> Dictionary:
 			if partner:
 				mid = (hp + partner.global_position) * 0.5
 				_last_mid = mid
-			else:
-				mid = _last_mid
+			elif _last_mid.distance_to(hp) < 6.0:
+				mid = _last_mid   # the partner just left: hold the pair framing while it eases out
+			# (a partner left behind in another room never pulls the frame across the map)
 			var shift := (mid - hp) * (0.8 if is_follow else 0.0)
 			shift.y = 0.0
 			pos += shift * _social
@@ -342,6 +344,10 @@ func _process(delta: float) -> void:
 	# rig "damp" (data) maps onto the spring time; cines settle a touch quicker
 	var k := 6.0 / maxf(0.5, float(d.damp))
 	var pt := POS_TIME * k * (0.8 if not _override.is_empty() else 1.0)
+	# the target is in another room (teleport, scene jump): that is a cut, not a camera move
+	if (d.pos as Vector3).distance_to(_pos) > CUT_DIST:
+		snap(false)
+		return
 	# a new composition (rig / sub-zone change): the target jumps; travel there calmly
 	if _last_target != Vector3.INF and (d.pos as Vector3).distance_to(_last_target) > 0.8:
 		_recompose = RECOMPOSE_SEC
