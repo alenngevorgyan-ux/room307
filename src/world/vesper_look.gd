@@ -79,7 +79,43 @@ const MATS := {
 	"crate": [1, "5a4630", "3e2f20", 2.5, 0.5, 0.8, 0.0, 0.1, 0.0],
 	"ceramic_dark": [0, "2a2622", "2a2622", 1.0, 0.0, 0.5, 0.0, 0.06, 0.0],
 	"object": [0, "cbbb9a", "cbbb9a", 1.0, 0.0, 0.7, 0.0, 0.04, 0.0],
+	# FINAL VISUAL LANGUAGE V1 profiles (MATERIAL_LIBRARY.md); used only in VesperArt rollout zones
+	"v_wood_floor": [1, "3a2a1e", "4d3826", 1.0, 0.35, 0.62, 0.0, 0.05, 0.0],
+	"v_wood_dark": [0, "33241a", "33241a", 1.0, 0.0, 0.6, 0.0, 0.04, 0.0],
+	"v_wood_panel": [7, "34241a", "24170e", 1.0, 0.4, 0.58, 0.0, 0.04, 0.0],
+	"v_marble_dark": [0, "24403a", "24403a", 1.0, 0.0, 0.36, 0.0, 0.03, 0.0],
+	"v_marble_cream": [0, "7d766a", "7d766a", 1.0, 0.0, 0.5, 0.0, 0.03, 0.0],
+	"v_brass_aged": [0, "8a6c3e", "8a6c3e", 1.0, 0.0, 0.5, 0.85, 0.03, 0.0],
+	"v_oxblood": [0, "5a2a26", "5a2a26", 1.0, 0.0, 0.75, 0.0, 0.04, 0.0],
+	"v_bar_wall": [3, "2f3f35", "28362d", 1.0, 0.25, 0.88, 0.0, 0.05, 0.0],
 }
+
+## Authored detail layer per final profile: [map, repeats/m, mix, dark, light, wear, wear colour,
+## roughness deviation, bare-metal loss under patina]. Maps: assets/vesper/textures (tools/bake_vesper_textures.gd).
+const DETAIL := {
+	"v_wood_floor": ["wood", 0.55, 0.7, "33251b", "6a5038", 0.35, "7a6048", 0.25, 0.0],
+	"v_wood_dark": ["wood", 1.0, 0.85, "281b16", "55402c", 0.3, "6a5038", 0.24, 0.0],
+	"v_wood_panel": ["wood", 0.8, 0.6, "281b16", "4d3a28", 0.25, "5f4832", 0.2, 0.0],
+	"v_marble_dark": ["marble", 0.7, 0.85, "1f3832", "5a6b60", 0.45, "8c978d", 0.16, 0.0],
+	"v_marble_cream": ["marble", 0.5, 0.85, "615c52", "9c927c", 0.35, "b5ab95", 0.2, 0.0],
+	"v_brass_aged": ["brush", 1.5, 0.8, "57422b", "b59a5e", 0.4, "3d3426", 0.27, 0.45],
+	"v_oxblood": ["brush", 1.2, 0.7, "3c2023", "70403b", 0.25, "7a4a42", 0.2, 0.0],
+	"v_bar_wall": ["brush", 0.6, 0.55, "26342c", "3e5246", 0.15, "4a5a4e", 0.08, 0.0],
+}
+const DETAIL_MAPS := {
+	"wood": preload("res://assets/vesper/textures/wood.png"),
+	"marble": preload("res://assets/vesper/textures/marble.png"),
+	"brush": preload("res://assets/vesper/textures/brush.png"),
+}
+## Old material names -> final profiles inside rollout zones (old names keep working everywhere else).
+const ART_ALIAS := {
+	"timber_floor": "v_wood_floor", "bar_wall": "v_bar_wall", "walnut_wainscot": "v_wood_panel",
+	"walnut": "v_wood_dark", "walnut_panel": "v_wood_panel", "door_timber": "v_wood_panel",
+	"marble_green": "v_marble_dark", "marble_cream": "v_marble_cream", "brass": "v_brass_aged",
+	"oxblood": "v_oxblood",
+}
+## The zone currently being skinned/dressed (set only while VesperLook/VesperDress build a zone).
+static var art_zone := ""
 
 ## Light colour temperature per wing and an energy scale.
 const WING_LIGHT := {
@@ -116,7 +152,13 @@ static func wing(zone_id: String) -> String:
 	return String(ZONES.get(zone_id, {}).get("wing", "PUBLIC"))
 
 
+static func zone_on_art(zone_id: String) -> bool:
+	return VesperArt.zone_on(zone_id)
+
+
 static func material(name: String, tint: Variant = null) -> ShaderMaterial:
+	if art_zone != "" and ART_ALIAS.has(name) and VesperArt.zone_on(art_zone):
+		name = String(ART_ALIAS[name])
 	var key := name + ("" if tint == null else "|" + (tint as Color).to_html())
 	if _cache.has(key):
 		return _cache[key]
@@ -137,6 +179,17 @@ static func material(name: String, tint: Variant = null) -> ShaderMaterial:
 	m.set_shader_parameter("metal", float(p[6]))
 	m.set_shader_parameter("variation", float(p[7]))
 	m.set_shader_parameter("wet", float(p[8]))
+	if DETAIL.has(name):
+		var d: Array = DETAIL[name]
+		m.set_shader_parameter("detail_tex", DETAIL_MAPS[String(d[0])])
+		m.set_shader_parameter("detail_scale", float(d[1]))
+		m.set_shader_parameter("detail_mix", float(d[2]))
+		m.set_shader_parameter("detail_dark", Color(String(d[3])) if tint == null else (tint as Color).darkened(0.3))
+		m.set_shader_parameter("detail_light", Color(String(d[4])) if tint == null else (tint as Color).lightened(0.15))
+		m.set_shader_parameter("wear_amount", float(d[5]))
+		m.set_shader_parameter("wear_color", Color(String(d[6])))
+		m.set_shader_parameter("rough_dev", float(d[7]))
+		m.set_shader_parameter("metal_wear", float(d[8]))
 	_cache[key] = m
 	return m
 
@@ -192,6 +245,7 @@ static func skin_zone(z: Zone) -> void:
 	var zd: Dictionary = ZONES.get(z.zone_id, {})
 	if zd.is_empty():
 		return
+	art_zone = z.zone_id
 	var w := String(zd.wing)
 	var geo: Node = z.get_node_or_null("Geometry")
 	if geo:
@@ -200,6 +254,7 @@ static func skin_zone(z: Zone) -> void:
 	for did in z.doors:
 		_skin_door(z.doors[did], w)
 	_relight(z, w)
+	art_zone = ""
 
 
 static func _mesh_of(n: Node) -> MeshInstance3D:
@@ -348,6 +403,10 @@ static func _relight(z: Zone, w: String) -> void:
 		o.light_energy *= float(wl[1])
 		o.omni_range *= 1.15
 		o.omni_attenuation = 1.3
+		if VesperArt.zone_on(z.zone_id):
+			# final language: softer falloff so the warm pools reach floor, stools and faces (no new lights)
+			o.omni_range *= 1.1
+			o.omni_attenuation = 0.95
 		o.light_specular = 0.6
 		if not cool:   # warm practicals lose dominance to the morning (VesperTime)
 			o.set_meta("base_energy", o.light_energy)
@@ -455,6 +514,8 @@ static func _sconces(z: Zone, w: String) -> void:
 		shade.bottom_radius = 0.11
 		shade.height = 0.16
 		_mesh(root, shade, emissive(WARM_SHADE, 2.4), Vector3(x, y + 0.08, 0.13))
+		if zone_on_art(z.zone_id):
+			continue   # final language (BAR): glow-only sconces keep the floor under the 16-light cap
 		var l := OmniLight3D.new()
 		l.position = Vector3(x, y + 0.1, 0.35)
 		l.light_color = Color(1.0, 0.68, 0.4)

@@ -11,6 +11,7 @@ static func apply(world: Node) -> void:
 		var w := VesperLook.wing(zid)
 		if not VesperLook.ZONES.has(zid):
 			continue
+		VesperLook.art_zone = zid   # final material profiles apply inside VesperArt rollout zones
 		_walls(z, w)
 		var geo: Node = z.get_node_or_null("Geometry")
 		if geo:
@@ -22,6 +23,9 @@ static func apply(world: Node) -> void:
 		for did in z.doors:
 			_door_sign(z.doors[did], w)
 		_foreground(z, w)
+		if zid == "BAR" and VesperArt.zone_on(zid):
+			_bar_backdrop(z)
+	VesperLook.art_zone = ""
 
 
 # ================================================================== helpers
@@ -90,10 +94,10 @@ static func mat(n: String) -> Material:
 
 
 ## A warm table lamp: brass stem, cream shade glowing, a small pool of light.
-static func table_lamp(parent: Node3D, top: Vector3, light := true) -> void:
-	cyl(parent, 0.05, 0.08, 0.04, top + Vector3(0, 0.02, 0), mat("brass"))
-	cyl(parent, 0.012, 0.012, 0.32, top + Vector3(0, 0.18, 0), mat("brass"), 8)
-	cyl(parent, 0.09, 0.15, 0.18, top + Vector3(0, 0.38, 0), VesperLook.emissive(Color(0.95, 0.78, 0.52), 2.2))
+static func table_lamp(parent: Node3D, top: Vector3, light := true, glow := 2.2, size := 1.0) -> void:
+	cyl(parent, 0.05 * size, 0.08 * size, 0.04, top + Vector3(0, 0.02, 0), mat("brass"))
+	cyl(parent, 0.012, 0.012, 0.32 * size, top + Vector3(0, 0.18 * size, 0), mat("brass"), 8)
+	cyl(parent, 0.09 * size, 0.15 * size, 0.18 * size, top + Vector3(0, 0.38 * size, 0), VesperLook.emissive(Color(0.95, 0.78, 0.52), glow))
 	if light:
 		lamp_light(parent, top + Vector3(0, 0.45, 0), Color(1.0, 0.7, 0.42), 0.7, 2.6)
 
@@ -255,6 +259,8 @@ static func _decorate(z: Zone, n: Node3D, w: String) -> void:
 	var zid := z.zone_id
 	if k == "glass" and not id.contains("jet") and s.y > 0.5:
 		_window(z, n, s, w)
+		return
+	if zid == "BAR" and VesperArt.zone_on(zid) and _bar_kit(n, vis, id, s, top):
 		return
 	match id:
 		"counter":
@@ -418,6 +424,10 @@ static func _window(z: Zone, n: Node3D, s: Vector3, w: String) -> void:
 	var into := Vector3(0, 0, 0.9) if horiz else (Vector3(0.9, 0, 0) if n.position.x < z.size.x / 2.0 else Vector3(-0.9, 0, 0))
 	if horiz and n.position.z > z.size.y / 2.0:
 		into = Vector3(0, 0, -0.9)
+	# final language (BAR): only the middle pane keeps its cool spill; the two side spills light the
+	# hidden back-bar corner and their light slots go to the warm downlights over the guest floor
+	if z.zone_id == "BAR" and VesperArt.zone_on("BAR") and String(n.get_meta("def").get("id", "")) != "window_m":
+		return
 	lamp_light(vis, into, Color(0.55, 0.68, 0.9), 0.6 + 0.12 * len, maxf(3.0, len * 0.9), "vesper_window_light")
 
 
@@ -435,6 +445,15 @@ static func _foreground(z: Zone, w: String) -> void:
 	var x := 2.0 + fmod(float(z.zone_id.hash() % 7), 3.0)
 	while x < z.size.x - 1.0:
 		match w:
+			"PUBLIC" when VesperArt.zone_on(z.zone_id):
+				# final language: a club chair seen from behind (rounded back, arms), deep oxblood
+				var chair := VesperLook.material("dark", Color(0.075, 0.04, 0.038))
+				box(root, Vector3(0.92, 0.42, 0.62), Vector3(x, 0.21, y0), chair)
+				var back := cyl(root, 0.3, 0.3, 0.92, Vector3(x, 0.6, y0 + 0.2), chair, 16)
+				back.rotation_degrees = Vector3(0, 0, 90)
+				for ax in [-0.42, 0.42]:
+					var arm := cyl(root, 0.1, 0.1, 0.62, Vector3(x + ax, 0.5, y0), chair, 10)
+					arm.rotation_degrees = Vector3(90, 0, 0)
 			"PUBLIC":
 				# the back of a club chair / a lamp shade, low in frame
 				box(root, Vector3(0.9, 0.9, 0.5), Vector3(x, 0.45, y0), fg)
@@ -446,3 +465,297 @@ static func _foreground(z: Zone, w: String) -> void:
 			"EXTERIOR":
 				cyl(root, 0.12, 0.12, 1.1, Vector3(x, 0.55, y0), fg, 10)     # bollard
 		x += step
+
+
+# ================================================================== FINAL VISUAL LANGUAGE V1 — BAR hero kit
+# Visual meshes only, inside each prop's original footprint: collision bodies, nav, markers and the
+# occluder contract are untouched (none of these props is tall enough to be a camera occluder).
+
+static var _contact_mat: StandardMaterial3D = null
+static var _bottle_mesh: Mesh = null
+static var _bottle_mat: ShaderMaterial = null
+
+
+## Soft contact shadow: a flat radial card on the floor (no Decal, no physics).
+static func contact(parent: Node3D, size: Vector2, pos: Vector3, alpha := 0.45) -> MeshInstance3D:
+	if _contact_mat == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(0, 0, 0, 1))
+		g.set_color(1, Color(0, 0, 0, 0))
+		g.add_point(0.45, Color(0, 0, 0, 0.55))
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 64
+		t.height = 64
+		_contact_mat = StandardMaterial3D.new()
+		_contact_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_contact_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_contact_mat.albedo_texture = t
+		_contact_mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+		_contact_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var q := QuadMesh.new()
+	q.size = size
+	var mi := MeshInstance3D.new()
+	mi.mesh = q
+	mi.material_override = _contact_mat
+	mi.transparency = 1.0 - alpha
+	mi.rotation_degrees = Vector3(-90, 0, 0)
+	mi.position = pos
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(mi)
+	return mi
+
+
+static var _glint_mat: StandardMaterial3D = null
+
+
+## A blurred warm reflection card on the floor (additive, unshaded): suggests a polished surface.
+static func glint(parent: Node3D, size: Vector2, pos: Vector3, c: Color, strength: float) -> MeshInstance3D:
+	if _glint_mat == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(1, 1, 1, 1))
+		g.set_color(1, Color(1, 1, 1, 0))
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		t.width = 64
+		t.height = 64
+		_glint_mat = StandardMaterial3D.new()
+		_glint_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_glint_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_glint_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		_glint_mat.albedo_texture = t
+		_glint_mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+		_glint_mat.vertex_color_use_as_albedo = false
+	var q := QuadMesh.new()
+	q.size = size
+	var mi := MeshInstance3D.new()
+	mi.mesh = q
+	var m := _glint_mat.duplicate() as StandardMaterial3D
+	m.albedo_color = Color(c.r * strength, c.g * strength, c.b * strength, 1.0)
+	mi.material_override = m
+	mi.rotation_degrees = Vector3(-90, 0, 0)
+	mi.position = pos
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(mi)
+	return mi
+
+
+static func _bar_kit(n: Node3D, vis: Node3D, id: String, s: Vector3, top: Vector3) -> bool:
+	var floor_y := -s.y / 2.0 + 0.006
+	match id:
+		"counter":
+			(vis.get_child(0) as MeshInstance3D).material_override = mat("walnut_panel")
+			# quiet green marble top with a rounded walnut nose; warm strip under the lip
+			box(vis, Vector3(s.x + 0.12, 0.05, s.z + 0.16), top + Vector3(0, 0.025, 0.02), mat("marble_green"))
+			var nose := cyl(vis, 0.034, 0.034, s.x + 0.12, Vector3(0, s.y / 2.0 + 0.012, s.z / 2.0 + 0.1), mat("walnut"), 12)
+			nose.rotation_degrees = Vector3(0, 0, 90)
+			box(vis, Vector3(s.x, 0.1, 0.02), Vector3(0, -s.y / 2.0 + 0.05, s.z / 2.0 + 0.004), mat("dark"))   # kick recess
+			var rail := cyl(vis, 0.025, 0.025, s.x, Vector3(0, -s.y / 2.0 + 0.22, s.z / 2.0 + 0.18), mat("brass"), 10)
+			rail.rotation_degrees = Vector3(0, 0, 90)
+			for i in 6:
+				box(vis, Vector3(0.025, 0.05, 0.18), Vector3(-s.x / 2.0 + 0.5 + i * (s.x - 1.0) / 5.0, -s.y / 2.0 + 0.22, s.z / 2.0 + 0.09), mat("brass"))
+			# two shaded counter lamps (glow only) and one warm fill at face height for the guests
+			for x in [-2.6, 2.4]:
+				table_lamp(vis, top + Vector3(x, 0.05, 0.12), false, 0.9, 0.75)
+			lamp_light(vis, Vector3(0, 1.05, s.z / 2.0 + 0.9), Color(1.0, 0.74, 0.5), 0.55, 3.6)
+			# polished-floor suggestion: soft warm streaks below the counter lamps (no mirror, no probe)
+			for x in [-2.6, 2.4]:
+				glint(vis, Vector2(0.45, 1.3), Vector3(x, -s.y / 2.0 + 0.008, s.z / 2.0 + 0.85), Color(1.0, 0.7, 0.4), 0.16)
+			contact(vis, Vector2(s.x + 0.4, 0.55), Vector3(0, floor_y, s.z / 2.0 + 0.12), 0.5)
+			return true
+		"back_bar":
+			(vis.get_child(0) as MeshInstance3D).material_override = mat("walnut_panel")
+			box(vis, Vector3(s.x, 0.04, s.z + 0.04), top + Vector3(0, 0.02, 0), mat("marble_green"))
+			box(vis, Vector3(s.x, 0.014, 0.014), top + Vector3(0, -0.01, s.z / 2.0 + 0.022), mat("brass"))
+			contact(vis, Vector2(s.x + 0.3, 0.45), Vector3(0, floor_y, s.z / 2.0 + 0.08), 0.45)
+			return true
+		"bottles":
+			_bar_bottle_wall(vis, s)
+			return true
+		"booth_1", "booth_2", "booth_3":
+			box(vis, Vector3(s.x - 0.1, 0.12, s.z * 0.7), Vector3(0, -s.y / 2.0 + 0.5, 0.05), mat("oxblood"))
+			var roll := cyl(vis, 0.07, 0.07, s.x - 0.1, Vector3(0, -s.y / 2.0 + 0.5, 0.05 + s.z * 0.35), mat("oxblood"), 12)
+			roll.rotation_degrees = Vector3(0, 0, 90)
+			var pads := 6
+			for i in pads:
+				var px := -s.x / 2.0 + (i + 0.5) * s.x / pads
+				box(vis, Vector3(s.x / pads - 0.03, 0.46, 0.08), Vector3(px, s.y / 2.0 - 0.28, -s.z / 2.0 + 0.2), mat("oxblood"))
+			box(vis, Vector3(s.x, 0.05, 0.24), Vector3(0, s.y / 2.0 + 0.0, -s.z / 2.0 + 0.1), mat("walnut"))
+			contact(vis, Vector2(s.x + 0.25, s.z + 0.25), Vector3(0, floor_y, 0), 0.4)
+			return true
+		"booth_table", "guest_table":
+			box(vis, Vector3(s.x + 0.06, 0.04, s.z + 0.06), top + Vector3(0, 0.02, 0), mat("walnut"))
+			box(vis, Vector3(s.x + 0.07, 0.012, s.z + 0.07), top + Vector3(0, -0.004, 0), mat("brass"))
+			table_lamp(vis, top + Vector3(0, 0.04, 0), id == "guest_table")   # booth lamp: glow only (light cap)
+			contact(vis, Vector2(s.x + 0.35, s.z + 0.35), Vector3(0, floor_y, 0), 0.4)
+			return true
+		"stool_1", "stool_2", "stool_3", "stool_4", "stool_5", "stool_6":
+			vis.get_child(0).visible = false
+			cyl(vis, 0.205, 0.2, 0.06, top - Vector3(0, 0.045, 0), mat("oxblood"), 18)
+			sphere(vis, 0.205, 0.09, top - Vector3(0, 0.02, 0), mat("oxblood"))   # crowned cushion
+			cyl(vis, 0.19, 0.19, 0.016, top - Vector3(0, 0.082, 0), mat("brass"), 18)
+			cyl(vis, 0.028, 0.034, s.y - 0.12, Vector3(0, -0.03, 0), mat("brass"), 10)
+			cyl(vis, 0.07, 0.2, 0.05, Vector3(0, -s.y / 2.0 + 0.025, 0), mat("brass"), 18)
+			cyl(vis, 0.155, 0.155, 0.014, Vector3(0, -s.y / 2.0 + 0.3, 0), mat("brass"), 18)   # foot ring
+			contact(vis, Vector2(0.62, 0.62), Vector3(0, floor_y, 0), 0.55)
+			return true
+	return false
+
+
+## Two warm ceiling downlights over the guest floor (they take the slots of two hidden window spills):
+## pools on floor, stools and standing guests in ordinary gameplay view.
+static func _bar_downlights(z: Zone) -> void:
+	var root := look_root(z)
+	for x in [4.6, 10.4]:
+		var sp := SpotLight3D.new()
+		sp.position = Vector3(x, 3.45, 7.6)
+		sp.rotation_degrees = Vector3(-90, 0, 0)
+		sp.light_color = Color(1.0, 0.72, 0.46)
+		sp.light_energy = 2.2
+		sp.spot_range = 5.0
+		sp.spot_angle = 48.0
+		sp.spot_angle_attenuation = 0.8
+		sp.spot_attenuation = 0.7
+		# selected shadowed key: measured on the target GL machine before enabling (debug probe file only)
+		sp.shadow_enabled = OS.is_debug_build() and FileAccess.file_exists("/tmp/room307_bar_shadow") and x < 5.0
+		sp.set_meta("base_energy", sp.light_energy)
+		sp.add_to_group("vesper_practical")
+		root.add_child(sp)
+		cyl(root, 0.06, 0.08, 0.04, Vector3(x, 3.58, 7.6), VesperLook.emissive(Color(1.0, 0.85, 0.62), 1.6))
+
+
+## Shelving with grouped bottles (one MultiMesh, one draw call) in front of the backlit panel.
+static func _bar_bottle_wall(vis: Node3D, s: Vector3) -> void:
+	vis.get_child(0).visible = false
+	var h := 1.6
+	var rows := 3
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3071
+	var xf: Array = []
+	var cols: Array = []
+	var pal := [Color(0.62, 0.36, 0.13), Color(0.45, 0.24, 0.1), Color(0.2, 0.32, 0.17), Color(0.58, 0.56, 0.48), Color(0.36, 0.1, 0.07), Color(0.7, 0.5, 0.22)]
+	for r in rows:
+		var y := -h / 2.0 + 0.12 + r * (h / rows)
+		box(vis, Vector3(s.x, 0.03, s.z + 0.08), Vector3(0, y - 0.02, 0), mat("walnut"))
+		box(vis, Vector3(s.x, 0.014, 0.012), Vector3(0, y - 0.012, s.z / 2.0 + 0.045), mat("brass"))
+		var x := -s.x / 2.0 + 0.1
+		while x < s.x / 2.0 - 0.1:
+			var group := rng.randi_range(3, 7)
+			var c: Color = pal[rng.randi() % pal.size()]
+			var tall := rng.randf_range(0.85, 1.25)
+			for b in group:
+				if x > s.x / 2.0 - 0.08:
+					break
+				var sc := tall * rng.randf_range(0.94, 1.06)
+				xf.append(Transform3D(Basis().scaled(Vector3(1, sc, 1)), Vector3(x, y, rng.randf_range(-0.03, 0.03))))
+				cols.append(c.lerp(pal[rng.randi() % pal.size()], 0.15))
+				x += 0.085
+			x += rng.randf_range(0.08, 0.3)
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.use_colors = true
+	mm.mesh = _bottle()
+	mm.instance_count = xf.size()
+	for i in xf.size():
+		mm.set_instance_transform(i, xf[i])
+		mm.set_instance_color(i, cols[i])
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = mm
+	mmi.material_override = _bottle_material()
+	mmi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	vis.add_child(mmi)
+	# backlit panel: warm at the counter, falling off toward the ceiling
+	for b in 3:
+		box(vis, Vector3(s.x, 0.5, 0.02), Vector3(0, 0.25 + b * 0.5, -s.z / 2.0 - 0.02), VesperLook.emissive(Color(0.82, 0.55, 0.32), [0.36, 0.19, 0.08][b]))
+	lamp_light(vis, Vector3(0, 1.7, -0.15), Color(1.0, 0.62, 0.3), 1.0, 4.0)
+
+
+static func _bottle() -> Mesh:
+	if _bottle_mesh:
+		return _bottle_mesh
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var body := CylinderMesh.new()
+	body.top_radius = 0.034
+	body.bottom_radius = 0.036
+	body.height = 0.2
+	body.radial_segments = 10
+	body.rings = 1
+	var shoulder := CylinderMesh.new()
+	shoulder.top_radius = 0.014
+	shoulder.bottom_radius = 0.034
+	shoulder.height = 0.05
+	shoulder.radial_segments = 10
+	shoulder.rings = 1
+	var neck := CylinderMesh.new()
+	neck.top_radius = 0.012
+	neck.bottom_radius = 0.013
+	neck.height = 0.075
+	neck.radial_segments = 8
+	neck.rings = 1
+	st.append_from(body, 0, Transform3D(Basis(), Vector3(0, 0.1, 0)))
+	st.append_from(shoulder, 0, Transform3D(Basis(), Vector3(0, 0.225, 0)))
+	st.append_from(neck, 0, Transform3D(Basis(), Vector3(0, 0.2875, 0)))
+	_bottle_mesh = st.commit()
+	return _bottle_mesh
+
+
+## Subdued glass: dark core, colour from the backlit liquid, a painted bright rim — no transparency.
+static func _bottle_material() -> ShaderMaterial:
+	if _bottle_mat:
+		return _bottle_mat
+	var sh := Shader.new()
+	sh.code = """shader_type spatial;
+render_mode diffuse_burley, specular_schlick_ggx;
+uniform float glow = 0.5;
+void fragment() {
+	float rim_f = pow(1.0 - clamp(dot(NORMAL, VIEW), 0.0, 1.0), 3.0);
+	ALBEDO = COLOR.rgb * 0.3;
+	ROUGHNESS = 0.24;
+	SPECULAR = 0.5;
+	EMISSION = COLOR.rgb * glow * (0.3 + 0.7 * rim_f) + vec3(1.0, 0.86, 0.62) * rim_f * 0.1;
+}"""
+	_bottle_mat = ShaderMaterial.new()
+	_bottle_mat.shader = sh
+	return _bottle_mat
+
+
+## The BAR opening looks from behind the counter toward the camera side of the room, which the follow
+## rig never shows. This wall exists only while that fixed rig is live (VesperArt.tick).
+static func _bar_backdrop(z: Zone) -> void:
+	var root := look_root(z)
+	var bd := Node3D.new()
+	bd.name = "OpeningBackdrop"
+	bd.set_meta("rig", "BAR:start")
+	bd.add_to_group("vesper_rig_only")
+	bd.visible = false
+	root.add_child(bd)
+	var zz := z.size.y + 1.65
+	var cx := z.size.x / 2.0
+	_bar_downlights(z)
+	box(bd, Vector3(z.size.x - 1.0, 0.02, 1.8), Vector3(cx, -0.01, z.size.y + 0.85), mat("timber_floor"))
+	box(bd, Vector3(z.size.x - 1.0, 3.6, 0.1), Vector3(cx, 1.8, zz), mat("bar_wall"))
+	box(bd, Vector3(z.size.x - 1.0, 1.0, 0.06), Vector3(cx, 0.5, zz - 0.07), mat("walnut_wainscot"))
+	box(bd, Vector3(z.size.x - 1.0, 0.03, 0.05), Vector3(cx, 1.02, zz - 0.09), mat("brass"))
+	box(bd, Vector3(z.size.x - 2.0, 0.5, 0.25), Vector3(cx, 0.78, zz - 0.25), mat("oxblood"))   # banquette backs
+	for x in [cx - 3.6, cx, cx + 3.6]:
+		box(bd, Vector3(0.12, 0.22, 0.03), Vector3(x, 2.05, zz - 0.07), mat("brass"))
+		cyl(bd, 0.07, 0.11, 0.16, Vector3(x, 2.13, zz - 0.18), VesperLook.emissive(Color(0.95, 0.76, 0.48), 2.2))
+	for x in [cx - 1.8, cx + 1.8]:
+		box(bd, Vector3(1.1, 0.8, 0.03), Vector3(x, 1.75, zz - 0.07), mat("brass"))
+		box(bd, Vector3(1.0, 0.7, 0.03), Vector3(x, 1.75, zz - 0.09), VesperLook.material("night_glass"))
+	lamp_light(bd, Vector3(cx, 2.2, zz - 0.6), Color(1.0, 0.7, 0.42), 0.8, 4.5)
+	# its lamp lights only the backdrop (render layer 2): it never takes one of the 16 per-object light
+	# slots of the room floor or the cast
+	for c in bd.find_children("*", "", true, false):
+		if c is MeshInstance3D:
+			(c as MeshInstance3D).layers = 2
+		elif c is OmniLight3D:
+			(c as OmniLight3D).light_cull_mask = 2
+

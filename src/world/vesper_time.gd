@@ -122,7 +122,7 @@ static func _apply(world: Node) -> void:
 		o.light_color = cur.spill
 		o.light_energy = float(o.get_meta("base_energy", 1.0)) * float(cur.spill_e)
 	for l in world.get_tree().get_nodes_in_group("vesper_practical"):
-		var o := l as OmniLight3D
+		var o := l as Light3D   # omni lamps and the BAR downlights alike
 		o.light_energy = float(o.get_meta("base_energy", 1.0)) * float(cur.lamps) * float(o.get_meta("flicker", 1.0))
 	var e: Environment = world.env.environment
 	e.fog_light_color = cur.fog

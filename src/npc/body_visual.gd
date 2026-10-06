@@ -82,6 +82,8 @@ var _mood_amp := 1.0
 var _hand_targets: Array = [Vector3.ZERO, Vector3.ZERO]
 var _hand_tween: Tween
 var _mats: Dictionary = {}
+var _fv := false            # FINAL VISUAL LANGUAGE V1 proxy refinement (VesperArt.characters_on)
+static var _contact_mat: StandardMaterial3D = null
 
 
 static func proxy_spec(id: String) -> Dictionary:
@@ -108,7 +110,7 @@ func _mat(hex: String, rough: float = 0.82) -> StandardMaterial3D:
 	m.albedo_color = c
 	m.roughness = rough
 	m.rim_enabled = true        # CIR-25D: a thin rim separates every character from the room
-	m.rim = 0.45
+	m.rim = 0.12 if _fv else 0.45   # final language: motivated light separates, not a halo
 	m.rim_tint = 0.55
 	_mats[key] = m
 	return m
@@ -164,6 +166,7 @@ func _capsule(parent: Node3D, r: float, h: float, mat: Material) -> MeshInstance
 ## `c`, `scale_f`, `extra` are the graybox inputs (kept for compatibility / unknown characters).
 func build(c: Color, scale_f: float = 1.0, extra: Dictionary = {}) -> void:
 	_scale = scale_f
+	_fv = VesperArt.characters_on()
 	spec = proxy_spec(proxy_id).duplicate(true)
 	if spec.is_empty():
 		# no canon entry: a neutral figure tinted with the graybox colour so it stays distinct
@@ -219,6 +222,9 @@ func build(c: Color, scale_f: float = 1.0, extra: Dictionary = {}) -> void:
 		else:
 			var leg := _capsule(pivot, leg_w, _hip_y + 0.02, lmat)
 			leg.position = Vector3(0, -_hip_y / 2.0, 0)
+			if _fv:   # trouser hem breaking over the shoe (EL: the wider canon hem)
+				var flare := 1.3 if lstyle == "trousers_wide" else 1.12
+				_cyl(pivot, leg_w * 0.98, leg_w * flare, 0.17 * k, lmat, Vector3(0, -_hip_y + 0.2 * k, 0))
 		_box(pivot, Vector3(0.11 * k, 0.085, 0.27 * k), shoes, Vector3(0, -_hip_y + 0.045, -0.05))
 		if lstyle == "slip_dress":   # heeled ankle boots
 			_cyl(pivot, _limb * 1.0, _limb * 1.1, 0.16, shoes, Vector3(0, -_hip_y + 0.12, 0))
@@ -276,9 +282,12 @@ func build(c: Color, scale_f: float = 1.0, extra: Dictionary = {}) -> void:
 	_mesh(head, nose, skin, Vector3(0, -head_r * 0.08, -head_r * 0.98), Vector3(deg_to_rad(-90), 0, 0))
 	var eye := _mat("1a1512", 0.3)
 	var brow := _mat(String(spec.get("hair", {}).get("color", "201a16")))
-	for side in [-1.0, 1.0]:
-		_sphere(head, head_r * 0.075, eye, Vector3(side * head_r * 0.34, head_r * 0.1, -head_r * 0.9))
-		_box(head, Vector3(head_r * 0.34, head_r * 0.05, head_r * 0.08), brow, Vector3(side * head_r * 0.34, head_r * 0.26, -head_r * 0.9))
+	if _fv:
+		_proxy_face(head, head_r, skin, eye, brow)
+	else:
+		for side in [-1.0, 1.0]:
+			_sphere(head, head_r * 0.075, eye, Vector3(side * head_r * 0.34, head_r * 0.1, -head_r * 0.9))
+			_box(head, Vector3(head_r * 0.34, head_r * 0.05, head_r * 0.08), brow, Vector3(side * head_r * 0.34, head_r * 0.26, -head_r * 0.9))
 	_hair(head, head_r, spec.get("hair", {}))
 	# ---- arms: shoulder balls + two segments that follow the hand targets every frame
 	_shoulder_l = Vector3(-sh_w / 2.0 + 0.03, sh_y - 0.05 - o.y, 0)
@@ -286,7 +295,7 @@ func build(c: Color, scale_f: float = 1.0, extra: Dictionary = {}) -> void:
 	var sleeve := jmat if jstyle in JACKETS_SLEEVED else top
 	var fore := skin if acc.has("sleeves_rolled") else sleeve
 	for side in [-1.0, 1.0]:
-		_sphere(upper, _limb * 1.08, sleeve, _shoulder_l if side < 0 else _shoulder_r)
+		_sphere(upper, _limb * (0.98 if _fv else 1.08), sleeve, _shoulder_l if side < 0 else _shoulder_r)
 		var ua := _capsule(upper, _limb * 1.12, _seg, sleeve)
 		var fa := _capsule(upper, _limb, _seg, fore)
 		if side < 0:
@@ -295,6 +304,9 @@ func build(c: Color, scale_f: float = 1.0, extra: Dictionary = {}) -> void:
 			_arm_r = [ua, fa]
 	hand_l = _hand(skin, k)
 	hand_r = _hand(skin, k)
+	if _fv:
+		_proxy_garment(upper, o, jstyle, jmat, top, sleeve, sh_w, depth, sh_y, t_h, k)
+		_proxy_contact(k)
 	_accessories(acc, upper, o, sh_w, hip_w, depth, sh_y, chest_y, head_r, k)
 	# resting posture
 	var slump := float(post.get("slump", 0.0))
@@ -303,7 +315,84 @@ func build(c: Color, scale_f: float = 1.0, extra: Dictionary = {}) -> void:
 	_shoulder_l.z += 0.03 * slump
 	_shoulder_r.z += 0.03 * slump
 	_rng.seed = hash(proxy_id) ^ get_instance_id()
+	if _fv and proxy_id == "hero":
+		_rim_only_on_self()
 	set_pose("rest", true)
+
+
+## FINAL VISUAL LANGUAGE V1 — temporary proxy bridge (NOT final faces): planes the eye reads at
+## gameplay distance — jaw/cheek mass, brow ridge, upper-lid lines instead of bead eyes, a mouth line.
+func _proxy_face(hd: Node3D, r: float, skin: Material, eye: Material, brow: Material) -> void:
+	_sphere(hd, r * 0.82, skin, Vector3(0, -r * 0.38, -r * 0.14), Vector3(0.92, 0.78, 0.95))   # jaw / cheeks
+	_sphere(hd, r * 0.5, skin, Vector3(0, r * 0.2, -r * 0.62), Vector3(1.55, 0.42, 0.7))       # brow ridge
+	var iris := _mat("2a1d16", 0.4)
+	var lip := _mat(Color(String(spec.get("skin", "c69a7c"))).darkened(0.28).to_html(false), 0.7)
+	for side in [-1.0, 1.0]:
+		_box(hd, Vector3(r * 0.3, r * 0.06, r * 0.05), eye, Vector3(side * r * 0.34, r * 0.075, -r * 0.93), Vector3(0, 0, side * -0.08))
+		_sphere(hd, r * 0.052, iris, Vector3(side * r * 0.33, r * 0.02, -r * 0.9))
+		_box(hd, Vector3(r * 0.38, r * 0.08, r * 0.08), brow, Vector3(side * r * 0.35, r * 0.25, -r * 0.92), Vector3(0, 0, side * -0.12))
+	_box(hd, Vector3(r * 0.28, r * 0.035, r * 0.04), lip, Vector3(0, -r * 0.44, -r * 0.9))
+
+
+## Collar / lapel / yoke hierarchy so the garment is not one cylinder (temporary bridge).
+func _proxy_garment(up: Node3D, o: Vector3, jstyle: String, jmat: Material, shirt: Material, sleeve: Material,
+		sh_w: float, depth: float, sh_y: float, t_h: float, k: float) -> void:
+	var front_z := -depth * 0.58 - 0.008
+	var yoke := _cyl(up, _limb * 1.02, _limb * 1.02, sh_w - 0.06, sleeve, Vector3(0, sh_y - 0.06 - o.y, 0))
+	yoke.rotation_degrees = Vector3(0, 0, 90)   # one shoulder line instead of two balls
+	_cyl(up, 0.06 * k, 0.072 * k, 0.05 * k, shirt, Vector3(0, sh_y - o.y + 0.025, -0.01))   # shirt collar
+	match jstyle:
+		"suit_open", "suit_closed", "blazer":
+			_cyl(up, 0.074 * k, 0.088 * k, 0.06 * k, jmat, Vector3(0, sh_y - o.y + 0.012, 0.012))
+			for side in [-1.0, 1.0]:
+				_box(up, Vector3(sh_w * 0.13, t_h * 0.42, 0.016), jmat,
+					Vector3(side * sh_w * 0.13, sh_y - o.y - t_h * 0.2, front_z - 0.006), Vector3(0.06, 0, side * 0.32))
+		"overshirt", "waxed", "bomber", "cardigan", "cropped":
+			_cyl(up, 0.074 * k, 0.088 * k, 0.055 * k, jmat, Vector3(0, sh_y - o.y + 0.012, 0.01))
+			for side in [-1.0, 1.0]:
+				_box(up, Vector3(sh_w * 0.12, 0.08 * k, 0.016), jmat,
+					Vector3(side * sh_w * 0.11, sh_y - o.y - 0.035, front_z - 0.004), Vector3(0.1, 0, side * 0.6))
+
+
+## Soft contact under the feet (follows the body; no Decal, no physics, no gameplay effect).
+func _proxy_contact(k: float) -> void:
+	if _contact_mat == null:
+		var g := Gradient.new()
+		g.set_color(0, Color(0, 0, 0, 1))
+		g.set_color(1, Color(0, 0, 0, 0))
+		g.add_point(0.45, Color(0, 0, 0, 0.5))
+		var t := GradientTexture2D.new()
+		t.gradient = g
+		t.fill = GradientTexture2D.FILL_RADIAL
+		t.fill_from = Vector2(0.5, 0.5)
+		t.fill_to = Vector2(1.0, 0.5)
+		_contact_mat = StandardMaterial3D.new()
+		_contact_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		_contact_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		_contact_mat.albedo_texture = t
+		_contact_mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	var q := QuadMesh.new()
+	q.size = Vector2(0.62, 0.5) * k
+	var mi := MeshInstance3D.new()
+	mi.name = "Contact"
+	mi.mesh = q
+	mi.material_override = _contact_mat
+	mi.transparency = 0.5
+	mi.rotation_degrees = Vector3(-90, 0, 0)
+	mi.position = Vector3(0, 0.012, 0.02)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(mi)
+
+
+## EL's cool rim light (owned by the player node) lit the floor and counter around him; on render
+## layer 3 it now touches only EL's own body (final language: separation, not a moving pool).
+func _rim_only_on_self() -> void:
+	for mi in find_children("*", "MeshInstance3D", true, false):
+		if mi.name != "Contact":
+			(mi as MeshInstance3D).layers = 1 | 4
+	var rim := get_parent().get_node_or_null("Rim") if get_parent() else null
+	if rim is Light3D:
+		(rim as Light3D).light_cull_mask = 4
 
 
 func _hand(skin: Material, k: float) -> MeshInstance3D:
@@ -324,6 +413,13 @@ func _hand(skin: Material, k: float) -> MeshInstance3D:
 func _hair(hd: Node3D, r: float, hdef: Dictionary) -> void:
 	var m := _mat(String(hdef.get("color", "1b1512")), 0.7)
 	match String(hdef.get("style", "short_neat")):
+		"curly_volume" when _fv:   # EL (final language bridge): one cap + a few shaped curl clumps
+			_sphere(hd, r * 1.08, m, Vector3(0, r * 0.3, r * 0.08), Vector3(1.04, 0.84, 1.08))
+			_sphere(hd, r * 0.62, m, Vector3(-r * 0.32, r * 0.5, -r * 0.6), Vector3(1.15, 0.62, 0.9))   # fringe L
+			_sphere(hd, r * 0.55, m, Vector3(r * 0.36, r * 0.42, -r * 0.66), Vector3(1.1, 0.6, 0.85))   # fringe R (lower)
+			_sphere(hd, r * 0.6, m, Vector3(-r * 0.78, r * 0.3, r * 0.05), Vector3(0.7, 1.0, 1.15))     # side L
+			_sphere(hd, r * 0.6, m, Vector3(r * 0.8, r * 0.28, r * 0.08), Vector3(0.7, 1.0, 1.15))      # side R
+			_sphere(hd, r * 0.72, m, Vector3(0, r * 0.62, r * 0.42), Vector3(1.25, 0.75, 1.0))          # crown
 		"curly_volume":   # EL: loose dark curls falling forward over the forehead
 			_sphere(hd, r * 1.08, m, Vector3(0, r * 0.28, r * 0.06), Vector3(1.05, 0.82, 1.08))
 			for i in 10:

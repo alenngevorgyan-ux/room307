@@ -465,3 +465,111 @@ func s_54_check() -> void:
 	await wait(2.0)
 	await shot("chk_kitchen")
 	await s_42_epilogue()
+
+
+# ------------------------------------------------------------------ FINAL VISUAL LANGUAGE — BAR gate
+# Same gameplay cameras only (opening fixed rig, hub follow rig). Run on the baseline worktree and on
+# the candidate with identical recipes; nothing here changes the camera or staging.
+
+func s_60_bar_art() -> void:
+	await _quiet()
+	Services.scenes.goto_scene("S01")
+	await wait(4.0)
+	await shot("bar_01_opening_4s")
+	await wait(6.0)
+	await shot("bar_02_opening_10s")
+	await jump("S04")
+	await _quiet()
+	# ordinary gameplay framing: no auto-started exchange may switch the camera to its social mode
+	Services.conversation.auto_triggers = false
+	hero_at("BAR:nico_tables")
+	await wait(1.5)
+	await shot("bar_03_hub")
+	hero_at("BAR:hero_stand")
+	await wait(1.5)
+	await shot("bar_04_hub_counter")
+	Services.conversation.auto_triggers = true
+
+
+## Motion evidence (no video encoder on this machine): 10 fps frame sequences through the normal game.
+func s_61_bar_motion() -> void:
+	await jump("S04")
+	await _quiet()
+	Services.conversation.auto_triggers = false   # same framing on every run (no auto exchange)
+	hero_at("BAR:selin_spot")
+	await wait(1.2)
+	var key := _key_toward(Vector3(1, 0, 0))
+	Input.action_press(key)
+	for i in 30:
+		await wait(0.1)
+		await shot("bm_walk_%02d" % i)
+	Input.action_release(key)
+	Services.conversation.auto_triggers = true
+	hero_at("BAR:nico_tables")
+	await wait(1.0)
+	Services.conversation.talk_to("nico")
+	for i in 40:
+		await wait(0.15)
+		await shot("bm_nico_%02d" % i)
+
+
+## Render cost of the game view (vsync off). Viewport render time CPU/GPU + wall time of one draw.
+func _perf(label: String, warm: float, windows: int, sec: float) -> void:
+	var rid := view.get_viewport_rid()
+	RenderingServer.viewport_set_measure_render_time(rid, true)
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
+	await wait(warm)
+	var res := {"label": label, "windows": []}
+	for w in windows:
+		var wall: Array = []
+		var gpu: Array = []
+		var cpu: Array = []
+		var t_end := Time.get_ticks_msec() + int(sec * 1000.0)
+		while Time.get_ticks_msec() < t_end:
+			await get_tree().process_frame
+			var t0 := Time.get_ticks_usec()
+			RenderingServer.force_draw(false)
+			wall.append((Time.get_ticks_usec() - t0) / 1000.0)
+			gpu.append(RenderingServer.viewport_get_measured_render_time_gpu(rid))
+			cpu.append(RenderingServer.viewport_get_measured_render_time_cpu(rid))
+		wall.sort()
+		gpu.sort()
+		cpu.sort()
+		res.windows.append({"n": wall.size(),
+			"wall_median": wall[wall.size() / 2], "wall_p95": wall[int(wall.size() * 0.95)],
+			"gpu_median": gpu[gpu.size() / 2], "gpu_p95": gpu[int(gpu.size() * 0.95)],
+			"cpu_median": cpu[cpu.size() / 2], "cpu_p95": cpu[int(cpu.size() * 0.95)],
+			"over_33ms": wall.filter(func(v): return v > 33.3).size()})
+	res["draw_calls"] = RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)
+	res["objects"] = RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME)
+	res["primitives"] = RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_PRIMITIVES_IN_FRAME)
+	res["video_mem_mb"] = RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0
+	res["texture_mem_mb"] = RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TEXTURE_MEM_USED) / 1048576.0
+	var f := FileAccess.open(out_dir.path_join("perf_%s.json" % label), FileAccess.WRITE)
+	f.store_string(JSON.stringify(res, "  "))
+	f.close()
+	RenderingServer.viewport_set_measure_render_time(rid, false)
+	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
+	print("[perf] ", label, " done")
+
+
+func s_62_perf() -> void:
+	await jump("S04")
+	await _quiet()
+	hero_at("BAR:nico_tables")
+	await _perf("bar_hub", 30.0, 3, 60.0)
+	await _quiet()
+	Services.scenes.goto_scene("S01")
+	await _perf("bar_opening", 3.0, 3, 15.0)
+
+
+func s_63_perf_short() -> void:
+	await jump("S04")
+	await _quiet()
+	hero_at("BAR:nico_tables")
+	await _perf("bar_hub_short", 10.0, 3, 20.0)
+	await _quiet()
+	Services.scenes.goto_scene("S01")
+	await _perf("bar_opening_short", 3.0, 3, 15.0)
+	await shot("bar_shadow_probe")
+

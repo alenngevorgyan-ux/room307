@@ -107,6 +107,7 @@ func _process(_delta: float) -> void:
 		e.adjustment_brightness = lerpf(e.adjustment_brightness, 0.94 if reading else 1.0, minf(1.0, _delta * 5.0))
 		# the night moves on with the story (Pass 11) — gradually (Motion Polish Pass G)
 		VesperTime.update(self, get_node("/root/Episode"), _delta)
+		VesperArt.tick(self)   # rig-specific visual pieces (final visual language); visual only
 	# interactables/observables bound to moving NPCs or interactables
 	for it in get_tree().get_nodes_in_group("interactables"):
 		if it.has_meta("follow_npc"):

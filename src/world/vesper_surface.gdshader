@@ -18,6 +18,17 @@ uniform float ripple = 0.0;       // 0..1 raindrop rings in the puddles (follows
 uniform float emission_energy = 0.0;
 uniform float fade = 0.0;         // camera occlusion: ordered-dither cut-out (keeps a faint silhouette)
 uniform vec3 emission_color : source_color = vec3(1.0, 0.8, 0.55);
+// FINAL VISUAL LANGUAGE V1 — authored detail layer (profiles in VesperLook.DETAIL). detail_mix 0 keeps
+// the procedural V1 look exactly. Map packing: R value/mark, G wear|vein|patina, B roughness deviation.
+uniform sampler2D detail_tex : hint_default_white, filter_linear_mipmap, repeat_enable;
+uniform float detail_mix = 0.0;
+uniform float detail_scale = 1.0;          // map repeats per metre (512 px map -> 512 px/m at 1.0)
+uniform vec3 detail_dark : source_color = vec3(0.16);
+uniform vec3 detail_light : source_color = vec3(0.33);
+uniform float wear_amount = 0.0;
+uniform vec3 wear_color : source_color = vec3(0.5);
+uniform float rough_dev = 0.0;
+uniform float metal_wear = 0.0;            // bare-metal response drops where the patina mask sits
 
 varying vec3 wpos;
 varying vec3 wnrm;
@@ -65,6 +76,18 @@ float drop_rings(vec2 wxz, float tm) {
 	return smoothstep(0.06, 0.0, abs(rd - rt * 0.45)) * (1.0 - rt);
 }
 
+// authored detail: colour from the painted map, roughness deviation in .a (keeps the fragment flat)
+vec4 vesper_detail(vec2 dp) {
+	vec3 dmap = texture(detail_tex, dp * detail_scale).rgb;
+	vec3 dcol = mix(detail_dark, detail_light, dmap.r);
+	dcol = mix(dcol, wear_color, dmap.g * wear_amount);
+	return vec4(dcol, (dmap.b - 0.5) * rough_dev);
+}
+
+float vesper_patina(vec2 dp) {
+	return texture(detail_tex, dp * detail_scale).g;
+}
+
 const float BAYER[16] = float[](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
 
 void fragment() {
@@ -75,7 +98,8 @@ void fragment() {
 		}
 	}
 	int axis;
-	vec2 uv = plane_uv(axis) * scale;
+	vec2 puv = plane_uv(axis);
+	vec2 uv = puv * scale;
 	vec3 col = base_color;
 	float r = rough;
 	float line = 0.0;
@@ -125,6 +149,13 @@ void fragment() {
 		col = base_color * (0.85 + 0.25 * hash(vec2(floor(x), row)));
 		col = mix(alt_color, col, mortar);
 	}
+	float mtl = metal;
+	if (detail_mix > 0.001) {
+		vec4 dd = vesper_detail(puv);
+		col = mix(col, dd.rgb, detail_mix);
+		r = clamp(r + dd.a, 0.05, 1.0);
+		mtl = metal * (1.0 - vesper_patina(puv) * metal_wear);
+	}
 	// painterly large-scale value variation, never pure black or pure white
 	col *= 1.0 + (fbm(wpos.xz * 0.21 + wpos.y * 0.13) - 0.5) * variation * 2.0;
 	col = clamp(col, vec3(0.055, 0.051, 0.047), vec3(0.945, 0.902, 0.812));
@@ -136,7 +167,7 @@ void fragment() {
 	}
 	ALBEDO = col;
 	ROUGHNESS = r;
-	METALLIC = metal;
+	METALLIC = mtl;
 	SPECULAR = 0.35;
 	EMISSION = emission_color * emission_energy;
 }
